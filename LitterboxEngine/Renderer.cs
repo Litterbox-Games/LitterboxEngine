@@ -13,6 +13,10 @@ namespace LitterboxEngine;
 public class Renderer : IDisposable
 {
     // TODO: Stop passing fields as params and just reference them directly
+    // TODO: It should be noted that in a real world application, you're not supposed to actually call vkAllocateMemory for every individual buffer. https://vulkan-tutorial.com/Vertex_buffers/Staging_buffer
+    // TODO: The right way to allocate memory for a large number of objects at the same time is to create a custom allocator that splits up a single allocation among many different objects by using the offset parameters that we've seen in many functions
+    // TODO: Abstract around buffer and buffer memory objects so they dont need to be handled separately
+    
     
     private const int MaxFramesInFlight = 2;
     
@@ -702,41 +706,105 @@ public class Renderer : IDisposable
     
     private unsafe (Buffer, DeviceMemory) CreateVertexBuffer()
     {
+        var bufferSize = (ulong)(Unsafe.SizeOf<Vertex>() * _vertices.Length);
+
+        var (stagingBuffer, stagingBufferMemory) = CreateBuffer(bufferSize, 
+            BufferUsageFlags.TransferSrcBit, 
+            MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit);
+
+        void* data;
+        _vk.MapMemory(_logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+        _vertices.AsSpan().CopyTo(new Span<Vertex>(data, _vertices.Length));
+        _vk.UnmapMemory(_logicalDevice, stagingBufferMemory);
+
+        var (vertexBuffer, vertexBufferMemory) = CreateBuffer(bufferSize,
+            BufferUsageFlags.TransferDstBit | BufferUsageFlags.VertexBufferBit, 
+            MemoryPropertyFlags.DeviceLocalBit);
+
+        CopyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+
+        _vk.DestroyBuffer(_logicalDevice, stagingBuffer, null);
+        _vk.FreeMemory(_logicalDevice, stagingBufferMemory, null);
+        
+        return (vertexBuffer, vertexBufferMemory);
+    }
+
+    private unsafe (Buffer, DeviceMemory) CreateBuffer(ulong size, BufferUsageFlags usage, MemoryPropertyFlags properties)
+    {
         BufferCreateInfo bufferInfo = new()
         {
             SType = StructureType.BufferCreateInfo,
-            Size = (ulong)(sizeof(Vertex) * _vertices.Length),
-            Usage = BufferUsageFlags.VertexBufferBit,
-            SharingMode = SharingMode.Exclusive,
+            Size = size,
+            Usage = usage,
+            SharingMode = SharingMode.Exclusive
         };
-
-        var result = _vk.CreateBuffer(_logicalDevice, bufferInfo, null, out var vertexBuffer);
+        
+        var result = _vk.CreateBuffer(_logicalDevice, bufferInfo, null, out var buffer);
         if (result != Result.Success)
             throw new Exception($"Failed to create vertex buffer with error: {result.ToString()}");
 
-        _vk.GetBufferMemoryRequirements(_logicalDevice, vertexBuffer, out var memRequirements);
+        _vk.GetBufferMemoryRequirements(_logicalDevice, buffer, out var memRequirements);
 
         MemoryAllocateInfo allocateInfo = new()
         {
             SType = StructureType.MemoryAllocateInfo,
             AllocationSize = memRequirements.Size,
-            MemoryTypeIndex = FindMemoryType(memRequirements.MemoryTypeBits, MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit),
+            MemoryTypeIndex = FindMemoryType(memRequirements.MemoryTypeBits, properties),
         };
-
-        result = _vk.AllocateMemory(_logicalDevice, allocateInfo, null, out var vertexBufferMemory); 
+        
+        result = _vk.AllocateMemory(_logicalDevice, allocateInfo, null, out var bufferMemory); 
         if (result != Result.Success)
             throw new Exception($"Failed to allocate vertex buffer memory with error: {result.ToString()}");
 
-        _vk.BindBufferMemory(_logicalDevice, vertexBuffer, vertexBufferMemory, 0);
+        result = _vk.BindBufferMemory(_logicalDevice, buffer, bufferMemory, 0);
+        if (result != Result.Success)
+            throw new Exception($"Failed to bind buffer memory with error: {result.ToString()}");
 
-        void* data;
-        _vk.MapMemory(_logicalDevice, vertexBufferMemory, 0, bufferInfo.Size, 0, &data);
-        _vertices.AsSpan().CopyTo(new Span<Vertex>(data, _vertices.Length));
-        _vk.UnmapMemory(_logicalDevice, vertexBufferMemory);
-
-        return (vertexBuffer, vertexBufferMemory);
+        return (buffer, bufferMemory);
     }
     
+    private unsafe void CopyBuffer(Buffer srcBuffer, Buffer dstBuffer, ulong size)
+    {
+        CommandBufferAllocateInfo allocateInfo = new()
+        {
+            SType = StructureType.CommandBufferAllocateInfo,
+            Level = CommandBufferLevel.Primary,
+            CommandPool = _commandPool,
+            CommandBufferCount = 1,
+        };
+
+        _vk.AllocateCommandBuffers(_logicalDevice, allocateInfo, out var commandBuffer);
+
+        CommandBufferBeginInfo beginInfo = new()
+        {
+            SType = StructureType.CommandBufferBeginInfo,
+            Flags = CommandBufferUsageFlags.OneTimeSubmitBit,
+        };
+
+        _vk.BeginCommandBuffer(commandBuffer, beginInfo);
+
+        BufferCopy copyRegion = new()
+        {
+            Size = size,
+        };
+
+        _vk.CmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, copyRegion);
+
+        _vk.EndCommandBuffer(commandBuffer);
+
+        SubmitInfo submitInfo = new()
+        {
+            SType = StructureType.SubmitInfo,
+            CommandBufferCount = 1,
+            PCommandBuffers = &commandBuffer,
+        };
+
+        _vk.QueueSubmit(_queue, 1, submitInfo, default);
+        _vk.QueueWaitIdle(_queue);
+
+        _vk.FreeCommandBuffers(_logicalDevice, _commandPool, 1, commandBuffer);
+    }
+
     private uint FindMemoryType(uint typeFilter, MemoryPropertyFlags properties)
     {
         _vk.GetPhysicalDeviceMemoryProperties(_physicalDevice, out var memProperties);
