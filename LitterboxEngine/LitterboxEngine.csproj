@@ -10,6 +10,7 @@
 
     <ItemGroup>
       <PackageReference Include="Silk.NET.GLFW" Version="2.20.0" />
+      <PackageReference Include="Silk.NET.Maths" Version="2.20.0" />
       <PackageReference Include="Silk.NET.SPIRV.Cross" Version="2.20.0" />
       <PackageReference Include="Silk.NET.Vulkan" Version="2.20.0" />
       <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.20.0" />
