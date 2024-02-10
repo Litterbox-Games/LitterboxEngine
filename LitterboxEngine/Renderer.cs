@@ -45,17 +45,27 @@ public class Renderer : IDisposable
     private readonly Fence[] _inFlightFences;
     private Fence[] _imagesInFlight;
     private CommandBuffer[] _commandBuffers;
+    
     private readonly Buffer _vertexBuffer;
     private readonly DeviceMemory _vertexBufferMemory;
+    
+    private readonly Buffer _indexBuffer;
+    private readonly DeviceMemory _indexBufferMemory;
 
     private int _currentFrame;
     private bool _frameBufferResized;
     
     private readonly Vertex[] _vertices =
     {
-        new() { pos = new Vector2D<float>(0.0f,-0.5f), color = new Vector3D<float>(1.0f, 0.0f, 0.0f) },
-        new() { pos = new Vector2D<float>(0.5f,0.5f), color = new Vector3D<float>(0.0f, 1.0f, 0.0f) },
-        new() { pos = new Vector2D<float>(-0.5f,0.5f), color = new Vector3D<float>(0.0f, 0.0f, 1.0f) }
+        new() { pos = new Vector2D<float>(-0.5f,-0.5f), color = new Vector3D<float>(1.0f, 0.0f, 0.0f) },
+        new() { pos = new Vector2D<float>(0.5f,-0.5f), color = new Vector3D<float>(0.0f, 1.0f, 0.0f) },
+        new() { pos = new Vector2D<float>(0.5f,0.5f), color = new Vector3D<float>(0.0f, 0.0f, 1.0f) },
+        new() { pos = new Vector2D<float>(-0.5f,0.5f), color = new Vector3D<float>(0.0f, 0.0f, 0.0f) }
+    };
+    
+    private ushort[] _indices = 
+    {
+        0, 1, 2, 2, 3, 0
     };
 
     public unsafe Renderer(Window window, string[] extensions, string[]? validationLayers = null, DebugUtilsMessengerCallbackFunctionEXT? debugCallback = null)
@@ -76,6 +86,7 @@ public class Renderer : IDisposable
         _framebuffers = CreateFramebuffers(_swapchainExtent, _imageViews, _renderPass);         
         _commandPool = CreateCommandPool();
         (_vertexBuffer, _vertexBufferMemory) = CreateVertexBuffer();
+        (_indexBuffer, _indexBufferMemory) = CreateIndexBuffer();
         _commandBuffers = CreateCommandBuffers(_swapchainExtent, _renderPass, _pipeline, _framebuffers); 
         (_imageAvailableSemaphores, _renderFinishedSemaphores, _inFlightFences, _imagesInFlight) = CreateSyncObjects(_images);
     }
@@ -729,6 +740,31 @@ public class Renderer : IDisposable
         return (vertexBuffer, vertexBufferMemory);
     }
 
+    private unsafe (Buffer, DeviceMemory) CreateIndexBuffer()
+    {
+        var bufferSize = (ulong)(Unsafe.SizeOf<ushort>() * _indices.Length);
+
+        var (stagingBuffer, stagingBufferMemory) = CreateBuffer(bufferSize, 
+            BufferUsageFlags.TransferSrcBit, 
+            MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit);
+
+        void* data;
+        _vk.MapMemory(_logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+        _indices.AsSpan().CopyTo(new Span<ushort>(data, _indices.Length));
+        _vk.UnmapMemory(_logicalDevice, stagingBufferMemory);
+
+        var (indexBuffer, indexBufferMemory) = CreateBuffer(bufferSize, 
+            BufferUsageFlags.TransferDstBit | BufferUsageFlags.IndexBufferBit, 
+            MemoryPropertyFlags.DeviceLocalBit);
+
+        CopyBuffer(stagingBuffer, indexBuffer, bufferSize);
+
+        _vk.DestroyBuffer(_logicalDevice, stagingBuffer, null);
+        _vk.FreeMemory(_logicalDevice, stagingBufferMemory, null);
+
+        return (indexBuffer, indexBufferMemory);
+    }
+
     private unsafe (Buffer, DeviceMemory) CreateBuffer(ulong size, BufferUsageFlags usage, MemoryPropertyFlags properties)
     {
         BufferCreateInfo bufferInfo = new()
@@ -882,7 +918,9 @@ public class Renderer : IDisposable
                 _vk.CmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffersPtr, offsetsPtr);
             }
             
-            _vk.CmdDraw(commandBuffers[i], 3, 1, 0, 0);
+            _vk.CmdBindIndexBuffer(commandBuffers[i], _indexBuffer, 0, IndexType.Uint16);
+
+            _vk.CmdDrawIndexed(commandBuffers[i], (uint)_indices.Length, 1, 0, 0, 0);
 
             _vk.CmdEndRenderPass(commandBuffers[i]);
 
@@ -1059,6 +1097,9 @@ public class Renderer : IDisposable
     public unsafe void Dispose()
     {
         CleanUpSwapChain();
+        
+        _vk.DestroyBuffer(_logicalDevice, _indexBuffer, null);
+        _vk.FreeMemory(_logicalDevice, _indexBufferMemory, null);
         
         _vk.DestroyBuffer(_logicalDevice, _vertexBuffer, null);
         _vk.FreeMemory(_logicalDevice, _vertexBufferMemory, null);
