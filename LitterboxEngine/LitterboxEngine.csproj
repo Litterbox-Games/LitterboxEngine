@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Silk.NET.GLFW" Version="2.20.0" />
+      <PackageReference Include="Silk.NET.SPIRV.Cross" Version="2.20.0" />
+      <PackageReference Include="Silk.NET.Vulkan" Version="2.20.0" />
+      <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.20.0" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <VulkanBinPath>$(VULKAN_SDK)\Bin</VulkanBinPath>
+      <ShaderOutputPath>Resources\Shaders</ShaderOutputPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+		  <VertexShader Include="Resources/Shaders/*.vert" />
+		  <FragmentShader Include="Resources/Shaders/*.frag" />
+	  </ItemGroup>
+	
+	  <Target Name="BuildVulkanShader" AfterTargets="Build">
+		  <Message Text="VulkanBinPath: $(VulkanBinPath)" Importance="high" />
+		  <Message Text="ShaderOutputPath: $(OutputPath)\$(ShaderOutputPath)" Importance="high" />
+		  <Message Text="VertexShader: @(VertexShader)" Importance="high" />
+		  <Message Text="FragmentShader: @(FragmentShader)" Importance="high" />
+		  <MakeDir Directories="$(TargetDir)$(ShaderOutputPath)" Condition="!Exists('$(TargetDir)$(ShaderOutputPath)')" />
+		  <Exec Command="$(VulkanBinPath)\glslc.exe &quot;%(VertexShader.FullPath)&quot; -o &quot;$(TargetDir)$(ShaderOutputPath)\vert.spv&quot;" Condition="'@(VertexShader)'!=''" />
+		  <Exec Command="$(VulkanBinPath)\glslc.exe &quot;%(FragmentShader.FullPath)&quot; -o &quot;$(TargetDir)$(ShaderOutputPath)\frag.spv&quot;" Condition="'@(FragmentShader)'!=''" />
+	  </Target>
+
+</Project>
