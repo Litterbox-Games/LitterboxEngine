@@ -11,7 +11,7 @@ using Buffer = Silk.NET.Vulkan.Buffer;
 
 namespace LitterboxEngine;
 
-public class Renderer : IDisposable
+public class RendererOld : IDisposable
 {
     // TODO: Stop passing fields as params and just reference them directly
     // TODO: It should be noted that in a real world application, you're not supposed to actually call vkAllocateMemory for every individual buffer. https://vulkan-tutorial.com/Vertex_buffers/Staging_buffer
@@ -84,7 +84,7 @@ public class Renderer : IDisposable
     // TODO: Remove temp timer used for uniform buffer testing
     private readonly Stopwatch _stopwatch = new();
     
-    public unsafe Renderer(Window window, string[] extensions, string[]? validationLayers = null, DebugUtilsMessengerCallbackFunctionEXT? debugCallback = null)
+    public unsafe RendererOld(Window window, string[] extensions, string[]? validationLayers = null, DebugUtilsMessengerCallbackFunctionEXT? debugCallback = null)
     {
         _stopwatch.Start();
         
