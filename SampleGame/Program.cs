@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using LitterboxEngine;
+using Silk.NET.GLFW;
 
 namespace SampleGame;
 
@@ -19,6 +20,9 @@ public class Program: IGame
 
     public void Input(Window window)
     {
+        if (window.IsKeyPressed(Keys.A))
+            Console.WriteLine("A");
+        
         // throw new NotImplementedException();
     }
 
