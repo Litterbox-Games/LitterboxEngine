@@ -60,15 +60,21 @@ public class Renderer : IDisposable
     private DescriptorPool _descriptorPool;
     private DescriptorSet[] _descriptorSets;
 
+    private readonly Image _textureImage;
+    private readonly DeviceMemory _textureImageMemory;
+    private readonly ImageView _textureImageView;
+    private readonly Sampler _textureSampler;
+    
     private int _currentFrame;
     private bool _frameBufferResized;
-    
+
     private readonly Vertex[] _vertices =
     {
-        new() { pos = new Vector2D<float>(-0.5f,-0.5f), color = new Vector3D<float>(1.0f, 0.0f, 0.0f) },
-        new() { pos = new Vector2D<float>(0.5f,-0.5f), color = new Vector3D<float>(0.0f, 1.0f, 0.0f) },
-        new() { pos = new Vector2D<float>(0.5f,0.5f), color = new Vector3D<float>(0.0f, 0.0f, 1.0f) },
-        new() { pos = new Vector2D<float>(-0.5f,0.5f), color = new Vector3D<float>(0.0f, 0.0f, 0.0f) }
+        new() { pos = new Vector2D<float>(-0.5f,-0.5f), color = new Vector3D<float>(1.0f, 0.0f, 0.0f), texCoord = new Vector2D<float>(1.0f, 0.0f) },
+        new() { pos = new Vector2D<float>(0.5f,-0.5f), color = new Vector3D<float>(0.0f, 1.0f, 0.0f), texCoord = new Vector2D<float>(0.0f, 0.0f) },
+        new() { pos = new Vector2D<float>(0.5f,0.5f), color = new Vector3D<float>(0.0f, 0.0f, 1.0f), texCoord = new Vector2D<float>(0.0f, 1.0f) },
+        new() { pos = new Vector2D<float>(-0.5f,0.5f), color = new Vector3D<float>(1.0f, 1.0f, 1.0f), texCoord = new Vector2D<float>(1.0f, 1.0f) },
+
     };
     
     private readonly ushort[] _indices = 
@@ -96,9 +102,12 @@ public class Renderer : IDisposable
         (_images, _imageViews) = CreateImageViews(_khrSwapchain, _swapchain, _swapchainFormat); 
         _renderPass = CreateRenderPass(_swapchainFormat);
         _descriptorSetLayout = CreateDescriptorSetLayout();
-        (_pipelineLayout, _pipeline) = CreateGraphicsPipeline(_renderPass, _swapchainExtent);   
+        (_pipelineLayout, _pipeline) = CreateGraphicsPipeline(_renderPass, _swapchainExtent);
         _framebuffers = CreateFramebuffers(_swapchainExtent, _imageViews, _renderPass);         
         _commandPool = CreateCommandPool();
+        (_textureImage, _textureImageMemory) = CreateTextureImage();
+        _textureImageView = CreateTextureImageView(_textureImage, Format.R8G8B8A8Srgb);
+        _textureSampler = CreateTextureSampler();
         (_vertexBuffer, _vertexBufferMemory) = CreateVertexBuffer();
         (_indexBuffer, _indexBufferMemory) = CreateIndexBuffer();
         (_uniformBuffers, _uniformBuffersMemory) = CreateUniformBuffers();
@@ -511,27 +520,41 @@ public class Renderer : IDisposable
     
     private unsafe DescriptorSetLayout CreateDescriptorSetLayout()
     {
-        DescriptorSetLayoutBinding uboLayoutBinding = new()
+        var bindings = new DescriptorSetLayoutBinding[]
         {
-            Binding = 0,
-            DescriptorCount = 1,
-            DescriptorType = DescriptorType.UniformBuffer,
-            PImmutableSamplers = null,
-            StageFlags = ShaderStageFlags.VertexBit,
+             new() // UBO Layout Binding
+            {
+                Binding = 0,
+                DescriptorCount = 1,
+                DescriptorType = DescriptorType.UniformBuffer,
+                PImmutableSamplers = null,
+                StageFlags = ShaderStageFlags.VertexBit,
+            },
+            new() // Sampler Layout Binding
+            {
+                Binding = 1,
+                DescriptorCount = 1,
+                DescriptorType = DescriptorType.CombinedImageSampler,
+                PImmutableSamplers = null,
+                StageFlags = ShaderStageFlags.FragmentBit,
+            }
         };
 
-        DescriptorSetLayoutCreateInfo layoutInfo = new()
+        fixed (DescriptorSetLayoutBinding* bindingsPtr = bindings)
         {
-            SType = StructureType.DescriptorSetLayoutCreateInfo,
-            BindingCount = 1,
-            PBindings = &uboLayoutBinding,
-        };
+            DescriptorSetLayoutCreateInfo layoutInfo = new()
+            {
+                SType = StructureType.DescriptorSetLayoutCreateInfo,
+                BindingCount = 2,
+                PBindings = bindingsPtr,
+            };
+            
+            var result = _vk.CreateDescriptorSetLayout(_logicalDevice, layoutInfo, null, out var descriptorSetLayout);
+            if (result != Result.Success)
+                throw new Exception($"Failed to create descriptor set layout with error: {result.ToString()}");
 
-        var result = _vk.CreateDescriptorSetLayout(_logicalDevice, layoutInfo, null, out var descriptorSetLayout);
-        if (result != Result.Success)
-            throw new Exception($"Failed to create descriptor set layout with error: {result.ToString()}");
-
-        return descriptorSetLayout;
+            return descriptorSetLayout;
+        }
     }
     
     private unsafe (PipelineLayout, Pipeline) CreateGraphicsPipeline(RenderPass renderPass, Extent2D swapchainExtent)
@@ -758,6 +781,213 @@ public class Renderer : IDisposable
 
         return commandPool;
     }
+
+    private unsafe (Image, DeviceMemory) CreateTextureImage()
+    {
+        using var img = SixLabors.ImageSharp.Image.Load<SixLabors.ImageSharp.PixelFormats.Rgba32>("Resources/Textures/litterbox_logo.png");
+
+        var imageSize = (ulong)(img.Width * img.Height * img.PixelType.BitsPerPixel / 8);
+
+        var (stagingBuffer, stagingBufferMemory) = CreateBuffer(imageSize, 
+            BufferUsageFlags.TransferSrcBit, MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit);
+
+        void* data;
+        _vk.MapMemory(_logicalDevice, stagingBufferMemory, 0, imageSize, 0, &data);
+        img.CopyPixelDataTo(new Span<byte>(data, (int)imageSize));
+        _vk.UnmapMemory(_logicalDevice, stagingBufferMemory);
+
+        var (textureImage, textureImageMemory) = CreateImage((uint)img.Width, (uint)img.Height, Format.R8G8B8A8Srgb, 
+            ImageTiling.Optimal, ImageUsageFlags.TransferDstBit | ImageUsageFlags.SampledBit, MemoryPropertyFlags.DeviceLocalBit);
+
+        TransitionImageLayout(textureImage, ImageLayout.Undefined, ImageLayout.TransferDstOptimal);
+        CopyBufferToImage(stagingBuffer, textureImage, (uint)img.Width, (uint)img.Height);
+        TransitionImageLayout(textureImage, ImageLayout.TransferDstOptimal, ImageLayout.ShaderReadOnlyOptimal);
+
+        _vk.DestroyBuffer(_logicalDevice, stagingBuffer, null);
+        _vk.FreeMemory(_logicalDevice, stagingBufferMemory, null);
+
+        return (textureImage, textureImageMemory);
+    }
+
+    private unsafe (Image, DeviceMemory) CreateImage(uint width, uint height, Format format, ImageTiling tiling, ImageUsageFlags usage, MemoryPropertyFlags properties)
+    {
+        ImageCreateInfo imageInfo = new()
+        {
+            SType = StructureType.ImageCreateInfo,
+            ImageType = ImageType.Type2D,
+            Extent =
+            {
+                Width = width,
+                Height = height,
+                Depth = 1,
+            },
+            MipLevels = 1,
+            ArrayLayers = 1,
+            Format = format,
+            Tiling = tiling,
+            InitialLayout = ImageLayout.Undefined,
+            Usage = usage,
+            Samples = SampleCountFlags.Count1Bit,
+            SharingMode = SharingMode.Exclusive,
+        };
+
+        var result = _vk.CreateImage(_logicalDevice, imageInfo, null, out var image);
+
+        if (result != Result.Success)
+            throw new Exception($"Failed to create image with error {result.ToString()}");
+
+        _vk.GetImageMemoryRequirements(_logicalDevice, image, out var memRequirements);
+
+        MemoryAllocateInfo allocInfo = new()
+        {
+            SType = StructureType.MemoryAllocateInfo,
+            AllocationSize = memRequirements.Size,
+            MemoryTypeIndex = FindMemoryType(memRequirements.MemoryTypeBits, properties),
+        };
+
+        result = _vk.AllocateMemory(_logicalDevice, allocInfo, null, out var imageMemory);
+
+        if (result != Result.Success)
+            throw new Exception($"Failed to allocate image memory with error: {result.ToString()}");
+
+        _vk.BindImageMemory(_logicalDevice, image, imageMemory, 0);
+
+        return (image, imageMemory);
+    }
+
+    private unsafe ImageView CreateTextureImageView(Image image, Format format)
+    {
+        ImageViewCreateInfo createInfo = new()
+        {
+            SType = StructureType.ImageViewCreateInfo,
+            Image = image,
+            ViewType = ImageViewType.Type2D,
+            Format = format,
+            SubresourceRange =
+            {
+                AspectMask = ImageAspectFlags.ColorBit,
+                BaseMipLevel = 0,
+                LevelCount = 1,
+                BaseArrayLayer = 0,
+                LayerCount = 1,
+            }
+
+        };
+
+        var result = _vk.CreateImageView(_logicalDevice, createInfo, null, out var imageView);
+        if (result != Result.Success)
+            throw new Exception("failed to create image views!");
+
+        return imageView;
+    }
+
+    private unsafe Sampler CreateTextureSampler()
+    {
+        _vk.GetPhysicalDeviceProperties(_physicalDevice, out var properties);
+
+        SamplerCreateInfo samplerInfo = new()
+        {
+            SType = StructureType.SamplerCreateInfo,
+            MagFilter = Filter.Linear,
+            MinFilter = Filter.Linear,
+            AddressModeU = SamplerAddressMode.Repeat,
+            AddressModeV = SamplerAddressMode.Repeat,
+            AddressModeW = SamplerAddressMode.Repeat,
+            AnisotropyEnable = false,
+            MaxAnisotropy = properties.Limits.MaxSamplerAnisotropy,
+            BorderColor = BorderColor.IntOpaqueBlack,
+            UnnormalizedCoordinates = false,
+            CompareEnable = false,
+            CompareOp = CompareOp.Always,
+            MipmapMode = SamplerMipmapMode.Linear,
+        };
+
+        var result = _vk.CreateSampler(_logicalDevice, samplerInfo, null, out var sampler);
+        
+        if (result != Result.Success)
+            throw new Exception($"Failed to create texture sampler with error: {result.ToString()}");
+
+        return sampler;
+    }
+    
+    private unsafe void TransitionImageLayout(Image image, ImageLayout oldLayout, ImageLayout newLayout)
+    {
+        var commandBuffer = BeginTemporaryCommandBuffer();
+
+        ImageMemoryBarrier barrier = new()
+        {
+            SType = StructureType.ImageMemoryBarrier,
+            OldLayout = oldLayout,
+            NewLayout = newLayout,
+            SrcQueueFamilyIndex = Vk.QueueFamilyIgnored,
+            DstQueueFamilyIndex = Vk.QueueFamilyIgnored,
+            Image = image,
+            SubresourceRange =
+            {
+                AspectMask = ImageAspectFlags.ColorBit,
+                BaseMipLevel = 0,
+                LevelCount = 1,
+                BaseArrayLayer = 0,
+                LayerCount = 1,
+            }
+        };
+
+        PipelineStageFlags sourceStage;
+        PipelineStageFlags destinationStage;
+
+        if (oldLayout == ImageLayout.Undefined && newLayout == ImageLayout.TransferDstOptimal)
+        {
+            barrier.SrcAccessMask = 0;
+            barrier.DstAccessMask = AccessFlags.TransferWriteBit;
+
+            sourceStage = PipelineStageFlags.TopOfPipeBit;
+            destinationStage = PipelineStageFlags.TransferBit;
+        }
+        else if (oldLayout == ImageLayout.TransferDstOptimal && newLayout == ImageLayout.ShaderReadOnlyOptimal)
+        {
+            barrier.SrcAccessMask = AccessFlags.TransferWriteBit;
+            barrier.DstAccessMask = AccessFlags.ShaderReadBit;
+
+            sourceStage = PipelineStageFlags.TransferBit;
+            destinationStage = PipelineStageFlags.FragmentShaderBit;
+        }
+        else
+        {
+            throw new Exception($"Unsupported layout transition: old: ${oldLayout} new: ${newLayout}");
+        }
+
+        _vk.CmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, null, 0, null, 1, barrier);
+
+        EndTemporaryCommandBuffer(commandBuffer);
+
+    }
+    
+    private void CopyBufferToImage(Buffer buffer, Image image, uint width, uint height)
+    {
+        var commandBuffer = BeginTemporaryCommandBuffer();
+
+        BufferImageCopy region = new()
+        {
+            BufferOffset = 0,
+            BufferRowLength = 0,
+            BufferImageHeight = 0,
+            ImageSubresource =
+            {
+                AspectMask = ImageAspectFlags.ColorBit,
+                MipLevel = 0,
+                BaseArrayLayer = 0,
+                LayerCount = 1,
+            },
+            ImageOffset = new Offset3D(0, 0, 0),
+            ImageExtent = new Extent3D(width, height, 1),
+
+        };
+
+        _vk.CmdCopyBufferToImage(commandBuffer, buffer, image, ImageLayout.TransferDstOptimal, 1, region);
+
+        EndTemporaryCommandBuffer(commandBuffer);
+    }
+
     
     private unsafe (Buffer, DeviceMemory) CreateVertexBuffer()
     {
@@ -834,26 +1064,36 @@ public class Renderer : IDisposable
     
     private unsafe DescriptorPool CreateDescriptorPool()
     {
-        DescriptorPoolSize poolSize = new()
+        var poolSizes = new DescriptorPoolSize[]
         {
-            Type = DescriptorType.UniformBuffer,
-            DescriptorCount = (uint)_images.Length,
+            new()  // UBO Pool Size
+            {
+                Type = DescriptorType.UniformBuffer,
+                DescriptorCount = (uint)_images.Length,
+            },
+            new() // Sampler Pool Size
+            {
+                Type = DescriptorType.CombinedImageSampler,
+                DescriptorCount = (uint)_images.Length,
+            }
         };
 
-
-        DescriptorPoolCreateInfo poolInfo = new()
+        fixed (DescriptorPoolSize* poolSizesPtr = poolSizes)
         {
-            SType = StructureType.DescriptorPoolCreateInfo,
-            PoolSizeCount = 1,
-            PPoolSizes = &poolSize,
-            MaxSets = (uint)_images.Length,
-        };
+            DescriptorPoolCreateInfo poolInfo = new()
+            {
+                SType = StructureType.DescriptorPoolCreateInfo,
+                PoolSizeCount = 1,
+                PPoolSizes = poolSizesPtr,
+                MaxSets = (uint)_images.Length,
+            };
 
-        var result = _vk.CreateDescriptorPool(_logicalDevice, poolInfo, null, out var descriptorPool);
-        if (result != Result.Success)
-            throw new Exception($"Failed to create descriptor pool with error: {result.ToString()}");
+            var result = _vk.CreateDescriptorPool(_logicalDevice, poolInfo, null, out var descriptorPool);
+            if (result != Result.Success)
+                throw new Exception($"Failed to create descriptor pool with error: {result.ToString()}");
 
-        return descriptorPool;
+            return descriptorPool;    
+        }
     }
     
     private unsafe DescriptorSet[] CreateDescriptorSets()
@@ -879,7 +1119,7 @@ public class Renderer : IDisposable
             if (result != Result.Success)
                 throw new Exception($"Failed to allocate descriptor sets with error: {result.ToString()}");
         
-            for (int i = 0; i < _images.Length; i++)
+            for (var i = 0; i < _images.Length; i++)
             {
                 DescriptorBufferInfo bufferInfo = new()
                 {
@@ -889,18 +1129,41 @@ public class Renderer : IDisposable
 
                 };
 
-                WriteDescriptorSet descriptorWrite = new()
+                DescriptorImageInfo imageInfo = new()
                 {
-                    SType = StructureType.WriteDescriptorSet,
-                    DstSet = descriptorSets[i],
-                    DstBinding = 0,
-                    DstArrayElement = 0,
-                    DescriptorType = DescriptorType.UniformBuffer,
-                    DescriptorCount = 1,
-                    PBufferInfo = &bufferInfo,
+                    ImageLayout = ImageLayout.ShaderReadOnlyOptimal,
+                    ImageView = _textureImageView,
+                    Sampler = _textureSampler,
+                };
+                      
+                var descriptorWrites = new WriteDescriptorSet[]
+                {
+                    new()
+                    {
+                        SType = StructureType.WriteDescriptorSet,
+                        DstSet = descriptorSets[i],
+                        DstBinding = 0,
+                        DstArrayElement = 0,
+                        DescriptorType = DescriptorType.UniformBuffer,
+                        DescriptorCount = 1,
+                        PBufferInfo = &bufferInfo,
+                    },
+                    new()
+                    {
+                        SType = StructureType.WriteDescriptorSet,
+                        DstSet = descriptorSets[i],
+                        DstBinding = 1,
+                        DstArrayElement = 0,
+                        DescriptorType = DescriptorType.CombinedImageSampler,
+                        DescriptorCount = 1,
+                        PImageInfo = &imageInfo,
+                    }
                 };
 
-                _vk.UpdateDescriptorSets(_logicalDevice, 1, descriptorWrite, 0, null);
+                fixed (WriteDescriptorSet* descriptorWritesPtr = descriptorWrites)
+                {
+                    _vk.UpdateDescriptorSets(_logicalDevice, (uint)descriptorWrites.Length, descriptorWritesPtr, 0, null);    
+                }
             }
 
 
@@ -961,8 +1224,8 @@ public class Renderer : IDisposable
 
         return (buffer, bufferMemory);
     }
-    
-    private unsafe void CopyBuffer(Buffer srcBuffer, Buffer dstBuffer, ulong size)
+
+    private CommandBuffer BeginTemporaryCommandBuffer()
     {
         CommandBufferAllocateInfo allocateInfo = new()
         {
@@ -982,13 +1245,11 @@ public class Renderer : IDisposable
 
         _vk.BeginCommandBuffer(commandBuffer, beginInfo);
 
-        BufferCopy copyRegion = new()
-        {
-            Size = size,
-        };
+        return commandBuffer;
+    }
 
-        _vk.CmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, copyRegion);
-
+    private unsafe void EndTemporaryCommandBuffer(CommandBuffer commandBuffer)
+    {
         _vk.EndCommandBuffer(commandBuffer);
 
         SubmitInfo submitInfo = new()
@@ -997,11 +1258,25 @@ public class Renderer : IDisposable
             CommandBufferCount = 1,
             PCommandBuffers = &commandBuffer,
         };
-
+        
         _vk.QueueSubmit(_queue, 1, submitInfo, default);
         _vk.QueueWaitIdle(_queue);
 
         _vk.FreeCommandBuffers(_logicalDevice, _commandPool, 1, commandBuffer);
+    }
+    
+    private void CopyBuffer(Buffer srcBuffer, Buffer dstBuffer, ulong size)
+    {
+        var commandBuffer = BeginTemporaryCommandBuffer();
+
+        BufferCopy copyRegion = new()
+        {
+            Size = size,
+        };
+
+        _vk.CmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, copyRegion);
+
+         EndTemporaryCommandBuffer(commandBuffer);
     }
 
     private uint FindMemoryType(uint typeFilter, MemoryPropertyFlags properties)
@@ -1278,6 +1553,12 @@ public class Renderer : IDisposable
     public unsafe void Dispose()
     {
         CleanUpSwapChain();
+        
+        _vk.DestroySampler(_logicalDevice, _textureSampler, null);
+        _vk.DestroyImageView(_logicalDevice, _textureImageView, null);
+        
+        _vk.DestroyImage(_logicalDevice, _textureImage, null);
+        _vk.FreeMemory(_logicalDevice, _textureImageMemory, null);
         
         _vk.DestroyDescriptorSetLayout(_logicalDevice, _descriptorSetLayout, null);
         
