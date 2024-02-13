@@ -66,7 +66,6 @@ public class Renderer : IDisposable
     private readonly Sampler _textureSampler;
     
     private int _currentFrame;
-    private bool _frameBufferResized;
 
     private readonly Vertex[] _vertices =
     {
@@ -91,7 +90,7 @@ public class Renderer : IDisposable
         
         _vk = Vk.GetApi();
         _window = window;
-        _window.SetFrameBufferResizeCallback((_,_,_) => _frameBufferResized = true);
+        // _window.SetFrameBufferResizeCallback((_,_,_) => _frameBufferResized = true);
         
         _instance = CreateVulkanInstance(_window.Title, extensions, validationLayers, debugCallback);
         _physicalDevice = SelectPhysicalDevice();
@@ -1480,9 +1479,9 @@ public class Renderer : IDisposable
 
         result = _khrSwapchain.QueuePresent(_queue, presentInfo);
 
-        if (result == Result.ErrorOutOfDateKhr || result == Result.SuboptimalKhr || _frameBufferResized)
+        if (result == Result.ErrorOutOfDateKhr || result == Result.SuboptimalKhr || _window.IsResized)
         {
-            _frameBufferResized = false;
+            _window.ResetResized();
             RecreateSwapChain();
         }
         else if (result != Result.Success)
@@ -1498,12 +1497,7 @@ public class Renderer : IDisposable
     
     private void RecreateSwapChain()
     {
-        var (width, height) = _window.GetFrameBufferSize();
-        while (width == 0 || height == 0)
-        {
-            (width, height) = _window.GetFrameBufferSize();
-            _window.WaitEvents();
-        }
+        while (_window.Width == 0 || _window.Height == 0) _window.WaitEvents();
 
         DeviceWaitIdle();
 

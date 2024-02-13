@@ -3,9 +3,13 @@ using Silk.NET.Vulkan;
 
 namespace LitterboxEngine;
 
-public static class Program
+public class Engine: IDisposable
 {
-    
+    private readonly IGame _game;
+    private readonly Window _window;
+    private readonly Renderer _renderer;
+    private bool _isRunning;
+
     private static unsafe uint DebugCallback(DebugUtilsMessageSeverityFlagsEXT messageSeverity, DebugUtilsMessageTypeFlagsEXT messageTypes, DebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
     {
         // Do not need to release this string like the others as Vulkan will release the memory automatically.
@@ -30,19 +34,44 @@ public static class Program
         "VK_EXT_debug_utils"
 #endif
     };
-
-    private static unsafe void Main()
+    
+    public unsafe Engine(string title, IGame game)
     {
-        using var window = new Window("Vulkan Game");
-        using var renderer = new Renderer(window, Extensions, ValidationLayers, DebugCallback);
-        
-        while (!window.ShouldClose())
-        {
-            window.PollEvents();
+        _game = game;
+        _window = new Window(title);
+        _renderer = new Renderer(_window, Extensions, ValidationLayers, DebugCallback);
+        _game.Init(_window);
+    }
 
-            renderer.DrawFrame();
+    private void Run()
+    {
+        while (_isRunning && !_window.ShouldClose())
+        {
+            _window.PollEvents();
+            _game.Input(_window);
+            _game.Update(_window);
+            _renderer.DrawFrame();
         }
         
-        renderer.DeviceWaitIdle();
+        _renderer.DeviceWaitIdle();
+    }
+
+    public void Start()
+    {
+        _isRunning = true;
+        Run();
+    }
+
+    public void Stop()
+    {
+        _isRunning = false;
+    }
+    
+    public void Dispose()
+    {
+        _game.Dispose();
+        _renderer.Dispose();
+        _window.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

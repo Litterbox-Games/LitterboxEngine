@@ -4,37 +4,65 @@ namespace LitterboxEngine;
 
 public unsafe class Window : IDisposable
 {
-    public readonly WindowHandle* WindowHandle;
     public readonly Glfw Glfw;
+    public readonly WindowHandle* WindowHandle;
     public readonly string Title;
+    public readonly MouseInput MouseInput;
 
-    public Window (int width, int height, string title)
+    public int Width { get; private set; }
+    public int Height { get; private set; }
+    public bool IsResized { get; private set; }
+
+    public Window(string title, GlfwCallbacks.KeyCallback? keyCallback = null)
     {
         Title = title;
         
         Glfw = Glfw.GetApi();
-        Glfw.Init();
+        if (!Glfw.Init()) 
+            throw new Exception("Failed to initialize GLFW");
 
-        if (!Glfw.VulkanSupported())
-            throw new Exception("Vulkan support is required to launch this application.");
+        if (!Glfw.VulkanSupported()) 
+            throw new Exception("Cannot find a compatible Vulkan installable client driver");
         
         Glfw.WindowHint(WindowHintClientApi.ClientApi, ClientApi.NoApi);
-        Glfw.WindowHint(WindowHintBool.Resizable, true);
+        Glfw.WindowHint(WindowHintBool.Maximized, false);
+        
+        var vidMode = Glfw.GetVideoMode(Glfw.GetPrimaryMonitor());
+        WindowHandle = Glfw.CreateWindow(vidMode->Width / 2, vidMode->Height / 2, title, null, null);
 
-        WindowHandle = Glfw.CreateWindow(width, height, title, null, null);
+        if (WindowHandle == null)
+            throw new Exception("Failed to create a GLFW window");
+
+        Glfw.SetFramebufferSizeCallback(WindowHandle, (window, w, h) => Resize(w, h));
+
+        Glfw.SetKeyCallback(WindowHandle, (window, key, code, action, mods) =>
+        {
+           if (key == Keys.Escape && action == InputAction.Release) 
+               SetShouldClose();
+
+           keyCallback?.Invoke(window, key, code, action, mods);
+        });
+
+        MouseInput = new MouseInput(this);
     }
 
-    public (int, int) GetFrameBufferSize()
+    public void Resize(int width, int height)
     {
-        Glfw.GetFramebufferSize(WindowHandle, out var width, out var height);
-        return (width, height);
+        Width = width;
+        Height = height;
+        IsResized = true;
     }
 
-    public void SetFrameBufferResizeCallback(GlfwCallbacks.FramebufferSizeCallback callback)
+    public bool IsKeyPressed(Keys key)
     {
-        Glfw.SetFramebufferSizeCallback(WindowHandle, callback);
+        return Glfw.GetKey(WindowHandle, key) == (int)InputAction.Press;
     }
     
+    public void ResetResized()
+    {
+        IsResized = false;
+    }
+
     public void WaitEvents()
     {
         Glfw.WaitEvents();
@@ -43,6 +71,7 @@ public unsafe class Window : IDisposable
     public void PollEvents()
     {
         Glfw.PollEvents();
+        MouseInput.Input();
     }
     
     public bool ShouldClose()
@@ -50,8 +79,15 @@ public unsafe class Window : IDisposable
         return Glfw.WindowShouldClose(WindowHandle);
     }
 
+    public void SetShouldClose()
+    {
+        Glfw.SetWindowShouldClose(WindowHandle, true);
+    }
+
     public void Dispose()
     {
+        Glfw.DestroyWindow(WindowHandle);
+        Glfw.Terminate();
         Glfw.Dispose();
         GC.SuppressFinalize(this);
     }
