@@ -8,7 +8,7 @@ namespace LitterboxEngine.Graphics.Vulkan;
 public class Instance: IDisposable
 {
     private readonly Vk _vk;
-    private readonly Silk.NET.Vulkan.Instance _vkInstance;
+    public readonly Silk.NET.Vulkan.Instance VkInstance;
     
     private static readonly string[] RequestedExtensions =
     {
@@ -82,7 +82,7 @@ public class Instance: IDisposable
             instanceCreateInfo.PNext = &debugCreateInfo;
         }
         
-        var result = _vk.CreateInstance(instanceCreateInfo, null, out _vkInstance);
+        var result = _vk.CreateInstance(instanceCreateInfo, null, out VkInstance);
         
         // Native strings are mem-copied by Vulkan and can be freed after instance creation.
         Marshal.FreeHGlobal((nint)applicationCreateInfo.PApplicationName);
@@ -142,7 +142,7 @@ public class Instance: IDisposable
 
     public unsafe void Dispose()
     {
-        _vk.DestroyInstance(_vkInstance, null);
+        _vk.DestroyInstance(VkInstance, null);
         GC.SuppressFinalize(this);
     }
 }
