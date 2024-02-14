@@ -25,6 +25,11 @@ public class Renderer: IDisposable
         _graphicsQueue = new GraphicsQueue(_vk, _logicalDevice, 0);
     }
 
+    public void DeviceWaitIdle()
+    {
+        _logicalDevice.WaitIdle();
+    }
+    
     public void Dispose()
     {
         _surface.Dispose();

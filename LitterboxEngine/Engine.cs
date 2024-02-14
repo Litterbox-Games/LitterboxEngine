@@ -27,7 +27,7 @@ public class Engine: IDisposable
             // _rendererOld.DrawFrame();
         }
         
-        // _rendererOld.DeviceWaitIdle();
+        _renderer.DeviceWaitIdle();
     }
 
     public void Start()

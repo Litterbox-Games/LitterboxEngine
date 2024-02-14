@@ -8,7 +8,7 @@ public class PhysicalDevice
 {
     private readonly Vk _vk;
     public readonly Silk.NET.Vulkan.PhysicalDevice VkPhysicalDevice;
-    public readonly PhysicalDeviceProperties _vkPhysicalDeviceProperties;
+    private readonly PhysicalDeviceProperties _vkPhysicalDeviceProperties;
     public readonly string[] AvailableDeviceExtensions;
     public readonly QueueFamilyProperties[] VkQueueFamilyProperties;
     private readonly PhysicalDeviceFeatures _vkPhysicalDeviceFeatures;
