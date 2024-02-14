@@ -11,6 +11,7 @@ public class Renderer: IDisposable
     private readonly Instance _instance;
     private readonly PhysicalDevice _physicalDevice;
     private readonly LogicalDevice _logicalDevice;
+    private readonly Surface _surface;
     
     public Renderer(Window window)
     {
@@ -18,10 +19,12 @@ public class Renderer: IDisposable
         _instance = new Instance(_vk, window.Title, true);
         _physicalDevice = PhysicalDevice.SelectPreferredPhysicalDevice(_vk, _instance);
         _logicalDevice = new LogicalDevice(_vk, _physicalDevice);
+        _surface = new Surface(_vk, _instance, window);
     }
 
     public void Dispose()
     {
+        _surface.Dispose();
         _logicalDevice.Dispose();
         _instance.Dispose();
         _vk.Dispose();
