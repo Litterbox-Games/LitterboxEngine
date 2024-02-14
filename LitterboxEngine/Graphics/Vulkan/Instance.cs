@@ -15,6 +15,10 @@ public class Instance: IDisposable
         // This extension is required to work with the window surface created by GLFW.
         "VK_KHR_surface",
         "VK_KHR_win32_surface",
+#if MACOS
+        // Tells vulkan to complain about the use of features non compliant for portability
+        "VK_KHR_portability_enumeration"
+#endif
 #if DEBUG        
         "VK_EXT_debug_utils"
 #endif
@@ -106,7 +110,7 @@ public class Instance: IDisposable
         result = _vk.EnumerateInstanceExtensionProperties((string)null!, &layersCount, extensions); 
         if (result != Result.Success)
             throw new Exception($"Failed to enumerate instance extension properties with error: ${result.ToString()}");
-        
+
         return extensions.ToArray()
             .Select(ext => SilkMarshal.PtrToString((nint)ext.ExtensionName)!)
             .Where(name => RequestedExtensions.Contains(name))

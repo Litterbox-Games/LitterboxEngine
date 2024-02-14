@@ -7,10 +7,10 @@ namespace LitterboxEngine.Graphics.Vulkan;
 public class PhysicalDevice
 {
     private readonly Vk _vk;
-    private readonly Silk.NET.Vulkan.PhysicalDevice _vkPhysicalDevice;
+    public readonly Silk.NET.Vulkan.PhysicalDevice VkPhysicalDevice;
     private readonly PhysicalDeviceProperties _vkPhysicalDeviceProperties;
-    private readonly ExtensionProperties[] _vkDeviceExtensions;
-    private readonly QueueFamilyProperties[] _vkQueueFamilyProperties;
+    public readonly string[] AvailableDeviceExtensions;
+    public readonly QueueFamilyProperties[] VkQueueFamilyProperties;
     private readonly PhysicalDeviceFeatures _vkPhysicalDeviceFeatures;
     private readonly PhysicalDeviceMemoryProperties _vkMemoryProperties;
 
@@ -23,33 +23,37 @@ public class PhysicalDevice
     private unsafe PhysicalDevice(Vk vk, Silk.NET.Vulkan.PhysicalDevice vkPhysicalDevice)
     {
         _vk = vk;
-        _vkPhysicalDevice = vkPhysicalDevice;
+        VkPhysicalDevice = vkPhysicalDevice;
         
         // Device properties
-        _vk.GetPhysicalDeviceProperties(_vkPhysicalDevice, out _vkPhysicalDeviceProperties);
+        _vk.GetPhysicalDeviceProperties(VkPhysicalDevice, out _vkPhysicalDeviceProperties);
         
         // Device extensions
         uint extensionCount = 0;
-        var result = _vk.EnumerateDeviceExtensionProperties(_vkPhysicalDevice, (string)null!, ref extensionCount, null);
+        var result = _vk.EnumerateDeviceExtensionProperties(VkPhysicalDevice, (string)null!, ref extensionCount, null);
         if (result != Result.Success)
             throw new Exception($"Failed to get the number of device extension properties with error: {result.ToString()}");
 
-        Span<ExtensionProperties> deviceExtensions = _vkDeviceExtensions = new ExtensionProperties[extensionCount];
-        result = _vk.EnumerateDeviceExtensionProperties(_vkPhysicalDevice, (string)null!, &extensionCount, deviceExtensions);
+        Span<ExtensionProperties> deviceExtensions = new ExtensionProperties[extensionCount];
+        result = _vk.EnumerateDeviceExtensionProperties(VkPhysicalDevice, (string)null!, &extensionCount, deviceExtensions);
         if (result != Result.Success)
             throw new Exception($"Failed to get extension properties with error: {result.ToString()}");
 
+        AvailableDeviceExtensions = deviceExtensions.ToArray()
+            .Select(ext => SilkMarshal.PtrToString((nint) ext.ExtensionName)!)
+            .ToArray();
+
         // Queue family properties
         uint queueCount = 0;
-        _vk.GetPhysicalDeviceQueueFamilyProperties(_vkPhysicalDevice, ref queueCount, null);
-        Span<QueueFamilyProperties> queueFamilyProperties = _vkQueueFamilyProperties = new QueueFamilyProperties[queueCount]; 
-        _vk.GetPhysicalDeviceQueueFamilyProperties(_vkPhysicalDevice, &queueCount, queueFamilyProperties);
+        _vk.GetPhysicalDeviceQueueFamilyProperties(VkPhysicalDevice, ref queueCount, null);
+        Span<QueueFamilyProperties> queueFamilyProperties = VkQueueFamilyProperties = new QueueFamilyProperties[queueCount]; 
+        _vk.GetPhysicalDeviceQueueFamilyProperties(VkPhysicalDevice, &queueCount, queueFamilyProperties);
         
         // Device features
-        _vk.GetPhysicalDeviceFeatures(_vkPhysicalDevice, out _vkPhysicalDeviceFeatures);
+        _vk.GetPhysicalDeviceFeatures(VkPhysicalDevice, out _vkPhysicalDeviceFeatures);
 
         // Memory information and properties
-        _vk.GetPhysicalDeviceMemoryProperties(_vkPhysicalDevice, out _vkMemoryProperties);
+        _vk.GetPhysicalDeviceMemoryProperties(VkPhysicalDevice, out _vkMemoryProperties);
     }
     
     public static unsafe PhysicalDevice SelectPreferredPhysicalDevice(Vk vk, Instance instance, string? preferredDeviceName = null)
@@ -78,15 +82,14 @@ public class PhysicalDevice
 
             var deviceName = physicalDevice.Name;
 
-            if (physicalDevice.HasGraphicsQueueFamily() && physicalDevice.HasKhrSwapChainExtensions())
+            if (!physicalDevice.HasGraphicsQueueFamily() || !physicalDevice.HasKhrSwapChainExtension()) continue;
+
+            if (preferredDeviceName != null && preferredDeviceName == deviceName)
             {
-                if (preferredDeviceName != null && preferredDeviceName == deviceName)
-                {
-                    selectedPhysicalDevice = physicalDevice;
-                    break;
-                }
-                supportedDevices.Enqueue(physicalDevice);
+                selectedPhysicalDevice = physicalDevice;
+                break;
             }
+            supportedDevices.Enqueue(physicalDevice);
         }
         
         // If we didnt find the preferred device, just fall back to the first supported device if possible
@@ -98,11 +101,11 @@ public class PhysicalDevice
 
     private bool HasGraphicsQueueFamily()
     {
-        return _vkQueueFamilyProperties.Any(familyProps => familyProps.QueueFlags.HasFlag(QueueFlags.GraphicsBit));
+        return VkQueueFamilyProperties.Any(familyProps => familyProps.QueueFlags.HasFlag(QueueFlags.GraphicsBit));
     }
 
-    private bool HasKhrSwapChainExtensions()
+    private bool HasKhrSwapChainExtension()
     {
-        return _vk.IsDeviceExtensionPresent(_vkPhysicalDevice, KhrSwapchain.ExtensionName);
+        return _vk.IsDeviceExtensionPresent(VkPhysicalDevice, KhrSwapchain.ExtensionName);
     }
 }
