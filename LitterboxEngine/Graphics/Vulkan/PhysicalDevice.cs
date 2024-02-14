@@ -8,7 +8,7 @@ public class PhysicalDevice
 {
     private readonly Vk _vk;
     public readonly Silk.NET.Vulkan.PhysicalDevice VkPhysicalDevice;
-    private readonly PhysicalDeviceProperties _vkPhysicalDeviceProperties;
+    public readonly PhysicalDeviceProperties _vkPhysicalDeviceProperties;
     public readonly string[] AvailableDeviceExtensions;
     public readonly QueueFamilyProperties[] VkQueueFamilyProperties;
     private readonly PhysicalDeviceFeatures _vkPhysicalDeviceFeatures;
@@ -74,7 +74,7 @@ public class PhysicalDevice
         if (result != Result.Success)
             throw new Exception($"Failed to enumerate physical devices with error: {result.ToString()}.");
 
-        var supportedDevices = new Queue<PhysicalDevice>();
+        var supportedDevices = new List<PhysicalDevice>();
         PhysicalDevice? selectedPhysicalDevice = null;
         foreach (var vkPhysicalDevice in vkPhysicalDevices)
         {
@@ -89,11 +89,16 @@ public class PhysicalDevice
                 selectedPhysicalDevice = physicalDevice;
                 break;
             }
-            supportedDevices.Enqueue(physicalDevice);
+            supportedDevices.Add(physicalDevice);
         }
-        
+
         // If we didnt find the preferred device, just fall back to the first supported device if possible
-        if ((selectedPhysicalDevice ??= supportedDevices.Dequeue()) == null)
+        // We also prioritize discrete gpus if available
+        selectedPhysicalDevice ??= supportedDevices
+            .Where(device => device._vkPhysicalDeviceProperties.DeviceType == PhysicalDeviceType.DiscreteGpu)
+            .FirstOrDefault(supportedDevices.FirstOrDefault((PhysicalDevice)null!));
+
+        if (selectedPhysicalDevice == null)
             throw new Exception("Failed to find a suitable physical device");
 
         return selectedPhysicalDevice;
