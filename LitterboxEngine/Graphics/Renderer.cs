@@ -2,6 +2,7 @@
 using Silk.NET.Vulkan;
 using Instance = LitterboxEngine.Graphics.Vulkan.Instance;
 using PhysicalDevice = LitterboxEngine.Graphics.Vulkan.PhysicalDevice;
+using Queue = LitterboxEngine.Graphics.Vulkan.Queue;
 
 namespace LitterboxEngine.Graphics;
 
@@ -12,6 +13,7 @@ public class Renderer: IDisposable
     private readonly PhysicalDevice _physicalDevice;
     private readonly LogicalDevice _logicalDevice;
     private readonly Surface _surface;
+    private readonly Queue _graphicsQueue;
     
     public Renderer(Window window)
     {
@@ -20,6 +22,7 @@ public class Renderer: IDisposable
         _physicalDevice = PhysicalDevice.SelectPreferredPhysicalDevice(_vk, _instance);
         _logicalDevice = new LogicalDevice(_vk, _physicalDevice);
         _surface = new Surface(_vk, _instance, window);
+        _graphicsQueue = new GraphicsQueue(_vk, _logicalDevice, 0);
     }
 
     public void Dispose()

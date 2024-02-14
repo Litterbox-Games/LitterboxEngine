@@ -98,6 +98,16 @@ public class PhysicalDevice
 
         return selectedPhysicalDevice;
     }
+    
+    public int GetGraphicsQueueFamilyIndex()
+    {
+        // Return index of first queue family with graphics bit
+        return VkQueueFamilyProperties
+            .Select((familyProps, i) => (familyProps.QueueFlags.HasFlag(QueueFlags.GraphicsBit), i))
+            .Where(tuple => tuple.Item1)
+            .Select(tuple => tuple.i)
+            .First();
+    }
 
     private bool HasGraphicsQueueFamily()
     {

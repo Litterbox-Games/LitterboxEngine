@@ -7,9 +7,9 @@ namespace LitterboxEngine.Graphics.Vulkan;
 public class LogicalDevice: IDisposable
 {
     private readonly Vk _vk;
-    // TODO: This propery might not be required unless needed elsewhere
-    private readonly PhysicalDevice _physicalDevice;
+    private readonly PhysicalDevice _physicalDevice;  // TODO: see if this can be removed
     public readonly Device VkLogicalDevice;
+    public readonly int GraphicsQueueFamilyIndex;
 
     private static readonly string[] RequestedExtensions =
     {
@@ -32,28 +32,23 @@ public class LogicalDevice: IDisposable
             if (!availableExtension.Contains(extension))
                 throw new Exception($"Requested extension \"{extension}\" is not available");
         }
-
-        // Enable all queue families
-        var queueCreateInfoCount = _physicalDevice.VkQueueFamilyProperties.Length;
-        using var mem = GlobalMemory.Allocate(queueCreateInfoCount * sizeof(DeviceQueueCreateInfo));
-        var queueCreateInfos = (DeviceQueueCreateInfo*)Unsafe.AsPointer(ref mem.GetPinnableReference());
+        
+        // Enable graphics queue family
+        GraphicsQueueFamilyIndex = physicalDevice.GetGraphicsQueueFamilyIndex();
         var queuePriority = 1.0f;
-        for (var i = 0; i < queueCreateInfoCount; i++)
+        var queueCreateInfo = new DeviceQueueCreateInfo()
         {
-            queueCreateInfos[i] = new DeviceQueueCreateInfo()
-            {
-                SType = StructureType.DeviceQueueCreateInfo,
-                QueueFamilyIndex = (uint)i,
-                QueueCount = 1,
-                PQueuePriorities = &queuePriority
-            };    
-        }
+            SType = StructureType.DeviceQueueCreateInfo,
+            QueueFamilyIndex = (uint)GraphicsQueueFamilyIndex,
+            QueueCount = 1,
+            PQueuePriorities = &queuePriority
+        };            
         
         var deviceCreateInfo = new DeviceCreateInfo()
         {
             SType = StructureType.DeviceCreateInfo,
-            QueueCreateInfoCount = (uint)queueCreateInfoCount,
-            PQueueCreateInfos = queueCreateInfos,
+            QueueCreateInfoCount = 1,
+            PQueueCreateInfos = &queueCreateInfo,
             EnabledExtensionCount = (uint)RequestedExtensions.Length,
             PpEnabledExtensionNames = (byte**)SilkMarshal.StringArrayToPtr(RequestedExtensions)
         };
@@ -70,7 +65,7 @@ public class LogicalDevice: IDisposable
     {
         _vk.DeviceWaitIdle(VkLogicalDevice);
     }
-    
+
     public unsafe void Dispose()
     {
         _vk.DestroyDevice(VkLogicalDevice, null);
