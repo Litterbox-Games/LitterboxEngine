@@ -7,7 +7,7 @@ namespace LitterboxEngine.Graphics.Vulkan;
 public class LogicalDevice: IDisposable
 {
     private readonly Vk _vk;
-    private readonly PhysicalDevice _physicalDevice;  // TODO: see if this can be removed
+    public readonly PhysicalDevice PhysicalDevice;
     public readonly Device VkLogicalDevice;
     public readonly int GraphicsQueueFamilyIndex;
 
@@ -23,10 +23,10 @@ public class LogicalDevice: IDisposable
     public unsafe LogicalDevice(Vk vk, PhysicalDevice physicalDevice)
     {
         _vk = vk;
-        _physicalDevice = physicalDevice;
+        PhysicalDevice = physicalDevice;
         
         // Check for requested extensions
-        var availableExtension = _physicalDevice.AvailableDeviceExtensions;
+        var availableExtension = PhysicalDevice.AvailableDeviceExtensions;
         foreach (var extension in RequestedExtensions)
         {
             if (!availableExtension.Contains(extension))
@@ -53,7 +53,7 @@ public class LogicalDevice: IDisposable
             PpEnabledExtensionNames = (byte**)SilkMarshal.StringArrayToPtr(RequestedExtensions)
         };
         
-        var result = _vk.CreateDevice(_physicalDevice.VkPhysicalDevice, deviceCreateInfo, null, out VkLogicalDevice);
+        var result = _vk.CreateDevice(PhysicalDevice.VkPhysicalDevice, deviceCreateInfo, null, out VkLogicalDevice);
         
         SilkMarshal.Free((nint) deviceCreateInfo.PpEnabledExtensionNames);
             

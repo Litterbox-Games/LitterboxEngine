@@ -6,8 +6,8 @@ namespace LitterboxEngine.Graphics.Vulkan;
 
 public class Surface: IDisposable
 {
-    private readonly KhrSurface _khrSurface;
-    private readonly SurfaceKHR _vkSurface;
+    public readonly KhrSurface KhrSurface;
+    public readonly SurfaceKHR VkSurface;
     private readonly Instance _instance;
     
     public unsafe Surface(Vk vk, Instance instance, Window window)
@@ -20,9 +20,9 @@ public class Surface: IDisposable
         if (isSurfaceCreated != (int)Result.Success)
             throw new Exception($"Failed to create window surface with error code: {isSurfaceCreated}");
 
-        _vkSurface = vkNonDispatchableHandle[0].ToSurface();
+        VkSurface = vkNonDispatchableHandle[0].ToSurface();
         
-        if (!vk.TryGetInstanceExtension(_instance.VkInstance, out _khrSurface))
+        if (!vk.TryGetInstanceExtension(_instance.VkInstance, out KhrSurface))
             throw new Exception("Failed to instantiate KHR surface extension");
         
         // TODO: this is how we check if a queue has presentation support. Ideally we should have a selectPreferredQueue function
@@ -32,7 +32,7 @@ public class Surface: IDisposable
 
     public unsafe void Dispose()
     {
-        _khrSurface.DestroySurface(_instance.VkInstance, _vkSurface, null);
+        KhrSurface.DestroySurface(_instance.VkInstance, VkSurface, null);
         GC.SuppressFinalize(this);
     }
 }
