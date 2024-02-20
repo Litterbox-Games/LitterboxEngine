@@ -47,6 +47,7 @@ public class SwapChain
 
         // TODO: Finish swap chain creation by creating image views
         // imagesViews = CreateImageViews(logicalDevice, _vkSwapChain, _surfaceFormat.Format);
+        CreateImageViews(logicalDevice, khrSwapchain, _vkSwapChain, _surfaceFormat.Format);
     }
 
     private static uint CalcImageCount(SurfaceCapabilitiesKHR surfaceCapabilities, int requestedImages)
@@ -110,6 +111,23 @@ public class SwapChain
         return new Extent2D { Width = (uint)width, Height = (uint)height };
 
     }
-    
-    
+
+    private unsafe void CreateImageViews(LogicalDevice logicalDevice, KhrSwapchain khrSwapchain, SwapchainKHR swapchainKhr, Format format)
+    {
+        uint imageCount = 0;
+        var result = khrSwapchain.GetSwapchainImages(logicalDevice.VkLogicalDevice, swapchainKhr, ref imageCount, null);
+        
+        if (result != Result.Success)
+            throw new Exception($"Failed to get surface images with error: {result.ToString()}.");
+
+        if (imageCount == 0)
+            throw new Exception($"No surface images were found");
+        
+        Span<Image> swapChainImages = new Image[imageCount];
+
+        result = khrSwapchain.GetSwapchainImages(logicalDevice.VkLogicalDevice, swapchainKhr, &imageCount, swapChainImages);
+
+        if (result != Result.Success)
+            throw new Exception($"Failed to get surface images with error: {result.ToString()}.");
+    }
 }
