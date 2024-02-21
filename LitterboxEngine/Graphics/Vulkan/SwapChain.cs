@@ -3,15 +3,21 @@ using Silk.NET.Vulkan.Extensions.KHR;
 
 namespace LitterboxEngine.Graphics.Vulkan;
 
-public class SwapChain
+public class SwapChain: IDisposable
 {
+    // TODO: might not need to save these for later
     private readonly SurfaceFormatKHR _surfaceFormat;
     private readonly Extent2D _swapChainExtent;
+    private readonly KhrSwapchain _khrSwapChain;
     private readonly SwapchainKHR _vkSwapChain;
+    private readonly ImageView[] _imageViews;
+    private readonly LogicalDevice _logicalDevice;
 
     public unsafe SwapChain(Vk vk, Instance instance, LogicalDevice logicalDevice, Surface surface, Window window, int requestedImages, bool vsync)
     {
-        var physicalDevice = logicalDevice.PhysicalDevice;
+        _logicalDevice = logicalDevice;
+        
+        var physicalDevice = _logicalDevice.PhysicalDevice;
         surface.KhrSurface.GetPhysicalDeviceSurfaceCapabilities(physicalDevice.VkPhysicalDevice, surface.VkSurface,
             out var surfaceCapabilities);
 
@@ -38,16 +44,14 @@ public class SwapChain
             PresentMode = vsync ? PresentModeKHR.FifoKhr : PresentModeKHR.ImmediateKhr
         };
 
-        if (!vk.TryGetDeviceExtension(instance.VkInstance, logicalDevice.VkLogicalDevice, out KhrSwapchain khrSwapchain))
+        if (!vk.TryGetDeviceExtension(instance.VkInstance, _logicalDevice.VkLogicalDevice, out _khrSwapChain))
             throw new Exception("VK_KHR_swapchain extension was not found or was not be loaded");
         
-        var result = khrSwapchain.CreateSwapchain(logicalDevice.VkLogicalDevice, swapChainCreateInfo, null, out _vkSwapChain);
+        var result = _khrSwapChain.CreateSwapchain(_logicalDevice.VkLogicalDevice, swapChainCreateInfo, null, out _vkSwapChain);
         if (result != Result.Success)
             throw new Exception($"Failed to create swap chain with error: {result.ToString()}.");
-
-        // TODO: Finish swap chain creation by creating image views
-        // imagesViews = CreateImageViews(logicalDevice, _vkSwapChain, _surfaceFormat.Format);
-        CreateImageViews(logicalDevice, khrSwapchain, _vkSwapChain, _surfaceFormat.Format);
+        
+        _imageViews = CreateImageViews(vk, _logicalDevice, _khrSwapChain, _vkSwapChain, _surfaceFormat.Format);
     }
 
     private static uint CalcImageCount(SurfaceCapabilitiesKHR surfaceCapabilities, int requestedImages)
@@ -112,7 +116,7 @@ public class SwapChain
 
     }
 
-    private unsafe void CreateImageViews(LogicalDevice logicalDevice, KhrSwapchain khrSwapchain, SwapchainKHR swapchainKhr, Format format)
+    private static unsafe ImageView[] CreateImageViews(Vk vk, LogicalDevice logicalDevice, KhrSwapchain khrSwapchain, SwapchainKHR swapchainKhr, Format format)
     {
         uint imageCount = 0;
         var result = khrSwapchain.GetSwapchainImages(logicalDevice.VkLogicalDevice, swapchainKhr, ref imageCount, null);
@@ -129,5 +133,22 @@ public class SwapChain
 
         if (result != Result.Success)
             throw new Exception($"Failed to get surface images with error: {result.ToString()}.");
+
+        var imageViews = new ImageView[imageCount];
+        var imageViewData = new ImageView.ImageViewData(format, ImageAspectFlags.ColorBit);
+
+        for (var i = 0; i < imageCount; i++)
+            imageViews[i] = new ImageView(vk, logicalDevice, swapChainImages[i], imageViewData);
+
+        return imageViews;
+    }
+
+    public unsafe void Dispose()
+    {
+        foreach (var imageView in _imageViews)
+            imageView.Dispose();
+        
+        _khrSwapChain.DestroySwapchain(_logicalDevice.VkLogicalDevice, _vkSwapChain, null);
+        GC.SuppressFinalize(this);
     }
 }
