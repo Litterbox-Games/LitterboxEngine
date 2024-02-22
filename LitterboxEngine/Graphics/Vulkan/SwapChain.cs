@@ -6,24 +6,24 @@ namespace LitterboxEngine.Graphics.Vulkan;
 public class SwapChain: IDisposable
 {
     // TODO: might not need to save these for later
-    private readonly SurfaceFormatKHR _surfaceFormat;
+    public readonly SurfaceFormatKHR SurfaceFormat;
     private readonly Extent2D _swapChainExtent;
     private readonly KhrSwapchain _khrSwapChain;
     private readonly SwapchainKHR _vkSwapChain;
     private readonly ImageView[] _imageViews;
-    private readonly LogicalDevice _logicalDevice;
+    public readonly LogicalDevice LogicalDevice;
 
     public unsafe SwapChain(Vk vk, Instance instance, LogicalDevice logicalDevice, Surface surface, Window window, int requestedImages, bool vsync)
     {
-        _logicalDevice = logicalDevice;
+        LogicalDevice = logicalDevice;
         
-        var physicalDevice = _logicalDevice.PhysicalDevice;
+        var physicalDevice = LogicalDevice.PhysicalDevice;
         surface.KhrSurface.GetPhysicalDeviceSurfaceCapabilities(physicalDevice.VkPhysicalDevice, surface.VkSurface,
             out var surfaceCapabilities);
 
         var imageCount = CalcImageCount(surfaceCapabilities, requestedImages);
 
-        _surfaceFormat = CalcSurfaceFormat(physicalDevice, surface);
+        SurfaceFormat = CalcSurfaceFormat(physicalDevice, surface);
 
         _swapChainExtent = CalcSwapChainExtent(window, surfaceCapabilities);
         
@@ -32,8 +32,8 @@ public class SwapChain: IDisposable
             SType = StructureType.SwapchainCreateInfoKhr,
             Surface = surface.VkSurface,
             MinImageCount = imageCount,
-            ImageFormat = _surfaceFormat.Format,
-            ImageColorSpace = _surfaceFormat.ColorSpace,
+            ImageFormat = SurfaceFormat.Format,
+            ImageColorSpace = SurfaceFormat.ColorSpace,
             ImageExtent = _swapChainExtent,
             ImageArrayLayers = 1,
             ImageUsage = ImageUsageFlags.ColorAttachmentBit,
@@ -44,14 +44,14 @@ public class SwapChain: IDisposable
             PresentMode = vsync ? PresentModeKHR.FifoKhr : PresentModeKHR.ImmediateKhr
         };
 
-        if (!vk.TryGetDeviceExtension(instance.VkInstance, _logicalDevice.VkLogicalDevice, out _khrSwapChain))
+        if (!vk.TryGetDeviceExtension(instance.VkInstance, LogicalDevice.VkLogicalDevice, out _khrSwapChain))
             throw new Exception("VK_KHR_swapchain extension was not found or was not be loaded");
         
-        var result = _khrSwapChain.CreateSwapchain(_logicalDevice.VkLogicalDevice, swapChainCreateInfo, null, out _vkSwapChain);
+        var result = _khrSwapChain.CreateSwapchain(LogicalDevice.VkLogicalDevice, swapChainCreateInfo, null, out _vkSwapChain);
         if (result != Result.Success)
             throw new Exception($"Failed to create swap chain with error: {result.ToString()}.");
         
-        _imageViews = CreateImageViews(vk, _logicalDevice, _khrSwapChain, _vkSwapChain, _surfaceFormat.Format);
+        _imageViews = CreateImageViews(vk, LogicalDevice, _khrSwapChain, _vkSwapChain, SurfaceFormat.Format);
     }
 
     private static uint CalcImageCount(SurfaceCapabilitiesKHR surfaceCapabilities, int requestedImages)
@@ -148,7 +148,7 @@ public class SwapChain: IDisposable
         foreach (var imageView in _imageViews)
             imageView.Dispose();
         
-        _khrSwapChain.DestroySwapchain(_logicalDevice.VkLogicalDevice, _vkSwapChain, null);
+        _khrSwapChain.DestroySwapchain(LogicalDevice.VkLogicalDevice, _vkSwapChain, null);
         GC.SuppressFinalize(this);
     }
 }

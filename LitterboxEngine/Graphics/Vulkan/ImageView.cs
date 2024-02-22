@@ -6,7 +6,7 @@ namespace LitterboxEngine.Graphics.Vulkan;
 public class ImageView: IDisposable
 {
     private readonly Vk _vk;
-    private readonly Silk.NET.Vulkan.ImageView _vkImageView;
+    public readonly Silk.NET.Vulkan.ImageView VkImageView;
     private readonly LogicalDevice _logicalDevice;
     
     public unsafe ImageView(Vk vk, LogicalDevice logicalDevice, Image vkImage, ImageViewData imageViewData)
@@ -31,14 +31,14 @@ public class ImageView: IDisposable
 
         };
         
-        var result = _vk.CreateImageView(_logicalDevice.VkLogicalDevice, createInfo, null, out _vkImageView);
+        var result = _vk.CreateImageView(_logicalDevice.VkLogicalDevice, createInfo, null, out VkImageView);
         if (result != Result.Success)
             throw new Exception($"Failed to create image view with error: {result.ToString()}");
     }
 
     public unsafe void Dispose()
     {
-        _vk.DestroyImageView(_logicalDevice.VkLogicalDevice, _vkImageView, null);
+        _vk.DestroyImageView(_logicalDevice.VkLogicalDevice, VkImageView, null);
         GC.SuppressFinalize(this);
     }
     
