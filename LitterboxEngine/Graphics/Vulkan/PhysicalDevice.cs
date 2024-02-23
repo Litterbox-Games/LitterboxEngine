@@ -104,14 +104,41 @@ public class PhysicalDevice
         return selectedPhysicalDevice;
     }
     
-    public int GetGraphicsQueueFamilyIndex()
+    public uint GetGraphicsQueueFamilyIndex()
     {
         // Return index of first queue family with graphics bit
-        return VkQueueFamilyProperties
+        var index = VkQueueFamilyProperties
             .Select((familyProps, i) => (familyProps.QueueFlags.HasFlag(QueueFlags.GraphicsBit), i))
             .Where(tuple => tuple.Item1)
             .Select(tuple => tuple.i)
-            .First();
+            .FirstOrDefault(-1);
+        
+        if (index < 0)
+            throw new Exception("Failed to get graphics queue family index");
+
+        return (uint)index;
+    }
+
+    public uint GetPresentQueueFamilyIndex(Surface surface)
+    {
+        var index = VkQueueFamilyProperties
+            .Select((_, i) =>
+            {
+                var result = surface.KhrSurface.GetPhysicalDeviceSurfaceSupport(VkPhysicalDevice, (uint) i,
+                    surface.VkSurface, out var isSupported);
+                if (result != Result.Success)
+                    throw new Exception($"Failed to get physical device surface support: {result.ToString()}"); 
+                
+                return (isSupported, i);
+            })
+            .Where(tuple => tuple.Item1)
+            .Select(tuple => tuple.i)
+            .FirstOrDefault(-1);
+
+        if (index < 0)
+            throw new Exception("Failed to get presentation queue family index");
+
+        return (uint)index;
     }
 
     private bool HasGraphicsQueueFamily()

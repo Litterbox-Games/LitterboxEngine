@@ -3,6 +3,7 @@ using Silk.NET.Vulkan;
 using Instance = LitterboxEngine.Graphics.Vulkan.Instance;
 using PhysicalDevice = LitterboxEngine.Graphics.Vulkan.PhysicalDevice;
 using Queue = LitterboxEngine.Graphics.Vulkan.Queue;
+using CommandPool = LitterboxEngine.Graphics.Vulkan.CommandPool;
 
 namespace LitterboxEngine.Graphics;
 
@@ -14,7 +15,10 @@ public class Renderer: IDisposable
     private readonly LogicalDevice _logicalDevice;
     private readonly Surface _surface;
     private readonly Queue _graphicsQueue;
+    private readonly Queue _presentQueue;
     private readonly SwapChain _swapChain;
+    private readonly CommandPool _commandPool;
+    private readonly ForwardRenderTask _forwardRenderTask;
     
     public Renderer(Window window)
     {
@@ -24,9 +28,21 @@ public class Renderer: IDisposable
         _logicalDevice = new LogicalDevice(_vk, _physicalDevice);
         _surface = new Surface(_vk, _instance, window);
         _graphicsQueue = new GraphicsQueue(_vk, _logicalDevice, 0);
-        _swapChain = new SwapChain(_vk, _instance, _logicalDevice, _surface, window, 3, false);
+        _presentQueue = new PresentQueue(_vk, _logicalDevice, _surface, 0);
+        _swapChain = new SwapChain(_vk, _instance, _logicalDevice, _surface, window, 3, 
+            false, _presentQueue, new []{_graphicsQueue});
+        _commandPool = new CommandPool(_vk, _logicalDevice, _graphicsQueue.QueueFamilyIndex);
+        _forwardRenderTask = new ForwardRenderTask(_vk, _swapChain, _commandPool);
     }
 
+    public void Render()
+    {
+        _forwardRenderTask.WaitForFence();
+        _swapChain.AcquireNextImage();
+        _forwardRenderTask.Submit(_graphicsQueue);
+        _swapChain.PresentImage(_presentQueue);
+    }
+    
     public void DeviceWaitIdle()
     {
         _logicalDevice.WaitIdle();
@@ -34,6 +50,12 @@ public class Renderer: IDisposable
     
     public void Dispose()
     {
+        _presentQueue.WaitIdle();
+        _graphicsQueue.WaitIdle();
+        _logicalDevice.WaitIdle();
+        
+        _forwardRenderTask.Dispose();
+        _commandPool.Dispose();
         _swapChain.Dispose();
         _surface.Dispose();
         _logicalDevice.Dispose();

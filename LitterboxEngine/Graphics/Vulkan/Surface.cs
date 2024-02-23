@@ -24,15 +24,12 @@ public class Surface: IDisposable
         
         if (!vk.TryGetInstanceExtension(_instance.VkInstance, out KhrSurface))
             throw new Exception("Failed to instantiate KHR surface extension");
-        
-        // TODO: this is how we check if a queue has presentation support. Ideally we should have a selectPreferredQueue function
-        // TODO: that finds a queue with both presentation and graphics support
-        // khrSurface.GetPhysicalDeviceSurfaceSupport(_physicalDevice, _queueFamilyIndex, surface, out var iSupported);
     }
 
     public unsafe void Dispose()
     {
         KhrSurface.DestroySurface(_instance.VkInstance, VkSurface, null);
+        KhrSurface.Dispose();
         GC.SuppressFinalize(this);
     }
 }

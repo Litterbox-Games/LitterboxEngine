@@ -9,7 +9,7 @@ public class LogicalDevice: IDisposable
     private readonly Vk _vk;
     public readonly PhysicalDevice PhysicalDevice;
     public readonly Device VkLogicalDevice;
-    public readonly int GraphicsQueueFamilyIndex;
+    public readonly uint GraphicsQueueFamilyIndex;
 
     private static readonly string[] RequestedExtensions =
     {

@@ -24,7 +24,7 @@ public class Engine: IDisposable
             _window.PollEvents();
             _game.Input(_window);
             _game.Update(_window);
-            // _rendererOld.DrawFrame();
+            _renderer.Render();
         }
         
         _renderer.DeviceWaitIdle();

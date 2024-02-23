@@ -10,7 +10,7 @@ public class CommandPool: IDisposable
     public readonly LogicalDevice LogicalDevice;
 
 
-    public  unsafe CommandPool(Vk vk, LogicalDevice logicalDevice, int queueFamilyIndex)
+    public  unsafe CommandPool(Vk vk, LogicalDevice logicalDevice, uint queueFamilyIndex)
     {
         _vk = vk;
         LogicalDevice = logicalDevice;
@@ -19,7 +19,7 @@ public class CommandPool: IDisposable
         {
             SType = StructureType.CommandPoolCreateInfo,
             Flags = CommandPoolCreateFlags.ResetCommandBufferBit,
-            QueueFamilyIndex = (uint)queueFamilyIndex,
+            QueueFamilyIndex = queueFamilyIndex,
         };
 
         var result = _vk.CreateCommandPool(LogicalDevice.VkLogicalDevice, poolInfo, null, out VkCommandPool); 

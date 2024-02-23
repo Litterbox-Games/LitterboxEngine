@@ -38,6 +38,16 @@ public class SwapChainRenderPass: IDisposable
             PColorAttachments = &colorAttachmentRef,
         };
 
+        SubpassDependency subpassDependency = new()
+        {
+            SrcSubpass = Vk.SubpassExternal,
+            DstSubpass = 0,
+            SrcStageMask = PipelineStageFlags.ColorAttachmentOutputBit,
+            DstStageMask = PipelineStageFlags.ColorAttachmentOutputBit,
+            SrcAccessMask = 0,
+            DstAccessMask = AccessFlags.ColorAttachmentWriteBit
+        };
+
         RenderPassCreateInfo renderPassInfo = new()
         {
             SType = StructureType.RenderPassCreateInfo,
@@ -45,6 +55,8 @@ public class SwapChainRenderPass: IDisposable
             PAttachments = &colorAttachment,
             SubpassCount = 1,
             PSubpasses = &subpass,
+            DependencyCount = 1,
+            PDependencies = &subpassDependency
         };
 
         var result = _vk.CreateRenderPass(_swapChain.LogicalDevice.VkLogicalDevice, renderPassInfo, null, out VkRenderPass);

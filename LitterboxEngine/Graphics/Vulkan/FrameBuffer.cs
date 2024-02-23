@@ -9,7 +9,7 @@ public class FrameBuffer: IDisposable
     private readonly Vk _vk;
     private readonly LogicalDevice _logicalDevice;
     
-    public unsafe FrameBuffer(Vk vk, LogicalDevice logicalDevice, int width, int height, ImageView imageView, RenderPass renderPass)
+    public unsafe FrameBuffer(Vk vk, LogicalDevice logicalDevice, uint width, uint height, ImageView imageView, SwapChainRenderPass renderPass)
     {
         _vk = vk;
         _logicalDevice = logicalDevice;
@@ -18,11 +18,11 @@ public class FrameBuffer: IDisposable
         FramebufferCreateInfo framebufferInfo = new()
         {
             SType = StructureType.FramebufferCreateInfo,
-            RenderPass = renderPass,
+            RenderPass = renderPass.VkRenderPass,
             AttachmentCount = 1,
             PAttachments = &attachment,
-            Width = (uint)width,
-            Height = (uint)height,
+            Width = width,
+            Height = height,
             Layers = 1,
         };
         

@@ -5,15 +5,18 @@ namespace LitterboxEngine.Graphics.Vulkan;
 
 public class SwapChain: IDisposable
 {
-    // TODO: might not need to save these for later
     public readonly SurfaceFormatKHR SurfaceFormat;
-    private readonly Extent2D _swapChainExtent;
+    public readonly Extent2D Extent;
     private readonly KhrSwapchain _khrSwapChain;
     private readonly SwapchainKHR _vkSwapChain;
-    private readonly ImageView[] _imageViews;
+    public readonly ImageView[] ImageViews;
     public readonly LogicalDevice LogicalDevice;
+    public readonly SwapChainSyncSemaphores[] SyncSemaphores;
 
-    public unsafe SwapChain(Vk vk, Instance instance, LogicalDevice logicalDevice, Surface surface, Window window, int requestedImages, bool vsync)
+    public uint CurrentFrame;
+    
+    public unsafe SwapChain(Vk vk, Instance instance, LogicalDevice logicalDevice, Surface surface, Window window, int requestedImages, bool vsync,
+        Queue presentQueue, Queue[]? concurrentQueues)
     {
         LogicalDevice = logicalDevice;
         
@@ -25,7 +28,7 @@ public class SwapChain: IDisposable
 
         SurfaceFormat = CalcSurfaceFormat(physicalDevice, surface);
 
-        _swapChainExtent = CalcSwapChainExtent(window, surfaceCapabilities);
+        Extent = CalcSwapChainExtent(window, surfaceCapabilities);
         
         var swapChainCreateInfo = new SwapchainCreateInfoKHR
         {
@@ -34,7 +37,7 @@ public class SwapChain: IDisposable
             MinImageCount = imageCount,
             ImageFormat = SurfaceFormat.Format,
             ImageColorSpace = SurfaceFormat.ColorSpace,
-            ImageExtent = _swapChainExtent,
+            ImageExtent = Extent,
             ImageArrayLayers = 1,
             ImageUsage = ImageUsageFlags.ColorAttachmentBit,
             ImageSharingMode = SharingMode.Exclusive,
@@ -45,13 +48,76 @@ public class SwapChain: IDisposable
         };
 
         if (!vk.TryGetDeviceExtension(instance.VkInstance, LogicalDevice.VkLogicalDevice, out _khrSwapChain))
-            throw new Exception("VK_KHR_swapchain extension was not found or was not be loaded");
+            throw new Exception("VK_KHR_swapchain extension was not found or could not be loaded");
+
+        var concurrentFamilyIndices = concurrentQueues?
+            .Select(queue => (uint)queue.QueueFamilyIndex)
+            .Where(queueFamilyIndex => queueFamilyIndex != (uint)presentQueue.QueueFamilyIndex)
+            .ToArray();
+
+        if (concurrentFamilyIndices != null && concurrentFamilyIndices.Length > 0)
+        {
+            fixed (uint* concurrentFamilyIndicesPtr = concurrentFamilyIndices)
+            {
+                swapChainCreateInfo.ImageSharingMode = SharingMode.Concurrent;
+                swapChainCreateInfo.QueueFamilyIndexCount = (uint)concurrentFamilyIndices.Length;
+                swapChainCreateInfo.PQueueFamilyIndices = concurrentFamilyIndicesPtr;    
+            }
+        }
         
         var result = _khrSwapChain.CreateSwapchain(LogicalDevice.VkLogicalDevice, swapChainCreateInfo, null, out _vkSwapChain);
         if (result != Result.Success)
             throw new Exception($"Failed to create swap chain with error: {result.ToString()}.");
         
-        _imageViews = CreateImageViews(vk, LogicalDevice, _khrSwapChain, _vkSwapChain, SurfaceFormat.Format);
+        ImageViews = CreateImageViews(vk, LogicalDevice, _khrSwapChain, _vkSwapChain, SurfaceFormat.Format);
+        SyncSemaphores = ImageViews.Select(_ => new SwapChainSyncSemaphores(vk, LogicalDevice)).ToArray();
+    }
+
+    // Returns true if we need to resize/recreate the swap chain otherwise false
+    public bool AcquireNextImage()
+    {
+        uint imageIndex = 0;
+        var result = _khrSwapChain.AcquireNextImage(LogicalDevice.VkLogicalDevice, _vkSwapChain, ulong.MaxValue, 
+            SyncSemaphores[CurrentFrame].ImageAcquisition.VkSemaphore, default, ref imageIndex);
+
+        CurrentFrame = imageIndex;
+        
+        if (result == Result.ErrorOutOfDateKhr) return true;
+        
+        if (result != Result.Success && result != Result.SuboptimalKhr)
+            throw new Exception($"Failed to acquire swap chain image with error: ${result.ToString()}");
+
+        return false;
+    }
+
+    public unsafe bool PresentImage(Queue queue)
+    {
+        var imageIndex = CurrentFrame;
+        var signalSemaphores = stackalloc[] { SyncSemaphores[CurrentFrame].RenderComplete.VkSemaphore };
+        var swapChains = stackalloc[] { _vkSwapChain };
+        PresentInfoKHR presentInfo = new()
+        {
+            SType = StructureType.PresentInfoKhr,
+
+            WaitSemaphoreCount = 1,
+            PWaitSemaphores = signalSemaphores,
+
+            SwapchainCount = 1,
+            PSwapchains = swapChains,
+            
+            PImageIndices = &imageIndex
+        };
+
+        var result = _khrSwapChain.QueuePresent(queue.VkQueue, presentInfo);
+        
+        CurrentFrame = (CurrentFrame + 1) % (uint)ImageViews.Length;
+        
+        if (result == Result.ErrorOutOfDateKhr) return true;
+        
+        if (result != Result.Success && result != Result.SuboptimalKhr)
+            throw new Exception($"Failed to present KHR with error: ${result.ToString()}");
+        
+        return false;
     }
 
     private static uint CalcImageCount(SurfaceCapabilitiesKHR surfaceCapabilities, int requestedImages)
@@ -145,10 +211,32 @@ public class SwapChain: IDisposable
 
     public unsafe void Dispose()
     {
-        foreach (var imageView in _imageViews)
+        foreach (var imageView in ImageViews)
             imageView.Dispose();
+
+        foreach (var syncSemaphore in SyncSemaphores)
+            syncSemaphore.Dispose();
         
         _khrSwapChain.DestroySwapchain(LogicalDevice.VkLogicalDevice, _vkSwapChain, null);
+        _khrSwapChain.Dispose();
         GC.SuppressFinalize(this);
+    }
+}
+
+public readonly struct SwapChainSyncSemaphores: IDisposable
+{
+    public readonly Semaphore ImageAcquisition;
+    public readonly Semaphore RenderComplete;
+
+    public SwapChainSyncSemaphores(Vk vk, LogicalDevice logicalDevice)
+    {
+        ImageAcquisition = new Semaphore(vk, logicalDevice);
+        RenderComplete = new Semaphore(vk, logicalDevice);
+    }
+
+    public void Dispose()
+    {
+        ImageAcquisition.Dispose();
+        RenderComplete.Dispose();
     }
 }
