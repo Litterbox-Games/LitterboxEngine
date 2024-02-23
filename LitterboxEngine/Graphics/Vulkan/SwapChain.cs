@@ -13,8 +13,8 @@ public class SwapChain: IDisposable
     public readonly LogicalDevice LogicalDevice;
     public readonly SwapChainSyncSemaphores[] SyncSemaphores;
 
-    public uint CurrentFrame;
-    
+    public uint CurrentFrame { get; private set; }
+
     public unsafe SwapChain(Vk vk, Instance instance, LogicalDevice logicalDevice, Surface surface, Window window, int requestedImages, bool vsync,
         Queue presentQueue, Queue[]? concurrentQueues)
     {
@@ -90,6 +90,7 @@ public class SwapChain: IDisposable
         return false;
     }
 
+    // Returns true if we need to resize/recreate the swap chain otherwise false
     public unsafe bool PresentImage(Queue queue)
     {
         var imageIndex = CurrentFrame;
