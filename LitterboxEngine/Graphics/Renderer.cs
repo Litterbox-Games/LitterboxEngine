@@ -32,7 +32,10 @@ public class Renderer: IDisposable
         _swapChain = new SwapChain(_vk, _instance, _logicalDevice, _surface, window, 3, 
             false, _presentQueue, new []{_graphicsQueue});
         _commandPool = new CommandPool(_vk, _logicalDevice, _graphicsQueue.QueueFamilyIndex);
+        // TODO: This could really be made as a part of the SwapChain
+        // TODO: We would just need to create the commandPool before the SwapChain and pass it in
         _forwardRenderTask = new ForwardRenderTask(_vk, _swapChain, _commandPool);
+        
     }
 
     public void Render()
