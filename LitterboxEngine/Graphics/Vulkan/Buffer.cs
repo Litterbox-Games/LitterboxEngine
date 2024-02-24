@@ -45,6 +45,16 @@ public class Buffer: IDisposable
             throw new Exception($"Failed to bind buffer memory with error: {result.ToString()}");
     }
 
+    public void MapMemory()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void UnMapMemory()
+    {
+        throw new NotImplementedException();
+    }
+    
     // Utility function to convert memory properties into memory type
     private uint MemoryTypeFromProperties(uint typeFilter, MemoryPropertyFlags properties)
     {

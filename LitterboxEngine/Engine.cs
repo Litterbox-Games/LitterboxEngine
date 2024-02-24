@@ -6,14 +6,14 @@ public class Engine: IDisposable
 {
     private readonly IGame _game;
     private readonly Window _window;
-    private readonly Renderer _renderer;
+    private readonly VulkanRenderer _vulkanRenderer;
     private bool _isRunning;
 
     public Engine(string title, IGame game)
     {
         _game = game;
         _window = new Window(title);
-        _renderer = new Renderer(_window);
+        _vulkanRenderer = new VulkanRenderer(_window);
         _game.Init(_window);
     }
 
@@ -24,10 +24,10 @@ public class Engine: IDisposable
             _window.PollEvents();
             _game.Input(_window);
             _game.Update(_window);
-            _renderer.Render();
+            _vulkanRenderer.Render();
         }
         
-        _renderer.DeviceWaitIdle();
+        _vulkanRenderer.DeviceWaitIdle();
     }
 
     public void Start()
@@ -44,7 +44,7 @@ public class Engine: IDisposable
     public void Dispose()
     {
         _game.Dispose();
-        _renderer.Dispose();
+        _vulkanRenderer.Dispose();
         _window.Dispose();
         GC.SuppressFinalize(this);
     }
