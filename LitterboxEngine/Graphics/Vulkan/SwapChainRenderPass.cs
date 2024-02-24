@@ -2,6 +2,8 @@
 
 namespace LitterboxEngine.Graphics.Vulkan;
 
+// TODO: See about renaming this to just RenderPass
+
 public class SwapChainRenderPass: IDisposable
 {
     public readonly RenderPass VkRenderPass;

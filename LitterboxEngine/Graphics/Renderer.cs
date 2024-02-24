@@ -17,9 +17,11 @@ public class Renderer
 
     private readonly Vertex[] _vertices;
     
-    public Renderer(GraphicsBackend backend = GraphicsBackend.Vulkan)
+    public Renderer(Window window, GraphicsBackend backend = GraphicsBackend.Vulkan)
     {
-        _graphicsDevice = GraphicsDevice.Create(backend);
+        var description = new GraphicsDeviceDescription();
+        
+        _graphicsDevice = GraphicsDevice.Create(window, description, backend);
         
         // Vertex Buffer
         _vertices = new Vertex[MaxVertices];

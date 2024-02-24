@@ -1,13 +1,8 @@
-﻿using LitterboxEngine.Graphics.Vulkan;
-using Silk.NET.Vulkan;
-using Instance = LitterboxEngine.Graphics.Vulkan.Instance;
-using PhysicalDevice = LitterboxEngine.Graphics.Vulkan.PhysicalDevice;
-using Queue = LitterboxEngine.Graphics.Vulkan.Queue;
-using CommandPool = LitterboxEngine.Graphics.Vulkan.CommandPool;
+﻿using Silk.NET.Vulkan;
 
-namespace LitterboxEngine.Graphics;
+namespace LitterboxEngine.Graphics.Vulkan;
 
-public class VulkanRenderer: IDisposable
+public sealed class GraphicsDevice: Graphics.GraphicsDevice
 {
     private readonly Vk _vk;
     private readonly Instance _instance;
@@ -20,7 +15,7 @@ public class VulkanRenderer: IDisposable
     private readonly CommandPool _commandPool;
     private readonly ForwardRenderTask _forwardRenderTask;
     
-    public VulkanRenderer(Window window)
+    public GraphicsDevice(Window window, GraphicsDeviceDescription description)
     {
         _vk = Vk.GetApi();
         _instance = new Instance(_vk, window.Title, true);
@@ -35,10 +30,40 @@ public class VulkanRenderer: IDisposable
         // TODO: This could really be made as a part of the SwapChain
         // TODO: We would just need to create the commandPool before the SwapChain and pass it in
         _forwardRenderTask = new ForwardRenderTask(_vk, _swapChain, _commandPool);
-        
+    }
+    
+    public override void CreateBuffer()
+    {
+        throw new NotImplementedException();
     }
 
-    public void Render()
+    public override void UpdateBuffer()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void CreateShader()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Pipeline CreatePipeline()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void CreatCommandList()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void WaitIdle()
+    {
+        _logicalDevice.WaitIdle();
+    }
+    
+    // TODO: this is for testing and should be removed later
+    public override void Render()
     {
         _forwardRenderTask.WaitForFence();
         _swapChain.AcquireNextImage();
@@ -46,12 +71,7 @@ public class VulkanRenderer: IDisposable
         _swapChain.PresentImage(_presentQueue);
     }
     
-    public void DeviceWaitIdle()
-    {
-        _logicalDevice.WaitIdle();
-    }
-    
-    public void Dispose()
+    public override void Dispose()
     {
         _presentQueue.WaitIdle();
         _graphicsQueue.WaitIdle();
@@ -64,6 +84,6 @@ public class VulkanRenderer: IDisposable
         _logicalDevice.Dispose();
         _instance.Dispose();
         _vk.Dispose();
-        GC.SuppressFinalize(this);
+        // GC.SuppressFinalize(this);
     }
 }

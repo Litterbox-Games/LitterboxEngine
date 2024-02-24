@@ -2,6 +2,8 @@
 
 namespace LitterboxEngine;
 
+// TODO: Move to Graphics folder and clean up
+
 public unsafe class Window : IDisposable
 {
     public readonly Glfw Glfw;
@@ -24,11 +26,12 @@ public unsafe class Window : IDisposable
         if (!Glfw.VulkanSupported()) 
             throw new Exception("Cannot find a compatible Vulkan installable client driver");
         
+        // TODO: Pass this stuff as params
         Glfw.WindowHint(WindowHintClientApi.ClientApi, ClientApi.NoApi);
         Glfw.WindowHint(WindowHintBool.Maximized, false);
         
-        var vidMode = Glfw.GetVideoMode(Glfw.GetPrimaryMonitor());
-        WindowHandle = Glfw.CreateWindow(vidMode->Width / 2, vidMode->Height / 2, title, null, null);
+        var videoMode = Glfw.GetVideoMode(Glfw.GetPrimaryMonitor());
+        WindowHandle = Glfw.CreateWindow(videoMode->Width / 2, videoMode->Height / 2, title, null, null);
 
         if (WindowHandle == null)
             throw new Exception("Failed to create a GLFW window");
