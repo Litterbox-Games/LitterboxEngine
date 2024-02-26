@@ -2,6 +2,7 @@
 
 namespace LitterboxEngine.Graphics.Vulkan;
 
+// TODO: This class should become the CommandList
 public class ForwardRenderTask: IDisposable
 {
     private readonly SwapChainRenderPass _renderPass;

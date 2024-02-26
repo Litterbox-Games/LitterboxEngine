@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace LitterboxEngine.Graphics;
+namespace LitterboxEngine.Graphics.GHAL;
 
 public abstract class Pipeline: IDisposable
 {
@@ -33,7 +33,7 @@ public record VertexLayoutDescription
     
     public static VertexLayoutDescription New<T>(params VertexElementDescriptionCreateInfo[] elements)
     {
-        return new VertexLayoutDescription(
+        return new (
             (uint) Unsafe.SizeOf<T>(),
             elements
                 .Select(VertexElementDescription.New<T>)
@@ -67,18 +67,10 @@ public record VertexElementDescription
     public static VertexElementDescription New<T>(VertexElementDescriptionCreateInfo info)
     {
         var offset = (uint)Marshal.OffsetOf<T>(info.Name);
-        return new VertexElementDescription(info.Location, offset, info.Format, info.Binding);
+        return new (info.Location, offset, info.Format, info.Binding);
     }
 }
 
-/*
-public record VertexElementDescription(
-    uint Location,
-    string Name,
-    //uint Offset,
-    VertexElementFormat Format,
-    uint Binding = 0);
-*/
 public enum VertexElementFormat
 {
     // TODO: Fill with values equivalent to Silk.NET.Vulkan.Format

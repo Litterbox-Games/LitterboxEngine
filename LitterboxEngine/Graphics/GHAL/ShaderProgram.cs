@@ -1,4 +1,4 @@
-﻿namespace LitterboxEngine.Graphics;
+﻿namespace LitterboxEngine.Graphics.GHAL;
 
 public abstract class ShaderProgram: IDisposable
 {

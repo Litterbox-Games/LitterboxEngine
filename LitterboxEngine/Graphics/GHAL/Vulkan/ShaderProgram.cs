@@ -1,9 +1,10 @@
-﻿using MoreLinq;
+﻿using LitterboxEngine.Graphics.GHAL;
+using MoreLinq;
 using Silk.NET.Vulkan;
 
 namespace LitterboxEngine.Graphics.Vulkan;
 
-public sealed class ShaderProgram: Graphics.ShaderProgram
+public sealed class ShaderProgram: GHAL.ShaderProgram
 {
     public readonly ShaderModule[] ShaderModules;
     public readonly ShaderDescription[] Descriptions;

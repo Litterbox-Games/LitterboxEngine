@@ -1,4 +1,5 @@
 ﻿using LitterboxEngine.Graphics;
+using LitterboxEngine.Graphics.GHAL;
 
 namespace LitterboxEngine;
 

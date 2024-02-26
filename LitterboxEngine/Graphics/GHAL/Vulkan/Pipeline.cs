@@ -1,12 +1,15 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using LitterboxEngine.Graphics.GHAL;
 using MoreLinq;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
+using FrontFace = LitterboxEngine.Graphics.GHAL.FrontFace;
+using PrimitiveTopology = LitterboxEngine.Graphics.GHAL.PrimitiveTopology;
 
 namespace LitterboxEngine.Graphics.Vulkan;
 
-public class Pipeline: Graphics.Pipeline
+public class Pipeline: GHAL.Pipeline
 {
     public readonly Silk.NET.Vulkan.Pipeline VkPipeline;
     public readonly PipelineLayout VkPipelineLayout;

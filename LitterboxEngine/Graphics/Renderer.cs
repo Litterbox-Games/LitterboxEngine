@@ -1,6 +1,8 @@
 ﻿using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using LitterboxEngine.Graphics.GHAL;
+using LitterboxEngine.Graphics.GHAL.Resources;
 using LitterboxEngine.Resource;
 
 namespace LitterboxEngine.Graphics;
@@ -36,15 +38,14 @@ public class Renderer: IDisposable
         var shaderProgram = _graphicsDevice.CreateShaderProgram(vertexShaderDesc, fragmentShaderDesc);
 
         var pipelineDescription = new PipelineDescription(
-            RasterizationState: new RasterizationStateDescription(
+            RasterizationState: new (
                 CullMode: CullMode.Back,
                 FillMode: FillMode.Solid,
                 FrontFace: FrontFace.ClockWise,
                 EnableScissor: true,
                 EnableDepthTest: true),
             PrimitiveTopology: PrimitiveTopology.TriangleList,
-            // ResourceLayouts: idk, //TODO: implement this when we start using Uniforms Buffers
-            ShaderSet: new ShaderSetDescription(
+            ShaderSet: new (
                 ShaderProgram: shaderProgram,
                 VertexLayout: Vertex.VertexLayout)
         );
@@ -69,8 +70,8 @@ public struct Vertex
     public Vector2 TexCoords;
 
     public static readonly VertexLayoutDescription VertexLayout = VertexLayoutDescription.New<Vertex>(
-        new VertexElementDescriptionCreateInfo(0, nameof(Position), VertexElementFormat.Float3),
-        new VertexElementDescriptionCreateInfo(1, nameof(Color), VertexElementFormat.Float4),
-        new VertexElementDescriptionCreateInfo(2, nameof(TexCoords), VertexElementFormat.Float2)
+        new (0, nameof(Position), VertexElementFormat.Float3),
+        new (1, nameof(Color), VertexElementFormat.Float4),
+        new (2, nameof(TexCoords), VertexElementFormat.Float2)
     );
 }

@@ -1,4 +1,4 @@
-﻿namespace LitterboxEngine.Graphics;
+﻿namespace LitterboxEngine.Graphics.GHAL;
 
 public abstract class GraphicsDevice: IDisposable
 {
@@ -13,14 +13,16 @@ public abstract class GraphicsDevice: IDisposable
     
     private static Vulkan.GraphicsDevice CreateVulkanGraphicsDevice(Window window, GraphicsDeviceDescription description)
     {
-        return new Vulkan.GraphicsDevice(window, description);
+        return new (window, description);
     }
 
     public abstract void CreateBuffer();
     public abstract void UpdateBuffer();
     public abstract ShaderProgram CreateShaderProgram(params ShaderDescription[] descriptions);
     public abstract Pipeline CreatePipeline(PipelineDescription description);
-    public abstract void CreatCommandList();
+    public abstract void CreateCommandList();
+    public abstract void SubmitCommands();
+    public abstract void SwapBuffers();
     public abstract void WaitIdle();
     public abstract void Dispose();
     

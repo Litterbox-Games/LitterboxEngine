@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using LitterboxEngine.Resource;
 
-namespace LitterboxEngine.Graphics;
+namespace LitterboxEngine.Graphics.GHAL.Resources;
 
 public class Shader : IResource, IDisposable
 {

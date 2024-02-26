@@ -33,6 +33,12 @@
 		  <VertexShader Include="Resources/Shaders/*.vert" />
 		  <FragmentShader Include="Resources/Shaders/*.frag" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Graphics\GHAL\Vulkan\CommandList" />
+      <Folder Include="Graphics\GHAL\Vulkan\GraphicsDevice" />
+      <Folder Include="Graphics\GHAL\Vulkan\Pipeline" />
+    </ItemGroup>
 	
     <Target Name="BuildVulkanShader" AfterTargets="Build">
 		  <Message Text="VulkanBinPath: $(VulkanBinPath)" Importance="high" />
