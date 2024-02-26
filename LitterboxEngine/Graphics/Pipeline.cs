@@ -18,7 +18,6 @@ public record ShaderSetDescription(
     VertexLayoutDescription VertexLayout);
 
 #region VertexInputState
-
 public record VertexLayoutDescription
 {
     public readonly uint Stride;

@@ -20,18 +20,10 @@ public class Pipeline: Graphics.Pipeline
         _vk = vk;
         _logicalDevice = logicalDevice;
         
-        // Convert to Vulkan.ShaderProgram
         var shaderProgram = (description.ShaderSet.ShaderProgram as ShaderProgram)!;
-        
-        var shaderStages = shaderProgram.ShaderModules
-            .Zip(shaderProgram.Descriptions)
-            .Select(tuple => CreateShaderStage(tuple.First, tuple.Second))
-            .ToArray();
+        var shaderStages = CreateShaderStages(shaderProgram);
 
-        // var (bindingDescription, attributeDescriptions) = VertexLayoutDescriptionToVkDescriptions(description.VertexLayout);
-
-        fixed (PipelineShaderStageCreateInfo* shaderStagesPtr = shaderStages) 
-            // fixed (VertexInputAttributeDescription* attributeDescriptionsPtr = attributeDescriptions)
+        fixed (PipelineShaderStageCreateInfo* shaderStagesPtr = shaderStages)
             // fixed (DescriptorSetLayout* descriptorSetLayoutPtr = &_descriptorSetLayout)
         {
             PipelineViewportStateCreateInfo viewportState = new()
@@ -245,8 +237,15 @@ public class Pipeline: Graphics.Pipeline
         };
     }
     #endregion
-
-      
+    
+    #region ShaderStage
+    private static PipelineShaderStageCreateInfo[] CreateShaderStages(ShaderProgram shaderProgram)
+    {
+        return shaderProgram.ShaderModules
+            .Zip(shaderProgram.Descriptions)
+            .Select(tuple => CreateShaderStage(tuple.First, tuple.Second))
+            .ToArray();
+    }
     
     private static unsafe PipelineShaderStageCreateInfo CreateShaderStage(ShaderModule module, ShaderDescription description)
     {
@@ -268,6 +267,8 @@ public class Pipeline: Graphics.Pipeline
             _ => throw new NotImplementedException($"Cannot convert ShaderStage \"{shaderStage}\" to ShaderStageFlag")
         };
     }
+    #endregion
+    
 
     public override void Dispose()
     {
