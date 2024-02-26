@@ -79,6 +79,7 @@ public sealed class GraphicsDevice: Graphics.GraphicsDevice
         _graphicsQueue.WaitIdle();
         _logicalDevice.WaitIdle();
         
+        _pipelineCache.Dispose();
         _forwardRenderTask.Dispose();
         _commandPool.Dispose();
         _swapChain.Dispose();

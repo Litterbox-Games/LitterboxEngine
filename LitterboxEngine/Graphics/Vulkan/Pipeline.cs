@@ -15,6 +15,7 @@ public class Pipeline: Graphics.Pipeline
     private readonly LogicalDevice _logicalDevice;
 
     // TODO: Enabling scissor test
+    // TODO: Blending support from pipeline description
     public unsafe Pipeline(Vk vk, LogicalDevice logicalDevice, PipelineCache cache, PipelineDescription description)
     {
         _vk = vk;
@@ -114,7 +115,7 @@ public class Pipeline: Graphics.Pipeline
                 BasePipelineHandle = default
             };
             
-            result = _vk.CreateGraphicsPipelines(_logicalDevice.VkLogicalDevice, default, 1, pipelineInfo, null, out VkPipeline);
+            result = _vk.CreateGraphicsPipelines(_logicalDevice.VkLogicalDevice, cache.VkPipelineCache, 1, pipelineInfo, null, out VkPipeline);
             if (result != Result.Success)
                 throw new Exception($"Failed to create graphics pipeline with error: {result.ToString()}");
             
