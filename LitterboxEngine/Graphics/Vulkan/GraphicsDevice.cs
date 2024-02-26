@@ -14,6 +14,7 @@ public sealed class GraphicsDevice: Graphics.GraphicsDevice
     private readonly SwapChain _swapChain;
     private readonly CommandPool _commandPool;
     private readonly ForwardRenderTask _forwardRenderTask;
+    private readonly PipelineCache _pipelineCache;
     
     public GraphicsDevice(Window window, GraphicsDeviceDescription description)
     {
@@ -30,6 +31,7 @@ public sealed class GraphicsDevice: Graphics.GraphicsDevice
         // TODO: This could really be made as a part of the SwapChain
         // TODO: We would just need to create the commandPool before the SwapChain and pass it in
         _forwardRenderTask = new ForwardRenderTask(_vk, _swapChain, _commandPool);
+        _pipelineCache = new PipelineCache(_vk, _logicalDevice);
     }
     
     public override void CreateBuffer()
@@ -42,14 +44,14 @@ public sealed class GraphicsDevice: Graphics.GraphicsDevice
         throw new NotImplementedException();
     }
 
-    public override void CreateShader()
+    public override ShaderProgram CreateShaderProgram(params ShaderDescription[] descriptions)
     {
-        throw new NotImplementedException();
+        return new ShaderProgram(_vk, _logicalDevice, descriptions);
     }
 
-    public override Pipeline CreatePipeline()
+    public override Pipeline CreatePipeline(PipelineDescription description)
     {
-        throw new NotImplementedException();
+        return new Pipeline(_vk, _logicalDevice, _pipelineCache, description);
     }
 
     public override void CreatCommandList()

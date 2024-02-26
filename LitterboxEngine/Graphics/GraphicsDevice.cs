@@ -18,8 +18,8 @@ public abstract class GraphicsDevice: IDisposable
 
     public abstract void CreateBuffer();
     public abstract void UpdateBuffer();
-    public abstract void CreateShader();
-    public abstract Pipeline CreatePipeline();
+    public abstract ShaderProgram CreateShaderProgram(params ShaderDescription[] descriptions);
+    public abstract Pipeline CreatePipeline(PipelineDescription description);
     public abstract void CreatCommandList();
     public abstract void WaitIdle();
     public abstract void Dispose();
