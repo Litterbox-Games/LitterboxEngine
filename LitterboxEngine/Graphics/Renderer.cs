@@ -38,14 +38,14 @@ public class Renderer: IDisposable
         var shaderProgram = _graphicsDevice.CreateShaderProgram(vertexShaderDesc, fragmentShaderDesc);
 
         var pipelineDescription = new PipelineDescription(
-            RasterizationState: new (
+            RasterizationState: new RasterizationStateDescription(
                 CullMode: CullMode.Back,
                 FillMode: FillMode.Solid,
                 FrontFace: FrontFace.ClockWise,
                 EnableScissor: true,
                 EnableDepthTest: true),
             PrimitiveTopology: PrimitiveTopology.TriangleList,
-            ShaderSet: new (
+            ShaderSet: new ShaderSetDescription(
                 ShaderProgram: shaderProgram,
                 VertexLayout: Vertex.VertexLayout)
         );
@@ -70,8 +70,8 @@ public struct Vertex
     public Vector2 TexCoords;
 
     public static readonly VertexLayoutDescription VertexLayout = VertexLayoutDescription.New<Vertex>(
-        new (0, nameof(Position), VertexElementFormat.Float3),
-        new (1, nameof(Color), VertexElementFormat.Float4),
-        new (2, nameof(TexCoords), VertexElementFormat.Float2)
+        new VertexElementDescriptionCreateInfo(0, nameof(Position), VertexElementFormat.Float3),
+        new VertexElementDescriptionCreateInfo(1, nameof(Color), VertexElementFormat.Float4),
+        new VertexElementDescriptionCreateInfo(2, nameof(TexCoords), VertexElementFormat.Float2)
     );
 }

@@ -179,7 +179,8 @@ public class SwapChain: IDisposable
         height = Math.Max(height, (int)surfaceCapabilities.MinImageExtent.Height);
             
         
-        return new Extent2D { Width = (uint)width, Height = (uint)height };
+        return new Extent2D
+            { Width = (uint)width, Height = (uint)height };
 
     }
 

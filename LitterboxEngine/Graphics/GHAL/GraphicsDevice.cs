@@ -13,7 +13,7 @@ public abstract class GraphicsDevice: IDisposable
     
     private static Vulkan.GraphicsDevice CreateVulkanGraphicsDevice(Window window, GraphicsDeviceDescription description)
     {
-        return new (window, description);
+        return new Vulkan.GraphicsDevice(window, description);
     }
 
     public abstract void CreateBuffer();

@@ -33,7 +33,7 @@ public record VertexLayoutDescription
     
     public static VertexLayoutDescription New<T>(params VertexElementDescriptionCreateInfo[] elements)
     {
-        return new (
+        return new VertexLayoutDescription(
             (uint) Unsafe.SizeOf<T>(),
             elements
                 .Select(VertexElementDescription.New<T>)
@@ -67,7 +67,7 @@ public record VertexElementDescription
     public static VertexElementDescription New<T>(VertexElementDescriptionCreateInfo info)
     {
         var offset = (uint)Marshal.OffsetOf<T>(info.Name);
-        return new (info.Location, offset, info.Format, info.Binding);
+        return new VertexElementDescription(info.Location, offset, info.Format, info.Binding);
     }
 }
 

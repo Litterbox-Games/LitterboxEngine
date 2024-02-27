@@ -5,6 +5,9 @@ public class CommandList: GHAL.CommandList
 
     public override void Begin()
     {
+        // Wait For Fences
+
+
         throw new NotImplementedException();
     }
 

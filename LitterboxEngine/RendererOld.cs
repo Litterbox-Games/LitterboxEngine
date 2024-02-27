@@ -240,7 +240,7 @@ public class RendererOld : IDisposable
         var queueCreateInfos = (DeviceQueueCreateInfo*)Unsafe.AsPointer(ref mem.GetPinnableReference());
             
         var queuePriority = 1.0f;
-        queueCreateInfos[0] = new DeviceQueueCreateInfo()
+        queueCreateInfos[0] = new DeviceQueueCreateInfo
         {
             SType = StructureType.DeviceQueueCreateInfo,
             QueueFamilyIndex = _queueFamilyIndex,

@@ -20,19 +20,19 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
     public GraphicsDevice(Window window, GraphicsDeviceDescription description)
     {
         _vk = Vk.GetApi();
-        _instance = new (_vk, window.Title, true);
+        _instance = new Instance(_vk, window.Title, true);
         _physicalDevice = PhysicalDevice.SelectPreferredPhysicalDevice(_vk, _instance);
-        _logicalDevice = new (_vk, _physicalDevice);
-        _surface = new (_vk, _instance, window);
+        _logicalDevice = new LogicalDevice(_vk, _physicalDevice);
+        _surface = new Surface(_vk, _instance, window);
         _graphicsQueue = new GraphicsQueue(_vk, _logicalDevice, 0);
         _presentQueue = new PresentQueue(_vk, _logicalDevice, _surface, 0);
-        _swapChain = new (_vk, _instance, _logicalDevice, _surface, window, 3, 
+        _swapChain = new SwapChain(_vk, _instance, _logicalDevice, _surface, window, 3, 
             false, _presentQueue, new []{_graphicsQueue});
-        _commandPool = new (_vk, _logicalDevice, _graphicsQueue.QueueFamilyIndex);
+        _commandPool = new CommandPool(_vk, _logicalDevice, _graphicsQueue.QueueFamilyIndex);
         // TODO: This could really be made as a part of the SwapChain
         // TODO: We would just need to create the commandPool before the SwapChain and pass it in
-        _forwardRenderTask = new (_vk, _swapChain, _commandPool);
-        _pipelineCache = new (_vk, _logicalDevice);
+        _forwardRenderTask = new ForwardRenderTask(_vk, _swapChain, _commandPool);
+        _pipelineCache = new PipelineCache(_vk, _logicalDevice);
     }
     
     public override void CreateBuffer()
@@ -47,12 +47,12 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
 
     public override ShaderProgram CreateShaderProgram(params ShaderDescription[] descriptions)
     {
-        return new (_vk, _logicalDevice, descriptions);
+        return new ShaderProgram(_vk, _logicalDevice, descriptions);
     }
 
     public override Pipeline CreatePipeline(PipelineDescription description)
     {
-        return new (_vk, _logicalDevice, _pipelineCache, description);
+        return new Pipeline(_vk, _logicalDevice, _pipelineCache, description);
     }
 
     public override void CreateCommandList()
