@@ -24,51 +24,29 @@ public record VertexLayoutDescription
     public readonly uint Binding;
     public readonly VertexElementDescription[] ElementDescriptions;
 
-    private VertexLayoutDescription(uint stride, VertexElementDescription[] elementDescriptions, uint binding)
+    public VertexLayoutDescription(params VertexElementDescription[] elementDescriptions): 
+        this(0, elementDescriptions) {}
+    
+    private VertexLayoutDescription(uint binding = 0, params VertexElementDescription[] elementDescriptions)
     {
-        Stride = stride;
+        // Calculate offsets for elements
+        uint offset = 0;
+        foreach (var e in elementDescriptions)
+        {
+            e.Offset = offset;
+            offset += e.Format.SizeOf();
+        }
+
+        Stride = offset;
         Binding = binding;
         ElementDescriptions = elementDescriptions;
     }
-    
-    public static VertexLayoutDescription New<T>(params VertexElementDescriptionCreateInfo[] elements)
-    {
-        return new VertexLayoutDescription(
-            (uint) Unsafe.SizeOf<T>(),
-            elements
-                .Select(VertexElementDescription.New<T>)
-                .ToArray(),
-                0);
-    }
 }
 
-// TODO: possibly switch names with VertexElementDescription?
-public record VertexElementDescriptionCreateInfo(
-    uint Location, 
-    string Name, 
-    VertexElementFormat Format,
-    uint Binding = 0);
-
-public record VertexElementDescription
+public record VertexElementDescription(uint Location, VertexElementFormat Format, uint Binding = 0, uint Offset = 0)
 {
-    public readonly uint Location;
-    public readonly uint Offset;
-    public readonly uint Binding;
-    public readonly VertexElementFormat Format;
-
-    private VertexElementDescription(uint location, uint offset, VertexElementFormat format, uint binding)
-    {
-        Location = location;
-        Offset = offset;
-        Binding = binding;
-        Format = format;
-    }
-    
-    public static VertexElementDescription New<T>(VertexElementDescriptionCreateInfo info)
-    {
-        var offset = (uint)Marshal.OffsetOf<T>(info.Name);
-        return new VertexElementDescription(info.Location, offset, info.Format, info.Binding);
-    }
+    // Modified by VertexLayoutDescription
+    public uint Offset = Offset;
 }
 
 public enum VertexElementFormat
@@ -78,6 +56,21 @@ public enum VertexElementFormat
     Float2,
     Float3,
     Float4
+}
+
+public static class VertexElementFormatExtensions
+{
+    public static uint SizeOf(this VertexElementFormat format)
+    {
+        return format switch
+        {
+            VertexElementFormat.Float1 => 4,
+            VertexElementFormat.Float2 => 8,
+            VertexElementFormat.Float3 => 12,
+            VertexElementFormat.Float4 => 16,
+            _ => throw new ArgumentOutOfRangeException(nameof(format), format, null)
+        };
+    }
 }
 #endregion
 

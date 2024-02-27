@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using LitterboxEngine.Graphics.GHAL;
 using LitterboxEngine.Graphics.GHAL.Resources;
@@ -65,13 +66,13 @@ public class Renderer: IDisposable
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct Vertex
 {
-    public Vector3 Position;
-    public Color Color;
-    public Vector2 TexCoords;
+    public required Vector3 Position { get; init; }
+    public required Color Color { get; init; }
+    public required Vector2 TexCoords { get; init; }
 
-    public static readonly VertexLayoutDescription VertexLayout = VertexLayoutDescription.New<Vertex>(
-        new VertexElementDescriptionCreateInfo(0, nameof(Position), VertexElementFormat.Float3),
-        new VertexElementDescriptionCreateInfo(1, nameof(Color), VertexElementFormat.Float4),
-        new VertexElementDescriptionCreateInfo(2, nameof(TexCoords), VertexElementFormat.Float2)
+    public static readonly VertexLayoutDescription VertexLayout = new (
+        new VertexElementDescription(0, VertexElementFormat.Float3),
+        new VertexElementDescription(1, VertexElementFormat.Float4),
+        new VertexElementDescription(2, VertexElementFormat.Float2)
     );
 }
