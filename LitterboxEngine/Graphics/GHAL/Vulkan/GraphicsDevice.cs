@@ -47,12 +47,12 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
 
     public override Pipeline CreatePipeline(PipelineDescription description)
     {
-        return new Pipeline(_vk, _logicalDevice, _pipelineCache, description);
+        return new Pipeline(_vk, _swapChain, _pipelineCache, description);
     }
 
     public override CommandList CreateCommandList()
     {
-        throw new NotImplementedException();
+        return new CommandList(_vk, _swapChain);
     }
 
     public override void SubmitCommands()

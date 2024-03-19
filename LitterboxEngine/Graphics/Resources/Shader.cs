@@ -15,7 +15,7 @@ public class Shader : IResource, IDisposable
     
     public static IResource LoadFromFile(string path)
     {
-        var shaderSource = File.ReadAllText(path);
+        var shaderSource = File.ReadAllBytes(path);
         var extension = Path.GetExtension(path);
         
         var shaderType = extension switch
@@ -25,7 +25,7 @@ public class Shader : IResource, IDisposable
             _ => throw new Exception($"Unsupported shader file extension {extension}")
         };
 
-        var shaderDescription = new ShaderDescription(shaderType, Encoding.UTF8.GetBytes(shaderSource), "main", path);
+        var shaderDescription = new ShaderDescription(shaderType, shaderSource, "main", path);
         
         return new Shader(shaderDescription);
     }

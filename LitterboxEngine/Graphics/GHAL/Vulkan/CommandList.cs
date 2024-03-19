@@ -1,4 +1,5 @@
-﻿using Silk.NET.Vulkan;
+﻿using System.Drawing;
+using Silk.NET.Vulkan;
 
 namespace LitterboxEngine.Graphics.GHAL.Vulkan;
 
@@ -6,50 +7,58 @@ public class CommandList: GHAL.CommandList
 {
 
     private readonly Vk _vk;
+    private readonly SwapChain _swapChain;
     
-    public CommandList(Vk vk)
+    public CommandList(Vk vk, SwapChain swapChain)
     {
         _vk = vk;
-        
-        
-        
-        
-        
-        
-        
-        
+        _swapChain = swapChain;
     }
-    
-    public override void Begin()
+
+    public override unsafe void Begin(Color clearColor)
     {
-        // Wait For Fences
+        ClearValue clearValue = new()
+        {
+            Color = new ClearColorValue
+                { Float32_0 = clearColor.R / 255f, Float32_1 = clearColor.G / 255f, Float32_2 = clearColor.B / 255f, Float32_3 = 1 },
+        };
         
-        // _vk.BeginCommandBuffer();
-        // _vk.CmdBeginRenderPass();
-
-
-
-        throw new NotImplementedException();
+        RenderPassBeginInfo renderPassInfo = new()
+        {
+            SType = StructureType.RenderPassBeginInfo,
+            RenderPass = _swapChain.RenderPass.VkRenderPass,
+            Framebuffer = _swapChain.CurrentFrameBuffer.VkFrameBuffer,
+            RenderArea =
+            {
+                Offset = { X = 0, Y = 0 },
+                Extent = _swapChain.Extent
+            },
+            ClearValueCount = 1,
+            PClearValues = &clearValue
+        };
+        
+        _swapChain.CurrentCommandBuffer.BeginRecording();
+        _vk.CmdBeginRenderPass(_swapChain.CurrentCommandBuffer.VkCommandBuffer, &renderPassInfo, SubpassContents.Inline);
+        
+        // bind pipeline
+        
+        // bind vertex buffer
+        // bind index buffer
+        // draw indexed
     }
 
     public override void End()
     {
-        throw new NotImplementedException();
+        _vk.CmdEndRenderPass(_swapChain.CurrentCommandBuffer.VkCommandBuffer);
+        _swapChain.CurrentCommandBuffer.EndRecording();
     }
 
-    public override void SetFrameBuffer()
+    public override void SetPipeline(GHAL.Pipeline pipeline)
     {
-        throw new NotImplementedException();
-    }
-
-    public override void SetPipeline()
-    {
-        // Called after Begin()
-        // _vk.CmdBindPipeline()
-
-
-
-        throw new NotImplementedException();
+        if (pipeline is not Pipeline vulkanPipeline)
+            throw new Exception("Cannot use non-vulkan pipeline with a vulkan command list");
+        
+        _vk.CmdBindPipeline(_swapChain.CurrentCommandBuffer.VkCommandBuffer, PipelineBindPoint.Graphics, vulkanPipeline.VkPipeline);
     }
 
     public override void SetIndexBuffer()

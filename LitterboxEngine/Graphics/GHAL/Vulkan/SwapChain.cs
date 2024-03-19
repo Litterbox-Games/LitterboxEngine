@@ -12,11 +12,14 @@ public class SwapChain: IDisposable
     public readonly LogicalDevice LogicalDevice;
     
     public readonly SwapChainSyncSemaphores[] SyncSemaphores;
-    private readonly SwapChainRenderPass _renderPass;
+    public readonly SwapChainRenderPass RenderPass;
     private readonly FrameBuffer[] _frameBuffers;
     private readonly Fence[] _fences;
     private readonly CommandBuffer[] _commandBuffers;
 
+    public FrameBuffer CurrentFrameBuffer => _frameBuffers[CurrentFrame];
+    public CommandBuffer CurrentCommandBuffer => _commandBuffers[CurrentFrame];
+    
     public uint CurrentFrame { get; private set; }
 
     public unsafe SwapChain(Vk vk, Instance instance, LogicalDevice logicalDevice, Surface surface, CommandPool commandPool, Window window, int requestedImages, bool vsync,
@@ -76,11 +79,11 @@ public class SwapChain: IDisposable
         ImageViews = CreateImageViews(vk, LogicalDevice, _khrSwapChain, _vkSwapChain, surfaceFormat.Format);
         SyncSemaphores = ImageViews.Select(_ => new SwapChainSyncSemaphores(vk, LogicalDevice)).ToArray();
         
-        _renderPass = new SwapChainRenderPass(vk, LogicalDevice, surfaceFormat.Format);
+        RenderPass = new SwapChainRenderPass(vk, LogicalDevice, surfaceFormat.Format);
 
         // Create a frame buffer for each swap chain image
         _frameBuffers = ImageViews
-            .Select(imageView => new FrameBuffer(vk, logicalDevice, Extent.Width, Extent.Height, imageView, _renderPass))
+            .Select(imageView => new FrameBuffer(vk, logicalDevice, Extent.Width, Extent.Height, imageView, RenderPass))
             .ToArray();
 
         // Create a fence for each swap chain image
@@ -89,12 +92,8 @@ public class SwapChain: IDisposable
             .ToArray();
         
         // Create a command buffer for each swap chain image
-        _commandBuffers = _frameBuffers
-            .Select(frameBuffer => {
-                var commandBuffer = new CommandBuffer(vk, commandPool, true, false);
-                RecordCommandBuffer(vk, commandBuffer, frameBuffer, Extent);
-                return commandBuffer;
-            })
+        _commandBuffers = ImageViews
+            .Select(_ => new CommandBuffer(vk, commandPool, true, false))
             .ToArray();
     }
 
@@ -246,7 +245,7 @@ public class SwapChain: IDisposable
         foreach (var frameBuffer in _frameBuffers) 
             frameBuffer.Dispose();
         
-        _renderPass.Dispose();
+        RenderPass.Dispose();
         
         foreach (var commandBuffer in _commandBuffers) 
             commandBuffer.Dispose();
@@ -264,39 +263,7 @@ public class SwapChain: IDisposable
         _khrSwapChain.Dispose();
         GC.SuppressFinalize(this);
     }
-    
-    
-    
-    // TODO: Remove this
-    private unsafe void RecordCommandBuffer(Vk vk, CommandBuffer commandBuffer, FrameBuffer framebuffer, Extent2D extent)
-    {
-        ClearValue clearColor = new()
-        {
-            Color = new ClearColorValue
-                { Float32_0 = 1, Float32_1 = 0, Float32_2 = 0, Float32_3 = 1 },
-        };
-        
-        RenderPassBeginInfo renderPassInfo = new()
-        {
-            SType = StructureType.RenderPassBeginInfo,
-            RenderPass = _renderPass.VkRenderPass,
-            Framebuffer = framebuffer.VkFrameBuffer,
-            RenderArea =
-            {
-                Offset = { X = 0, Y = 0 },
-                Extent = extent
-            },
-            ClearValueCount = 1,
-            PClearValues = &clearColor
-        };
-        
-        commandBuffer.BeginRecording();
-        vk.CmdBeginRenderPass(commandBuffer.VkCommandBuffer, &renderPassInfo, SubpassContents.Inline);
-        vk.CmdEndRenderPass(commandBuffer.VkCommandBuffer);
-        commandBuffer.EndRecording();
-    }
-    
-    // TODO: Remove this
+
     public void Submit(Queue queue)
     {
         var fence = _fences[CurrentFrame];

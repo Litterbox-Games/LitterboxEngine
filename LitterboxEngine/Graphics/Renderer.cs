@@ -28,6 +28,8 @@ public class Renderer: IDisposable
 
     private readonly Vertex[] _vertices;
     
+    public Color ClearColor = Color.Magenta;
+    
     public Renderer(Window window, GraphicsDevice graphicsDevice)
     {
         _graphicsDevice = graphicsDevice;
@@ -36,12 +38,12 @@ public class Renderer: IDisposable
         _vertices = new Vertex[MaxVertices];
         // _vertexBuffer = _graphicsDevice.CreateBuffer();
         
-        /*
-        var vertexShaderDesc = ResourceManager.Get<Shader>("Shaders/default.vert").ShaderDescription;
-        var fragmentShaderDesc = ResourceManager.Get<Shader>("Shaders/default.frag").ShaderDescription;
+        var vertexShaderDesc = ResourceManager.Get<Shader>("Shaders/vert.vert").ShaderDescription;
+        var fragmentShaderDesc = ResourceManager.Get<Shader>("Shaders/frag.frag").ShaderDescription;
 
         var shaderProgram = _graphicsDevice.CreateShaderProgram(vertexShaderDesc, fragmentShaderDesc);
 
+        /*
         var pipelineDescription = new PipelineDescription(
             RasterizationState: new RasterizationStateDescription(
                 CullMode: CullMode.Back,
@@ -56,17 +58,16 @@ public class Renderer: IDisposable
         );
 
         _pipeline = _graphicsDevice.CreatePipeline(pipelineDescription);
-
-        _commandList = _graphicsDevice.CreateCommandList();
         */
+        
+        _commandList = _graphicsDevice.CreateCommandList();
     }
 
     public void Begin()
     {
         _graphicsDevice.SwapBuffers();
-        // _commandList.Begin();
-        // _commandList.SetClearColor(Color.Black);
-        // _commandList.SetPipeline();
+        _commandList.Begin(ClearColor);
+        // _commandList.SetPipeline(_pipeline);
         // _commandList.SetIndexBuffer();
     }
 
@@ -82,6 +83,7 @@ public class Renderer: IDisposable
     {
         // Flush();
         
+        _commandList.End();
         _graphicsDevice.SubmitCommands();
     }
     

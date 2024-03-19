@@ -19,11 +19,11 @@ public class Pipeline: GHAL.Pipeline
 
     // TODO: Enabling scissor test
     // TODO: Blending support from pipeline description
-    public unsafe Pipeline(Vk vk, LogicalDevice logicalDevice, PipelineCache cache, PipelineDescription description)
+    public unsafe Pipeline(Vk vk, SwapChain swapChain, PipelineCache cache, PipelineDescription description)
     {
         _vk = vk;
-        _logicalDevice = logicalDevice;
-        
+        _logicalDevice = swapChain.LogicalDevice;
+
         var shaderProgram = (description.ShaderSet.ShaderProgram as ShaderProgram)!;
         var shaderStages = CreateShaderStages(shaderProgram);
 
@@ -111,9 +111,8 @@ public class Pipeline: GHAL.Pipeline
                 
                 Layout = VkPipelineLayout,
                 
-                // TODO: Where does this come from?
-                // RenderPass = renderPass,
-                // Subpass = 0,
+                RenderPass = swapChain.RenderPass.VkRenderPass,
+                Subpass = 0,
                 
                 BasePipelineHandle = default
             };
@@ -142,7 +141,7 @@ public class Pipeline: GHAL.Pipeline
         {
             Binding = description.Binding,
             Stride = description.Stride,
-            // TODO: This prevents us from being able to use instance rendering
+            // TODO: This prevents us from being able to use instance rendering atm
             InputRate = VertexInputRate.Vertex
         };
 
