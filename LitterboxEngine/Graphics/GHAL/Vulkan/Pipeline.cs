@@ -7,7 +7,7 @@ using Silk.NET.Vulkan;
 using FrontFace = LitterboxEngine.Graphics.GHAL.FrontFace;
 using PrimitiveTopology = LitterboxEngine.Graphics.GHAL.PrimitiveTopology;
 
-namespace LitterboxEngine.Graphics.Vulkan;
+namespace LitterboxEngine.Graphics.GHAL.Vulkan;
 
 public class Pipeline: GHAL.Pipeline
 {

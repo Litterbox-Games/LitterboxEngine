@@ -1,6 +1,6 @@
 ﻿using Silk.NET.Vulkan;
 
-namespace LitterboxEngine.Graphics.Vulkan;
+namespace LitterboxEngine.Graphics.GHAL.Vulkan;
 
 public class Queue
 {
@@ -20,7 +20,7 @@ public class Queue
     {
         var vkCommandBuffer = commandBuffer.VkCommandBuffer;
         var signalSemaphores = stackalloc[] { syncSemaphores.RenderComplete.VkSemaphore };
-        var waitSemaphores = stackalloc[] {syncSemaphores.ImageAcquisition.VkSemaphore};
+        var waitSemaphores = stackalloc[] { syncSemaphores.ImageAcquisition.VkSemaphore };
         var stageMask = stackalloc[] { PipelineStageFlags.ColorAttachmentOutputBit };
 
         SubmitInfo submitInfo = new()

@@ -11,8 +11,8 @@ public unsafe class Window : IDisposable
     public readonly string Title;
     public readonly MouseInput MouseInput;
 
-    public int Width { get; private set; }
-    public int Height { get; private set; }
+    public uint Width { get; private set; }
+    public uint Height { get; private set; }
     public bool IsResized { get; private set; }
 
     public Window(string title, GlfwCallbacks.KeyCallback? keyCallback = null)
@@ -36,7 +36,7 @@ public unsafe class Window : IDisposable
         if (WindowHandle == null)
             throw new Exception("Failed to create a GLFW window");
 
-        Glfw.SetFramebufferSizeCallback(WindowHandle, (window, w, h) => Resize(w, h));
+        Glfw.SetFramebufferSizeCallback(WindowHandle, (_, w, h) => Resize((uint)w, (uint)h));
 
         Glfw.SetKeyCallback(WindowHandle, (window, key, code, action, mods) =>
         {
@@ -49,7 +49,7 @@ public unsafe class Window : IDisposable
         MouseInput = new MouseInput(this);
     }
 
-    public void Resize(int width, int height)
+    public void Resize(uint width, uint height)
     {
         Width = width;
         Height = height;

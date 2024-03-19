@@ -1,21 +1,25 @@
 ﻿using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
 
-namespace LitterboxEngine.Graphics.Vulkan;
+namespace LitterboxEngine.Graphics.GHAL.Vulkan;
 
 public class SwapChain: IDisposable
 {
-    public readonly SurfaceFormatKHR SurfaceFormat;
     public readonly Extent2D Extent;
     private readonly KhrSwapchain _khrSwapChain;
     private readonly SwapchainKHR _vkSwapChain;
     public readonly ImageView[] ImageViews;
     public readonly LogicalDevice LogicalDevice;
+    
     public readonly SwapChainSyncSemaphores[] SyncSemaphores;
+    private readonly SwapChainRenderPass _renderPass;
+    private readonly FrameBuffer[] _frameBuffers;
+    private readonly Fence[] _fences;
+    private readonly CommandBuffer[] _commandBuffers;
 
     public uint CurrentFrame { get; private set; }
 
-    public unsafe SwapChain(Vk vk, Instance instance, LogicalDevice logicalDevice, Surface surface, Window window, int requestedImages, bool vsync,
+    public unsafe SwapChain(Vk vk, Instance instance, LogicalDevice logicalDevice, Surface surface, CommandPool commandPool, Window window, int requestedImages, bool vsync,
         Queue presentQueue, Queue[]? concurrentQueues)
     {
         LogicalDevice = logicalDevice;
@@ -26,7 +30,7 @@ public class SwapChain: IDisposable
 
         var imageCount = CalcImageCount(surfaceCapabilities, requestedImages);
 
-        SurfaceFormat = CalcSurfaceFormat(physicalDevice, surface);
+        var surfaceFormat = CalcSurfaceFormat(physicalDevice, surface);
 
         Extent = CalcSwapChainExtent(window, surfaceCapabilities);
         
@@ -35,8 +39,8 @@ public class SwapChain: IDisposable
             SType = StructureType.SwapchainCreateInfoKhr,
             Surface = surface.VkSurface,
             MinImageCount = imageCount,
-            ImageFormat = SurfaceFormat.Format,
-            ImageColorSpace = SurfaceFormat.ColorSpace,
+            ImageFormat = surfaceFormat.Format,
+            ImageColorSpace = surfaceFormat.ColorSpace,
             ImageExtent = Extent,
             ImageArrayLayers = 1,
             ImageUsage = ImageUsageFlags.ColorAttachmentBit,
@@ -51,8 +55,8 @@ public class SwapChain: IDisposable
             throw new Exception("VK_KHR_swapchain extension was not found or could not be loaded");
 
         var concurrentFamilyIndices = concurrentQueues?
-            .Select(queue => (uint)queue.QueueFamilyIndex)
-            .Where(queueFamilyIndex => queueFamilyIndex != (uint)presentQueue.QueueFamilyIndex)
+            .Select(queue => queue.QueueFamilyIndex)
+            .Where(queueFamilyIndex => queueFamilyIndex != presentQueue.QueueFamilyIndex)
             .ToArray();
 
         if (concurrentFamilyIndices != null && concurrentFamilyIndices.Length > 0)
@@ -69,8 +73,29 @@ public class SwapChain: IDisposable
         if (result != Result.Success)
             throw new Exception($"Failed to create swap chain with error: {result.ToString()}.");
         
-        ImageViews = CreateImageViews(vk, LogicalDevice, _khrSwapChain, _vkSwapChain, SurfaceFormat.Format);
+        ImageViews = CreateImageViews(vk, LogicalDevice, _khrSwapChain, _vkSwapChain, surfaceFormat.Format);
         SyncSemaphores = ImageViews.Select(_ => new SwapChainSyncSemaphores(vk, LogicalDevice)).ToArray();
+        
+        _renderPass = new SwapChainRenderPass(vk, LogicalDevice, surfaceFormat.Format);
+
+        // Create a frame buffer for each swap chain image
+        _frameBuffers = ImageViews
+            .Select(imageView => new FrameBuffer(vk, logicalDevice, Extent.Width, Extent.Height, imageView, _renderPass))
+            .ToArray();
+
+        // Create a fence for each swap chain image
+        _fences = ImageViews
+            .Select(_ => new Fence(vk, logicalDevice, true))
+            .ToArray();
+        
+        // Create a command buffer for each swap chain image
+        _commandBuffers = _frameBuffers
+            .Select(frameBuffer => {
+                var commandBuffer = new CommandBuffer(vk, commandPool, true, false);
+                RecordCommandBuffer(vk, commandBuffer, frameBuffer, Extent);
+                return commandBuffer;
+            })
+            .ToArray();
     }
 
     // Returns true if we need to resize/recreate the swap chain otherwise false
@@ -119,6 +144,11 @@ public class SwapChain: IDisposable
             throw new Exception($"Failed to present KHR with error: ${result.ToString()}");
         
         return false;
+    }
+    
+    public void WaitForFence()
+    {
+        _fences[CurrentFrame].Wait();
     }
 
     private static uint CalcImageCount(SurfaceCapabilitiesKHR surfaceCapabilities, int requestedImages)
@@ -213,15 +243,68 @@ public class SwapChain: IDisposable
 
     public unsafe void Dispose()
     {
-        foreach (var imageView in ImageViews)
+        foreach (var frameBuffer in _frameBuffers) 
+            frameBuffer.Dispose();
+        
+        _renderPass.Dispose();
+        
+        foreach (var commandBuffer in _commandBuffers) 
+            commandBuffer.Dispose();
+        
+        foreach (var fence in _fences) 
+            fence.Dispose();
+        
+        foreach (var imageView in ImageViews) 
             imageView.Dispose();
 
-        foreach (var syncSemaphore in SyncSemaphores)
+        foreach (var syncSemaphore in SyncSemaphores) 
             syncSemaphore.Dispose();
         
         _khrSwapChain.DestroySwapchain(LogicalDevice.VkLogicalDevice, _vkSwapChain, null);
         _khrSwapChain.Dispose();
         GC.SuppressFinalize(this);
+    }
+    
+    
+    
+    // TODO: Remove this
+    private unsafe void RecordCommandBuffer(Vk vk, CommandBuffer commandBuffer, FrameBuffer framebuffer, Extent2D extent)
+    {
+        ClearValue clearColor = new()
+        {
+            Color = new ClearColorValue
+                { Float32_0 = 1, Float32_1 = 0, Float32_2 = 0, Float32_3 = 1 },
+        };
+        
+        RenderPassBeginInfo renderPassInfo = new()
+        {
+            SType = StructureType.RenderPassBeginInfo,
+            RenderPass = _renderPass.VkRenderPass,
+            Framebuffer = framebuffer.VkFrameBuffer,
+            RenderArea =
+            {
+                Offset = { X = 0, Y = 0 },
+                Extent = extent
+            },
+            ClearValueCount = 1,
+            PClearValues = &clearColor
+        };
+        
+        commandBuffer.BeginRecording();
+        vk.CmdBeginRenderPass(commandBuffer.VkCommandBuffer, &renderPassInfo, SubpassContents.Inline);
+        vk.CmdEndRenderPass(commandBuffer.VkCommandBuffer);
+        commandBuffer.EndRecording();
+    }
+    
+    // TODO: Remove this
+    public void Submit(Queue queue)
+    {
+        var fence = _fences[CurrentFrame];
+        fence.Reset();
+        var commandBuffer = _commandBuffers[CurrentFrame];
+        var syncSemaphores = SyncSemaphores[CurrentFrame];
+
+        queue.Submit(commandBuffer, syncSemaphores, fence);
     }
 }
 

@@ -1,6 +1,6 @@
 ﻿using Silk.NET.Vulkan;
 
-namespace LitterboxEngine.Graphics.Vulkan;
+namespace LitterboxEngine.Graphics.GHAL.Vulkan;
 
 public class Fence: IDisposable
 {

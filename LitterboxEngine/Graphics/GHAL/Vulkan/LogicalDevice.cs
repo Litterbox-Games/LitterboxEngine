@@ -2,7 +2,7 @@
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 
-namespace LitterboxEngine.Graphics.Vulkan;
+namespace LitterboxEngine.Graphics.GHAL.Vulkan;
 
 public class LogicalDevice: IDisposable
 {

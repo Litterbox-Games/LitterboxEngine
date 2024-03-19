@@ -1,11 +1,32 @@
-﻿namespace LitterboxEngine.Graphics.Vulkan;
+﻿using Silk.NET.Vulkan;
+
+namespace LitterboxEngine.Graphics.GHAL.Vulkan;
 
 public class CommandList: GHAL.CommandList
 {
 
+    private readonly Vk _vk;
+    
+    public CommandList(Vk vk)
+    {
+        _vk = vk;
+        
+        
+        
+        
+        
+        
+        
+        
+    }
+    
     public override void Begin()
     {
         // Wait For Fences
+        
+        // _vk.BeginCommandBuffer();
+        // _vk.CmdBeginRenderPass();
+
 
 
         throw new NotImplementedException();
@@ -23,6 +44,11 @@ public class CommandList: GHAL.CommandList
 
     public override void SetPipeline()
     {
+        // Called after Begin()
+        // _vk.CmdBindPipeline()
+
+
+
         throw new NotImplementedException();
     }
 

@@ -1,6 +1,6 @@
 ﻿using Silk.NET.Vulkan;
 
-namespace LitterboxEngine.Graphics.Vulkan;
+namespace LitterboxEngine.Graphics.GHAL.Vulkan;
 
 // TODO: See about renaming this to just RenderPass
 
@@ -9,16 +9,16 @@ public class SwapChainRenderPass: IDisposable
     public readonly RenderPass VkRenderPass;
     
     private readonly Vk _vk;
-    private readonly SwapChain _swapChain;
+    private readonly LogicalDevice _logicalDevice;
     
-    public unsafe SwapChainRenderPass(Vk vk, SwapChain swapChain)
+    public unsafe SwapChainRenderPass(Vk vk, LogicalDevice logicalDevice, Format format)
     {
         _vk = vk;
-        _swapChain = swapChain;
+        _logicalDevice = logicalDevice;
         
         AttachmentDescription colorAttachment = new()
         {
-            Format = _swapChain.SurfaceFormat.Format,
+            Format = format,
             Samples = SampleCountFlags.Count1Bit,
             LoadOp = AttachmentLoadOp.Clear,
             StoreOp = AttachmentStoreOp.Store,
@@ -61,14 +61,14 @@ public class SwapChainRenderPass: IDisposable
             PDependencies = &subpassDependency
         };
 
-        var result = _vk.CreateRenderPass(_swapChain.LogicalDevice.VkLogicalDevice, renderPassInfo, null, out VkRenderPass);
+        var result = _vk.CreateRenderPass(_logicalDevice.VkLogicalDevice, renderPassInfo, null, out VkRenderPass);
         if (result != Result.Success)
             throw new Exception($"Failed to create render pass with error: {result.ToString()}");
     }
 
     public unsafe void Dispose()
     {
-        _vk.DestroyRenderPass(_swapChain.LogicalDevice.VkLogicalDevice, VkRenderPass, null);
+        _vk.DestroyRenderPass(_logicalDevice.VkLogicalDevice, VkRenderPass, null);
         GC.SuppressFinalize(this);
     }
 }

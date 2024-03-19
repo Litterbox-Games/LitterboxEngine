@@ -20,7 +20,7 @@ public abstract class GraphicsDevice: IDisposable
     public abstract void UpdateBuffer();
     public abstract ShaderProgram CreateShaderProgram(params ShaderDescription[] descriptions);
     public abstract Pipeline CreatePipeline(PipelineDescription description);
-    public abstract void CreateCommandList();
+    public abstract CommandList CreateCommandList();
     public abstract void SubmitCommands();
     public abstract void SwapBuffers();
     public abstract void WaitIdle();

@@ -1,11 +1,12 @@
 ﻿using System.Text;
+using LitterboxEngine.Graphics.GHAL;
 using LitterboxEngine.Resource;
 
-namespace LitterboxEngine.Graphics.GHAL.Resources;
+namespace LitterboxEngine.Graphics.Resources;
 
 public class Shader : IResource, IDisposable
 {
-    public ShaderDescription ShaderDescription { get; }
+    public readonly ShaderDescription ShaderDescription;
 
     private Shader(ShaderDescription description)
     {

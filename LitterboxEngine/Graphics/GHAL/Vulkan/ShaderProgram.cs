@@ -2,7 +2,7 @@
 using MoreLinq;
 using Silk.NET.Vulkan;
 
-namespace LitterboxEngine.Graphics.Vulkan;
+namespace LitterboxEngine.Graphics.GHAL.Vulkan;
 
 public sealed class ShaderProgram: GHAL.ShaderProgram
 {

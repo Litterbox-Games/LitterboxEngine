@@ -2,7 +2,7 @@
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
 
-namespace LitterboxEngine.Graphics.Vulkan;
+namespace LitterboxEngine.Graphics.GHAL.Vulkan;
 
 public class PhysicalDevice
 {

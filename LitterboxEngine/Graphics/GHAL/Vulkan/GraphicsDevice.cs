@@ -1,7 +1,7 @@
 ﻿using LitterboxEngine.Graphics.GHAL;
 using Silk.NET.Vulkan;
 
-namespace LitterboxEngine.Graphics.Vulkan;
+namespace LitterboxEngine.Graphics.GHAL.Vulkan;
 
 public sealed class GraphicsDevice: GHAL.GraphicsDevice
 {
@@ -14,7 +14,6 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
     private readonly Queue _presentQueue;
     private readonly SwapChain _swapChain;
     private readonly CommandPool _commandPool;
-    private readonly ForwardRenderTask _forwardRenderTask;
     private readonly PipelineCache _pipelineCache;
     
     public GraphicsDevice(Window window, GraphicsDeviceDescription description)
@@ -24,14 +23,16 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
         _physicalDevice = PhysicalDevice.SelectPreferredPhysicalDevice(_vk, _instance);
         _logicalDevice = new LogicalDevice(_vk, _physicalDevice);
         _surface = new Surface(_vk, _instance, window);
+        
+        
+        
+        
         _graphicsQueue = new GraphicsQueue(_vk, _logicalDevice, 0);
         _presentQueue = new PresentQueue(_vk, _logicalDevice, _surface, 0);
-        _swapChain = new SwapChain(_vk, _instance, _logicalDevice, _surface, window, 3, 
-            false, _presentQueue, new []{_graphicsQueue});
         _commandPool = new CommandPool(_vk, _logicalDevice, _graphicsQueue.QueueFamilyIndex);
-        // TODO: This could really be made as a part of the SwapChain
-        // TODO: We would just need to create the commandPool before the SwapChain and pass it in
-        _forwardRenderTask = new ForwardRenderTask(_vk, _swapChain, _commandPool);
+        _swapChain = new SwapChain(_vk, _instance, _logicalDevice, _surface, _commandPool, window, 3, 
+            false, _presentQueue, new []{_graphicsQueue});
+        
         _pipelineCache = new PipelineCache(_vk, _logicalDevice);
     }
     
@@ -55,7 +56,7 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
         return new Pipeline(_vk, _logicalDevice, _pipelineCache, description);
     }
 
-    public override void CreateCommandList()
+    public override CommandList CreateCommandList()
     {
         throw new NotImplementedException();
     }
@@ -78,9 +79,9 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
     // TODO: this is for testing and should be removed later
     public override void Render()
     {
-        _forwardRenderTask.WaitForFence();
+        _swapChain.WaitForFence();
         SwapBuffers();
-        _forwardRenderTask.Submit(_graphicsQueue);
+        _swapChain.Submit(_graphicsQueue);
         _swapChain.PresentImage(_presentQueue);
     }
     
@@ -91,9 +92,8 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
         _logicalDevice.WaitIdle();
         
         _pipelineCache.Dispose();
-        _forwardRenderTask.Dispose();
-        _commandPool.Dispose();
         _swapChain.Dispose();
+        _commandPool.Dispose();
         _surface.Dispose();
         _logicalDevice.Dispose();
         _instance.Dispose();
