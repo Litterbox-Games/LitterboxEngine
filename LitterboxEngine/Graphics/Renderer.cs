@@ -9,6 +9,7 @@ namespace LitterboxEngine.Graphics;
 
 public class Renderer: IDisposable
 {
+    
     private const int MaxQuads = 100;
     
     private const int IndicesPerQuad = 6;
@@ -27,16 +28,15 @@ public class Renderer: IDisposable
 
     private readonly Vertex[] _vertices;
     
-    public Renderer(Window window, GraphicsBackend backend = GraphicsBackend.Vulkan)
+    public Renderer(Window window, GraphicsDevice graphicsDevice)
     {
-        var description = new GraphicsDeviceDescription();
-        
-        _graphicsDevice = GraphicsDevice.Create(window, description, backend);
+        _graphicsDevice = graphicsDevice;
         
         // Vertex Buffer
         _vertices = new Vertex[MaxVertices];
         // _vertexBuffer = _graphicsDevice.CreateBuffer();
         
+        /*
         var vertexShaderDesc = ResourceManager.Get<Shader>("Shaders/default.vert").ShaderDescription;
         var fragmentShaderDesc = ResourceManager.Get<Shader>("Shaders/default.frag").ShaderDescription;
 
@@ -58,25 +58,16 @@ public class Renderer: IDisposable
         _pipeline = _graphicsDevice.CreatePipeline(pipelineDescription);
 
         _commandList = _graphicsDevice.CreateCommandList();
+        */
     }
 
     public void Begin()
     {
-        _graphicsDevice.SwapBuffers(); // Swapchain.AcquireNextImage();
-        _commandList.Begin();
-        /*
-         *  
-         *
-         *
-         * 
-         */
-        
-        
+        _graphicsDevice.SwapBuffers();
+        // _commandList.Begin();
         // _commandList.SetClearColor(Color.Black);
-        
-        _commandList.SetPipeline();
-        
-        _commandList.SetIndexBuffer();
+        // _commandList.SetPipeline();
+        // _commandList.SetIndexBuffer();
     }
 
     private void Flush()
@@ -89,9 +80,9 @@ public class Renderer: IDisposable
     
     public void End()
     {
-        Flush();
+        // Flush();
         
-        _graphicsDevice.WaitIdle();
+        _graphicsDevice.SubmitCommands();
     }
     
     private void AddQuad(Vertex topLeft, Vertex topRight, Vertex bottomLeft, Vertex bottomRight)
@@ -109,8 +100,7 @@ public class Renderer: IDisposable
 
     public void Dispose()
     {
-        _pipeline.Dispose();
-        _graphicsDevice.Dispose();
+        // _pipeline.Dispose();
         GC.SuppressFinalize(this);
     }
 }

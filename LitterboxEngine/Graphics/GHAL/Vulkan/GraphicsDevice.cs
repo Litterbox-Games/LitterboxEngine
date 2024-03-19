@@ -1,5 +1,4 @@
-﻿using LitterboxEngine.Graphics.GHAL;
-using Silk.NET.Vulkan;
+﻿using Silk.NET.Vulkan;
 
 namespace LitterboxEngine.Graphics.GHAL.Vulkan;
 
@@ -23,16 +22,11 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
         _physicalDevice = PhysicalDevice.SelectPreferredPhysicalDevice(_vk, _instance);
         _logicalDevice = new LogicalDevice(_vk, _physicalDevice);
         _surface = new Surface(_vk, _instance, window);
-        
-        
-        
-        
         _graphicsQueue = new GraphicsQueue(_vk, _logicalDevice, 0);
         _presentQueue = new PresentQueue(_vk, _logicalDevice, _surface, 0);
         _commandPool = new CommandPool(_vk, _logicalDevice, _graphicsQueue.QueueFamilyIndex);
         _swapChain = new SwapChain(_vk, _instance, _logicalDevice, _surface, _commandPool, window, 3, 
             false, _presentQueue, new []{_graphicsQueue});
-        
         _pipelineCache = new PipelineCache(_vk, _logicalDevice);
     }
     
@@ -63,11 +57,13 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
 
     public override void SubmitCommands()
     {
-        throw new NotImplementedException();
+        _swapChain.Submit(_graphicsQueue);
+        _swapChain.PresentImage(_presentQueue);
     }
 
     public override void SwapBuffers()
     {
+        _swapChain.WaitForFence();
         _swapChain.AcquireNextImage();
     }
 
@@ -75,16 +71,7 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
     {
         _logicalDevice.WaitIdle();
     }
-    
-    // TODO: this is for testing and should be removed later
-    public override void Render()
-    {
-        _swapChain.WaitForFence();
-        SwapBuffers();
-        _swapChain.Submit(_graphicsQueue);
-        _swapChain.PresentImage(_presentQueue);
-    }
-    
+
     public override void Dispose()
     {
         _presentQueue.WaitIdle();

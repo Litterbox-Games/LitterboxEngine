@@ -1,4 +1,5 @@
-﻿using Silk.NET.GLFW;
+﻿using LitterboxEngine.Graphics;
+using Silk.NET.GLFW;
 
 namespace LitterboxEngine;
 
@@ -26,7 +27,13 @@ public class Program: IGame
     {
         
     }
-    
+
+    public void Draw(Renderer renderer)
+    {
+        renderer.Begin();
+        renderer.End();
+    }
+
     public void Dispose()
     {
         

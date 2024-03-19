@@ -25,9 +25,6 @@ public abstract class GraphicsDevice: IDisposable
     public abstract void SwapBuffers();
     public abstract void WaitIdle();
     public abstract void Dispose();
-    
-    // TODO: This was for testing and should be removed
-    public abstract void Render();
 }
 
 public struct GraphicsDeviceDescription
