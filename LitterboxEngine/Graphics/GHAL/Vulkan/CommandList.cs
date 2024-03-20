@@ -55,6 +55,11 @@ public class CommandList: GHAL.CommandList
 
     public override void SetPipeline(GHAL.Pipeline pipeline)
     {
+        // TODO:
+        // I think pipeline should have a method called set that we can just call because setting a pipeline
+        // depends on the backend implementation of pipelines
+        // Would also mean we dont need this check which I would like to avoid
+        
         if (pipeline is not Pipeline vulkanPipeline)
             throw new Exception("Cannot use non-vulkan pipeline with a vulkan command list");
         

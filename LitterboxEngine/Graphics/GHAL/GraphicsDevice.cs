@@ -16,8 +16,8 @@ public abstract class GraphicsDevice: IDisposable
         return new Vulkan.GraphicsDevice(window, description);
     }
 
-    public abstract void CreateBuffer();
-    public abstract void UpdateBuffer();
+    public abstract Buffer CreateBuffer(BufferDescription description);
+    public abstract void UpdateBuffer(Buffer buffer, uint offset, uint[] data);
     public abstract ShaderProgram CreateShaderProgram(params ShaderDescription[] descriptions);
     public abstract Pipeline CreatePipeline(PipelineDescription description);
     public abstract CommandList CreateCommandList();

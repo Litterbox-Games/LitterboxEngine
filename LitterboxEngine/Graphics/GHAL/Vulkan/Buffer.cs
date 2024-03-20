@@ -2,24 +2,27 @@
 
 namespace LitterboxEngine.Graphics.GHAL.Vulkan;
 
-public class Buffer: IDisposable
+public class Buffer: GHAL.Buffer
 {
     private readonly Vk _vk;
     private readonly LogicalDevice _logicalDevice;
 
-    public readonly Silk.NET.Vulkan.Buffer VkBuffer;
-    private readonly DeviceMemory _vkBufferMemory; 
+    public readonly uint Size;
     
-    public unsafe Buffer(Vk vk, LogicalDevice logicalDevice, ulong size, BufferUsageFlags usage, MemoryPropertyFlags properties)
+    public readonly Silk.NET.Vulkan.Buffer VkBuffer;
+    private readonly DeviceMemory _vkBufferMemory;
+
+    public unsafe Buffer(Vk vk, LogicalDevice logicalDevice, BufferDescription description, MemoryPropertyFlags properties)
     {
         _vk = vk;
         _logicalDevice = logicalDevice;
+        Size = description.Size;
         
         BufferCreateInfo bufferInfo = new()
         {
             SType = StructureType.BufferCreateInfo,
-            Size = size,
-            Usage = usage,
+            Size = Size,
+            Usage = BufferUsageFlagsFromBufferUsage(description.Usage),
             SharingMode = SharingMode.Exclusive
         };
         
@@ -45,16 +48,14 @@ public class Buffer: IDisposable
             throw new Exception($"Failed to bind buffer memory with error: {result.ToString()}");
     }
 
-    public void MapMemory()
+    public override unsafe void Update(uint offset, uint[] data)
     {
-        throw new NotImplementedException();
+        void* dataPtr;
+        _vk.MapMemory(_logicalDevice.VkLogicalDevice, _vkBufferMemory, offset, Size, 0, &dataPtr);
+        data.AsSpan().CopyTo(new Span<uint>(dataPtr, data.Length));
+        _vk.UnmapMemory(_logicalDevice.VkLogicalDevice, _vkBufferMemory);
     }
 
-    public void UnMapMemory()
-    {
-        throw new NotImplementedException();
-    }
-    
     // Utility function to convert memory properties into memory type
     private uint MemoryTypeFromProperties(uint typeFilter, MemoryPropertyFlags properties)
     {
@@ -71,7 +72,17 @@ public class Buffer: IDisposable
         throw new Exception("Failed to find suitable memory type");
     }
 
-    public unsafe void Dispose()
+    private BufferUsageFlags BufferUsageFlagsFromBufferUsage(BufferUsage usage)
+    {
+        return usage switch
+        {
+          BufferUsage.Vertex => BufferUsageFlags.VertexBufferBit,
+          BufferUsage.Index => BufferUsageFlags.IndexBufferBit,
+          _ => throw new ArgumentOutOfRangeException(nameof(usage), usage, null)
+        };
+    }
+
+    public override unsafe void Dispose()
     {
         _vk.DestroyBuffer(_logicalDevice.VkLogicalDevice, VkBuffer, null);
         _vk.FreeMemory(_logicalDevice.VkLogicalDevice, _vkBufferMemory, null);

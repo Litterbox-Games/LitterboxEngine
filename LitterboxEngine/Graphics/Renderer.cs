@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using LitterboxEngine.Graphics.GHAL;
 using LitterboxEngine.Graphics.Resources;
 using LitterboxEngine.Resource;
+using Buffer = LitterboxEngine.Graphics.GHAL.Buffer;
 
 namespace LitterboxEngine.Graphics;
 
@@ -28,6 +29,9 @@ public class Renderer: IDisposable
 
     private readonly Vertex[] _vertices;
     
+    private readonly Buffer _vertexBuffer;
+    private readonly Buffer _indexBuffer;
+    
     public Color ClearColor = Color.Magenta;
     
     public Renderer(Window window, GraphicsDevice graphicsDevice)
@@ -36,12 +40,39 @@ public class Renderer: IDisposable
         
         // Vertex Buffer
         _vertices = new Vertex[MaxVertices];
-        // _vertexBuffer = _graphicsDevice.CreateBuffer();
+        _vertexBuffer = _graphicsDevice.CreateBuffer(new BufferDescription(MaxVertices * Vertex.VertexLayout.Stride, BufferUsage.Vertex));
+        
+        // Index Buffer
+        var indicesTemplate = new ushort[]
+        {
+            // Since indices are read clock wise:
+            0, 1, 2, // tri 1
+            3, 2, 1 // tri 2
+        };
+    
+        var indices = new uint[MaxIndices];
+    
+        for (var i = 0; i < MaxQuads; i++)
+        {
+            var startIndex = i * IndicesPerQuad;
+            var offset = i * VerticesPerQuad;
+    
+            indices[startIndex + 0] = (uint)(indicesTemplate[0] + offset);
+            indices[startIndex + 1] = (uint)(indicesTemplate[1] + offset);
+            indices[startIndex + 2] = (uint)(indicesTemplate[2] + offset);
+    
+            indices[startIndex + 3] = (uint)(indicesTemplate[3] + offset);
+            indices[startIndex + 4] = (uint)(indicesTemplate[4] + offset);
+            indices[startIndex + 5] = (uint)(indicesTemplate[5] + offset);
+        }
+        
+        _indexBuffer = _graphicsDevice.CreateBuffer(new BufferDescription(MaxIndices * sizeof(uint), BufferUsage.Index));
+        _graphicsDevice.UpdateBuffer(_indexBuffer, 0, indices);
         
         var vertexShaderDesc = ResourceManager.Get<Shader>("Shaders/vert.vert").ShaderDescription;
         var fragmentShaderDesc = ResourceManager.Get<Shader>("Shaders/frag.frag").ShaderDescription;
 
-        var shaderProgram = _graphicsDevice.CreateShaderProgram(vertexShaderDesc, fragmentShaderDesc);
+        // var shaderProgram = _graphicsDevice.CreateShaderProgram(vertexShaderDesc, fragmentShaderDesc);
 
         /*
         var pipelineDescription = new PipelineDescription(
@@ -102,6 +133,8 @@ public class Renderer: IDisposable
 
     public void Dispose()
     {
+        _vertexBuffer.Dispose();
+        _indexBuffer.Dispose();
         // _pipeline.Dispose();
         GC.SuppressFinalize(this);
     }

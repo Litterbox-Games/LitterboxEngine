@@ -29,15 +29,19 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
             false, _presentQueue, new []{_graphicsQueue});
         _pipelineCache = new PipelineCache(_vk, _logicalDevice);
     }
-    
-    public override void CreateBuffer()
+
+    public override GHAL.Buffer CreateBuffer(BufferDescription description)
     {
-        throw new NotImplementedException();
+        return new Buffer(_vk, _logicalDevice, description,
+            // TODO: Experiment with these flags to see if a staging buffer would be better?
+            // TODO: as far as I can tell staging buffers arent available on every GPU, especially integrated GPUS because they only have one heap
+            // TODO: This makes things simple, but might not be the most performant
+            MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit);
     }
 
-    public override void UpdateBuffer()
+    public override void UpdateBuffer(GHAL.Buffer buffer, uint offset, uint[] data)
     {
-        throw new NotImplementedException();
+        buffer.Update(offset, data);
     }
 
     public override ShaderProgram CreateShaderProgram(params ShaderDescription[] descriptions)

@@ -1,7 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-
-namespace LitterboxEngine.Graphics.GHAL;
+﻿namespace LitterboxEngine.Graphics.GHAL;
 
 public abstract class Pipeline: IDisposable
 {
