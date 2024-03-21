@@ -24,7 +24,7 @@ public class Pipeline: GHAL.Pipeline
         var shaderStages = CreateShaderStages(shaderProgram);
 
         _descriptorSetLayouts = description.ResourceLayouts.Select(l => (l as DescriptorSetLayout)!).ToArray();
-        var vkLayouts = _descriptorSetLayouts.Select(l => l.VkDescriptorSetLayout).ToArray();
+        var descriptorSetLayouts = _descriptorSetLayouts.Select(l => l.VkDescriptorSetLayout).ToArray();
         
         var attributeDescriptions = description.ShaderSet.VertexLayout.ElementDescriptions
             .Select(element => new VertexInputAttributeDescription
@@ -34,9 +34,9 @@ public class Pipeline: GHAL.Pipeline
                 Format = ToVkElementFormat(element.Format),
                 Offset = element.Offset
             }).ToArray();
-        
+
         fixed (PipelineShaderStageCreateInfo* shaderStagesPtr = shaderStages)
-        fixed (Silk.NET.Vulkan.DescriptorSetLayout* descriptorSetLayoutPtr = vkLayouts)
+        fixed (Silk.NET.Vulkan.DescriptorSetLayout* descriptorSetLayoutsPtr = descriptorSetLayouts)
         fixed (VertexInputAttributeDescription* attributeDescriptionsPtr = attributeDescriptions)
         {
             PipelineViewportStateCreateInfo viewportState = new()
@@ -82,7 +82,7 @@ public class Pipeline: GHAL.Pipeline
             
             PipelineColorBlendStateCreateInfo colorBlendState = new()
             {
-                // TODO: not exactly sure but I think a lot of this should change tbh
+                // TODO: Same as above, should be created based on the pipeline description
                 SType = StructureType.PipelineColorBlendStateCreateInfo,
                 LogicOpEnable = false,
                 LogicOp = LogicOp.Copy,
@@ -106,14 +106,15 @@ public class Pipeline: GHAL.Pipeline
             PipelineDynamicStateCreateInfo dynamicState = new()
             {
                 SType = StructureType.PipelineDynamicStateCreateInfo,
+                DynamicStateCount = 2,
                 PDynamicStates = dynamicStates
             };
             
             PipelineLayoutCreateInfo pipelineLayoutInfo = new()
             {
                 SType = StructureType.PipelineLayoutCreateInfo,
-                SetLayoutCount = (uint)vkLayouts.Length,
-                PSetLayouts = descriptorSetLayoutPtr
+                SetLayoutCount = (uint)descriptorSetLayouts.Length,
+                PSetLayouts = descriptorSetLayoutsPtr
             };
             
             var result = _vk.CreatePipelineLayout(_logicalDevice.VkLogicalDevice, pipelineLayoutInfo, null, out VkPipelineLayout);
