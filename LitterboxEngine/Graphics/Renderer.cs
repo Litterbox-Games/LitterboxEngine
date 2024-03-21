@@ -31,10 +31,12 @@ public class Renderer: IDisposable
     
     private readonly Buffer _vertexBuffer;
     private readonly Buffer _indexBuffer;
+
+    private readonly Buffer _transformBuffer;
     
     public Color ClearColor = Color.Magenta;
     
-    public Renderer(Window window, GraphicsDevice graphicsDevice)
+    public unsafe Renderer(Window window, GraphicsDevice graphicsDevice)
     {
         _graphicsDevice = graphicsDevice;
         
@@ -69,12 +71,26 @@ public class Renderer: IDisposable
         _indexBuffer = _graphicsDevice.CreateBuffer(new BufferDescription(MaxIndices * sizeof(uint), BufferUsage.Index));
         _graphicsDevice.UpdateBuffer(_indexBuffer, 0, indices);
         
-        var vertexShaderDesc = ResourceManager.Get<Shader>("Shaders/vert.vert").ShaderDescription;
-        var fragmentShaderDesc = ResourceManager.Get<Shader>("Shaders/frag.frag").ShaderDescription;
+        var vertexShaderDesc = ResourceManager.Get<Shader>("Shaders/default.vert").ShaderDescription;
+        var fragmentShaderDesc = ResourceManager.Get<Shader>("Shaders/default.frag").ShaderDescription;
 
-        // var shaderProgram = _graphicsDevice.CreateShaderProgram(vertexShaderDesc, fragmentShaderDesc);
+        using var shaderProgram = _graphicsDevice.CreateShaderProgram(vertexShaderDesc, fragmentShaderDesc);
 
-        /*
+        _transformBuffer = _graphicsDevice.CreateBuffer(new BufferDescription(2 * (uint)sizeof(Matrix4x4), BufferUsage.Uniform));
+        var transformLayout = _graphicsDevice.CreateResourceLayout(
+            new ResourceLayoutDescription(
+                new ResourceLayoutElementDescription(
+                    "ProjectionViewBuffer", 
+                    ResourceKind.UniformBuffer, 
+                    ShaderStages.Vertex)));                                                                       
+        
+        //_transformSet = _graphicsDevice.CreateResourceSet(new ResourceSetDescription(transformLayout, _transformBuffer));
+
+        var textureLayout = _graphicsDevice.CreateResourceLayout(
+            new ResourceLayoutDescription(
+                new ResourceLayoutElementDescription("tex0", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
+                new ResourceLayoutElementDescription("sampler", ResourceKind.Sampler, ShaderStages.Fragment)));
+        
         var pipelineDescription = new PipelineDescription(
             RasterizationState: new RasterizationStateDescription(
                 CullMode: CullMode.Back,
@@ -83,14 +99,14 @@ public class Renderer: IDisposable
                 EnableScissor: true,
                 EnableDepthTest: true),
             PrimitiveTopology: PrimitiveTopology.TriangleList,
+            ResourceLayouts: new []{ transformLayout, textureLayout },
             ShaderSet: new ShaderSetDescription(
                 ShaderProgram: shaderProgram,
                 VertexLayout: Vertex.VertexLayout)
         );
 
         _pipeline = _graphicsDevice.CreatePipeline(pipelineDescription);
-        */
-        
+
         _commandList = _graphicsDevice.CreateCommandList();
     }
 
@@ -135,7 +151,7 @@ public class Renderer: IDisposable
     {
         _vertexBuffer.Dispose();
         _indexBuffer.Dispose();
-        // _pipeline.Dispose();
+        _pipeline.Dispose();
         GC.SuppressFinalize(this);
     }
 }

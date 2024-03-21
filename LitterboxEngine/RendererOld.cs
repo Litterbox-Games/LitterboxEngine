@@ -1338,7 +1338,7 @@ public class RendererOld : IDisposable
                 Color = new ClearColorValue
                     { Float32_0 = 0, Float32_1 = 0, Float32_2 = 0, Float32_3 = 1 },
             };
-
+            
             renderPassInfo.ClearValueCount = 1;
             renderPassInfo.PClearValues = &clearColor;
 

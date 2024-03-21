@@ -78,6 +78,7 @@ public class Buffer: GHAL.Buffer
         {
           BufferUsage.Vertex => BufferUsageFlags.VertexBufferBit,
           BufferUsage.Index => BufferUsageFlags.IndexBufferBit,
+          BufferUsage.Uniform => BufferUsageFlags.UniformBufferBit,
           _ => throw new ArgumentOutOfRangeException(nameof(usage), usage, null)
         };
     }

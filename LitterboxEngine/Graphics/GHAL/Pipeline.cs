@@ -8,6 +8,7 @@ public abstract class Pipeline: IDisposable
 public record PipelineDescription(
     RasterizationStateDescription RasterizationState,
     PrimitiveTopology PrimitiveTopology,
+    ResourceLayout[] ResourceLayouts,
     ShaderSetDescription ShaderSet);
 
 public record ShaderSetDescription(

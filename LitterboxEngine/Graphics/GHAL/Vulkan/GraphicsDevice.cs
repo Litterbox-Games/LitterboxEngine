@@ -14,6 +14,7 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
     private readonly SwapChain _swapChain;
     private readonly CommandPool _commandPool;
     private readonly PipelineCache _pipelineCache;
+    private readonly DescriptorPool _descriptorPool;
     
     public GraphicsDevice(Window window, GraphicsDeviceDescription description)
     {
@@ -27,6 +28,7 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
         _commandPool = new CommandPool(_vk, _logicalDevice, _graphicsQueue.QueueFamilyIndex);
         _swapChain = new SwapChain(_vk, _instance, _logicalDevice, _surface, _commandPool, window, 3, 
             false, _presentQueue, new []{_graphicsQueue});
+        _descriptorPool = new DescriptorPool(_vk, _logicalDevice, _swapChain.ImageCount);
         _pipelineCache = new PipelineCache(_vk, _logicalDevice);
     }
 
@@ -52,6 +54,11 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
     public override Pipeline CreatePipeline(PipelineDescription description)
     {
         return new Pipeline(_vk, _swapChain, _pipelineCache, description);
+    }
+
+    public override ResourceLayout CreateResourceLayout(ResourceLayoutDescription description)
+    {
+        return new DescriptorSetLayout(_vk, _logicalDevice, description);
     }
 
     public override CommandList CreateCommandList()

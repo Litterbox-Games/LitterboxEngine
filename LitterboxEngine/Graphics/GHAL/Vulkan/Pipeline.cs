@@ -1,11 +1,6 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using LitterboxEngine.Graphics.GHAL;
-using MoreLinq;
+﻿using MoreLinq;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
-using FrontFace = LitterboxEngine.Graphics.GHAL.FrontFace;
-using PrimitiveTopology = LitterboxEngine.Graphics.GHAL.PrimitiveTopology;
 
 namespace LitterboxEngine.Graphics.GHAL.Vulkan;
 
@@ -16,7 +11,8 @@ public class Pipeline: GHAL.Pipeline
     
     private readonly Vk _vk;
     private readonly LogicalDevice _logicalDevice;
-
+    private readonly DescriptorSetLayout[] _descriptorSetLayouts;
+    
     // TODO: Enabling scissor test
     // TODO: Blending support from pipeline description
     public unsafe Pipeline(Vk vk, SwapChain swapChain, PipelineCache cache, PipelineDescription description)
@@ -27,8 +23,21 @@ public class Pipeline: GHAL.Pipeline
         var shaderProgram = (description.ShaderSet.ShaderProgram as ShaderProgram)!;
         var shaderStages = CreateShaderStages(shaderProgram);
 
+        _descriptorSetLayouts = description.ResourceLayouts.Select(l => (l as DescriptorSetLayout)!).ToArray();
+        var vkLayouts = _descriptorSetLayouts.Select(l => l.VkDescriptorSetLayout).ToArray();
+        
+        var attributeDescriptions = description.ShaderSet.VertexLayout.ElementDescriptions
+            .Select(element => new VertexInputAttributeDescription
+            {
+                Binding = element.Binding,
+                Location = element.Location,
+                Format = ToVkElementFormat(element.Format),
+                Offset = element.Offset
+            }).ToArray();
+        
         fixed (PipelineShaderStageCreateInfo* shaderStagesPtr = shaderStages)
-            // fixed (DescriptorSetLayout* descriptorSetLayoutPtr = &_descriptorSetLayout)
+        fixed (Silk.NET.Vulkan.DescriptorSetLayout* descriptorSetLayoutPtr = vkLayouts)
+        fixed (VertexInputAttributeDescription* attributeDescriptionsPtr = attributeDescriptions)
         {
             PipelineViewportStateCreateInfo viewportState = new()
             {
@@ -37,10 +46,25 @@ public class Pipeline: GHAL.Pipeline
                 ScissorCount = 1
             };
 
-            var vertexInputState = CreateVertexInputState(description.ShaderSet.VertexLayout);
+            var bindingDescription = new VertexInputBindingDescription
+            {
+                Binding = description.ShaderSet.VertexLayout.Binding,
+                Stride = description.ShaderSet.VertexLayout.Stride,
+                // TODO: This prevents us from being able to use instance rendering atm
+                InputRate = VertexInputRate.Vertex
+            };
+            
+            var vertexInputState = new PipelineVertexInputStateCreateInfo
+            {
+                SType = StructureType.PipelineVertexInputStateCreateInfo,
+                VertexBindingDescriptionCount = 1,
+                VertexAttributeDescriptionCount = (uint)attributeDescriptions.Length,
+                PVertexBindingDescriptions = &bindingDescription,
+                PVertexAttributeDescriptions = attributeDescriptionsPtr,
+            };
             
             var inputAssemblyState = CreateInputAssemblyState(description.PrimitiveTopology);
-
+            
             var rasterizationState = CreateRasterizationState(description.RasterizationState);
 
             PipelineMultisampleStateCreateInfo multisampleState = new()
@@ -62,7 +86,7 @@ public class Pipeline: GHAL.Pipeline
                 SType = StructureType.PipelineColorBlendStateCreateInfo,
                 LogicOpEnable = false,
                 LogicOp = LogicOp.Copy,
-                AttachmentCount = 1, // TODO: where does this actually come from instead of magic constant
+                AttachmentCount = 1,
                 PAttachments = &colorBlendAttachment,
             };
             
@@ -87,7 +111,9 @@ public class Pipeline: GHAL.Pipeline
             
             PipelineLayoutCreateInfo pipelineLayoutInfo = new()
             {
-                SType = StructureType.PipelineLayoutCreateInfo
+                SType = StructureType.PipelineLayoutCreateInfo,
+                SetLayoutCount = (uint)vkLayouts.Length,
+                PSetLayouts = descriptorSetLayoutPtr
             };
             
             var result = _vk.CreatePipelineLayout(_logicalDevice.VkLogicalDevice, pipelineLayoutInfo, null, out VkPipelineLayout);
@@ -126,38 +152,6 @@ public class Pipeline: GHAL.Pipeline
     }
 
     #region VertexInputState
-    private static unsafe PipelineVertexInputStateCreateInfo CreateVertexInputState(VertexLayoutDescription description)
-    {
-        var attributeDescriptions = description.ElementDescriptions
-            .Select(element => new VertexInputAttributeDescription
-            {
-                Binding = element.Binding,
-                Location = element.Location,
-                Format = ToVkElementFormat(element.Format),
-                Offset = element.Offset
-            }).ToArray();
-        
-        var bindingDescription = new VertexInputBindingDescription
-        {
-            Binding = description.Binding,
-            Stride = description.Stride,
-            // TODO: This prevents us from being able to use instance rendering atm
-            InputRate = VertexInputRate.Vertex
-        };
-
-        fixed (VertexInputAttributeDescription* attributeDescriptionsPtr = attributeDescriptions)
-        {
-            return new PipelineVertexInputStateCreateInfo
-            {
-                SType = StructureType.PipelineVertexInputStateCreateInfo,
-                VertexBindingDescriptionCount = 1,
-                VertexAttributeDescriptionCount = (uint)attributeDescriptions.Length,
-                PVertexBindingDescriptions = &bindingDescription,
-                PVertexAttributeDescriptions = attributeDescriptionsPtr,
-            };
-        }
-    }
-    
     private static Format ToVkElementFormat(VertexElementFormat format)
     {
         return format switch
@@ -271,10 +265,11 @@ public class Pipeline: GHAL.Pipeline
         };
     }
     #endregion
-    
 
     public override void Dispose()
     {
         throw new NotImplementedException();
+        _descriptorSetLayouts.ForEach(l => l.Dispose());
+        GC.SuppressFinalize(this);
     }
 }

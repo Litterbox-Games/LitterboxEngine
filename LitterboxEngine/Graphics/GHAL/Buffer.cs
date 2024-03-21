@@ -13,6 +13,7 @@ public record BufferDescription(
 public enum BufferUsage
 {
     Vertex,
-    Index
+    Index,
+    Uniform
 }
     

@@ -7,11 +7,11 @@ public class SwapChain: IDisposable
 {
     public readonly Extent2D Extent;
     private readonly KhrSwapchain _khrSwapChain;
-    private readonly SwapchainKHR _vkSwapChain;
-    public readonly ImageView[] ImageViews;
+    public readonly SwapchainKHR VkSwapChain;
+    private readonly ImageView[] _imageViews;
     public readonly LogicalDevice LogicalDevice;
     
-    public readonly SwapChainSyncSemaphores[] SyncSemaphores;
+    private readonly SwapChainSyncSemaphores[] _syncSemaphores;
     public readonly SwapChainRenderPass RenderPass;
     private readonly FrameBuffer[] _frameBuffers;
     private readonly Fence[] _fences;
@@ -19,6 +19,7 @@ public class SwapChain: IDisposable
 
     public FrameBuffer CurrentFrameBuffer => _frameBuffers[CurrentFrame];
     public CommandBuffer CurrentCommandBuffer => _commandBuffers[CurrentFrame];
+    public uint ImageCount => (uint)_imageViews.Length;
     
     public uint CurrentFrame { get; private set; }
 
@@ -72,27 +73,27 @@ public class SwapChain: IDisposable
             }
         }
         
-        var result = _khrSwapChain.CreateSwapchain(LogicalDevice.VkLogicalDevice, swapChainCreateInfo, null, out _vkSwapChain);
+        var result = _khrSwapChain.CreateSwapchain(LogicalDevice.VkLogicalDevice, swapChainCreateInfo, null, out VkSwapChain);
         if (result != Result.Success)
             throw new Exception($"Failed to create swap chain with error: {result.ToString()}.");
         
-        ImageViews = CreateImageViews(vk, LogicalDevice, _khrSwapChain, _vkSwapChain, surfaceFormat.Format);
-        SyncSemaphores = ImageViews.Select(_ => new SwapChainSyncSemaphores(vk, LogicalDevice)).ToArray();
+        _imageViews = CreateImageViews(vk, LogicalDevice, _khrSwapChain, VkSwapChain, surfaceFormat.Format);
+        _syncSemaphores = _imageViews.Select(_ => new SwapChainSyncSemaphores(vk, LogicalDevice)).ToArray();
         
         RenderPass = new SwapChainRenderPass(vk, LogicalDevice, surfaceFormat.Format);
 
         // Create a frame buffer for each swap chain image
-        _frameBuffers = ImageViews
+        _frameBuffers = _imageViews
             .Select(imageView => new FrameBuffer(vk, logicalDevice, Extent.Width, Extent.Height, imageView, RenderPass))
             .ToArray();
 
         // Create a fence for each swap chain image
-        _fences = ImageViews
+        _fences = _imageViews
             .Select(_ => new Fence(vk, logicalDevice, true))
             .ToArray();
         
         // Create a command buffer for each swap chain image
-        _commandBuffers = ImageViews
+        _commandBuffers = _imageViews
             .Select(_ => new CommandBuffer(vk, commandPool, true, false))
             .ToArray();
     }
@@ -101,8 +102,8 @@ public class SwapChain: IDisposable
     public bool AcquireNextImage()
     {
         uint imageIndex = 0;
-        var result = _khrSwapChain.AcquireNextImage(LogicalDevice.VkLogicalDevice, _vkSwapChain, ulong.MaxValue, 
-            SyncSemaphores[CurrentFrame].ImageAcquisition.VkSemaphore, default, ref imageIndex);
+        var result = _khrSwapChain.AcquireNextImage(LogicalDevice.VkLogicalDevice, VkSwapChain, ulong.MaxValue, 
+            _syncSemaphores[CurrentFrame].ImageAcquisition.VkSemaphore, default, ref imageIndex);
 
         CurrentFrame = imageIndex;
         
@@ -118,8 +119,8 @@ public class SwapChain: IDisposable
     public unsafe bool PresentImage(Queue queue)
     {
         var imageIndex = CurrentFrame;
-        var signalSemaphores = stackalloc[] { SyncSemaphores[CurrentFrame].RenderComplete.VkSemaphore };
-        var swapChains = stackalloc[] { _vkSwapChain };
+        var signalSemaphores = stackalloc[] { _syncSemaphores[CurrentFrame].RenderComplete.VkSemaphore };
+        var swapChains = stackalloc[] { VkSwapChain };
         PresentInfoKHR presentInfo = new()
         {
             SType = StructureType.PresentInfoKhr,
@@ -135,7 +136,7 @@ public class SwapChain: IDisposable
 
         var result = _khrSwapChain.QueuePresent(queue.VkQueue, presentInfo);
         
-        CurrentFrame = (CurrentFrame + 1) % (uint)ImageViews.Length;
+        CurrentFrame = (CurrentFrame + 1) % (uint)_imageViews.Length;
         
         if (result == Result.ErrorOutOfDateKhr) return true;
         
@@ -253,13 +254,13 @@ public class SwapChain: IDisposable
         foreach (var fence in _fences) 
             fence.Dispose();
         
-        foreach (var imageView in ImageViews) 
+        foreach (var imageView in _imageViews) 
             imageView.Dispose();
 
-        foreach (var syncSemaphore in SyncSemaphores) 
+        foreach (var syncSemaphore in _syncSemaphores) 
             syncSemaphore.Dispose();
         
-        _khrSwapChain.DestroySwapchain(LogicalDevice.VkLogicalDevice, _vkSwapChain, null);
+        _khrSwapChain.DestroySwapchain(LogicalDevice.VkLogicalDevice, VkSwapChain, null);
         _khrSwapChain.Dispose();
         GC.SuppressFinalize(this);
     }
@@ -269,7 +270,7 @@ public class SwapChain: IDisposable
         var fence = _fences[CurrentFrame];
         fence.Reset();
         var commandBuffer = _commandBuffers[CurrentFrame];
-        var syncSemaphores = SyncSemaphores[CurrentFrame];
+        var syncSemaphores = _syncSemaphores[CurrentFrame];
 
         queue.Submit(commandBuffer, syncSemaphores, fence);
     }

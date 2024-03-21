@@ -8,6 +8,8 @@ public class CommandList: GHAL.CommandList
 
     private readonly Vk _vk;
     private readonly SwapChain _swapChain;
+
+    private Pipeline? _pipeline;
     
     public CommandList(Vk vk, SwapChain swapChain)
     {
@@ -55,14 +57,11 @@ public class CommandList: GHAL.CommandList
 
     public override void SetPipeline(GHAL.Pipeline pipeline)
     {
-        // TODO:
-        // I think pipeline should have a method called set that we can just call because setting a pipeline
-        // depends on the backend implementation of pipelines
-        // Would also mean we dont need this check which I would like to avoid
-        
         if (pipeline is not Pipeline vulkanPipeline)
             throw new Exception("Cannot use non-vulkan pipeline with a vulkan command list");
-        
+
+        _pipeline = vulkanPipeline;
+
         _vk.CmdBindPipeline(_swapChain.CurrentCommandBuffer.VkCommandBuffer, PipelineBindPoint.Graphics, vulkanPipeline.VkPipeline);
     }
 
@@ -74,6 +73,18 @@ public class CommandList: GHAL.CommandList
     public override void UpdateBuffer()
     {
         throw new NotImplementedException();
+    }
+
+    public override unsafe void SetResourceSet(ResourceSet resourceSet)
+    {
+        if (resourceSet is not DescriptorSet descriptorSet)
+            throw new Exception("Cannot use non-vulkan resource set with a vulkan command list");
+
+        if (_pipeline is null)
+            throw new Exception("A pipeline must be set on the command list before setting a resource set");
+
+        _vk.CmdBindDescriptorSets(_swapChain.CurrentCommandBuffer.VkCommandBuffer, PipelineBindPoint.Graphics,
+            _pipeline.VkPipelineLayout, 0, 1, descriptorSet.VkDescriptorSet, 0, null);
     }
 
     public override void SetVertexBuffer()
