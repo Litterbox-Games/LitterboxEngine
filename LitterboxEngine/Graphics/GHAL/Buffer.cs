@@ -2,7 +2,8 @@
 
 public abstract class Buffer : IDisposable
 {
-    public abstract void Update(uint offset, uint[] data);
+    public abstract void Update<T>(ulong offset, T[] data) where T : unmanaged;
+    public abstract void Update<T>(ulong offset, T data) where T : unmanaged;
     public abstract void Dispose();
 }
 

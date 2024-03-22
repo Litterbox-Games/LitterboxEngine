@@ -8,6 +8,11 @@ using Buffer = LitterboxEngine.Graphics.GHAL.Buffer;
 
 namespace LitterboxEngine.Graphics;
 
+// TODO: List
+// 1. Handle window resizing
+// 2. Go through all leftover TODOs in other files
+
+
 public class Renderer: IDisposable
 {
     
@@ -22,7 +27,7 @@ public class Renderer: IDisposable
     private uint _quadCount = 0;
     private uint _vertexCount => _quadCount * VerticesPerQuad;
     private uint _indexCount => _quadCount * IndicesPerQuad;
-    
+
     private readonly GraphicsDevice _graphicsDevice;
     private readonly Pipeline _pipeline;
     private readonly CommandList _commandList;
@@ -33,12 +38,19 @@ public class Renderer: IDisposable
     private readonly Buffer _indexBuffer;
 
     private readonly Buffer _transformBuffer;
+    private readonly ResourceSet _transformSet;
     
-    public Color ClearColor = Color.Magenta;
+    private Matrix4x4 _projection;
+    private Matrix4x4 _view;
+    
+    public Color ClearColor = System.Drawing.Color.Magenta;
     
     public unsafe Renderer(Window window, GraphicsDevice graphicsDevice)
     {
         _graphicsDevice = graphicsDevice;
+        
+        // Initialize projection matrix
+        SetViewSize(new Vector2(window.Width, window.Height));
         
         // Vertex Buffer
         _vertices = new Vertex[MaxVertices];
@@ -79,17 +91,14 @@ public class Renderer: IDisposable
         _transformBuffer = _graphicsDevice.CreateBuffer(new BufferDescription(2 * (uint)sizeof(Matrix4x4), BufferUsage.Uniform));
         var transformLayout = _graphicsDevice.CreateResourceLayout(
             new ResourceLayoutDescription(
-                new ResourceLayoutElementDescription(
-                    "ProjectionViewBuffer", 
-                    ResourceKind.UniformBuffer, 
-                    ShaderStages.Vertex)));                                                                       
+                new ResourceLayoutElementDescription(ResourceKind.UniformBuffer, ShaderStages.Vertex)));                                                                       
         
-        //_transformSet = _graphicsDevice.CreateResourceSet(new ResourceSetDescription(transformLayout, _transformBuffer));
+        _transformSet = _graphicsDevice.CreateResourceSet(new ResourceSetDescription(transformLayout, _transformBuffer));
 
-        var textureLayout = _graphicsDevice.CreateResourceLayout(
-            new ResourceLayoutDescription(
-                new ResourceLayoutElementDescription("tex0", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-                new ResourceLayoutElementDescription("sampler", ResourceKind.Sampler, ShaderStages.Fragment)));
+        // var textureLayout = _graphicsDevice.CreateResourceLayout(
+        //     new ResourceLayoutDescription(
+        //         new ResourceLayoutElementDescription(ResourceKind.TextureReadOnly, ShaderStages.Fragment),
+        //         new ResourceLayoutElementDescription(ResourceKind.Sampler, ShaderStages.Fragment)));
         
         var pipelineDescription = new PipelineDescription(
             RasterizationState: new RasterizationStateDescription(
@@ -99,7 +108,7 @@ public class Renderer: IDisposable
                 EnableScissor: true,
                 EnableDepthTest: true),
             PrimitiveTopology: PrimitiveTopology.TriangleList,
-            ResourceLayouts: new []{ transformLayout, textureLayout },
+            ResourceLayouts: new []{ transformLayout /*, textureLayout*/ },
             ShaderSet: new ShaderSetDescription(
                 ShaderProgram: shaderProgram,
                 VertexLayout: Vertex.VertexLayout)
@@ -110,28 +119,53 @@ public class Renderer: IDisposable
         _commandList = _graphicsDevice.CreateCommandList();
     }
 
-    public void Begin()
+    public void SetViewSize(Vector2 size)
+    {   
+        // Change zFarPlane to -1 if we want depth range to be [0, 1] rather than [-1, 0]
+        _projection = Matrix4x4.CreateOrthographicOffCenter(0f, size.X, size.Y, 0f, 0f, 1f);
+    }
+    
+    public unsafe void Begin(Matrix4x4? view = null)
     {
+        _view = view ?? Matrix4x4.Identity;
+        
         _graphicsDevice.SwapBuffers();
         _commandList.Begin(ClearColor);
-        // _commandList.SetPipeline(_pipeline);
-        // _commandList.SetIndexBuffer();
+        _commandList.SetPipeline(_pipeline);
+        
+        _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt32);
+        
+        _commandList.UpdateBuffer(_transformBuffer, 0, _projection);
+        _commandList.UpdateBuffer(_transformBuffer, (ulong)sizeof(Matrix4x4), _view);
+        _commandList.SetResourceSet(_transformSet);
     }
 
     private void Flush()
     {
-        _commandList.UpdateBuffer(); // Update vertex buffer
-        _commandList.SetVertexBuffer();
-        
-        _commandList.DrawIndexed();
+        _commandList.UpdateBuffer(_vertexBuffer, 0, _vertices);
+        _commandList.SetVertexBuffer(0, _vertexBuffer);
+
+        _commandList.DrawIndexed(_indexCount);
+
+        _quadCount = 0;
     }
     
     public void End()
     {
-        // Flush();
+        Flush();
         
         _commandList.End();
         _graphicsDevice.SubmitCommands();
+    }
+    
+    public void DrawRectangle(RectangleF destination, Color color, float depth = 0.0f /* depth should be in the range [-1, 0] */)
+    {
+        AddQuad(
+            new Vertex { Position = new Vector3(destination.Left, destination.Top, depth), Color = color },
+            new Vertex { Position = new Vector3(destination.Right, destination.Top, depth), Color = color },
+            new Vertex { Position = new Vector3(destination.Left, destination.Bottom, depth), Color = color },
+            new Vertex { Position = new Vector3(destination.Right, destination.Bottom, depth), Color = color }
+        );
     }
     
     private void AddQuad(Vertex topLeft, Vertex topRight, Vertex bottomLeft, Vertex bottomRight)
@@ -162,11 +196,11 @@ public struct Vertex
 {
     public required Vector3 Position { get; init; }
     public required Color Color { get; init; }
-    public required Vector2 TexCoords { get; init; }
+    // public required Vector2 TexCoords { get; init; }
 
     public static readonly VertexLayoutDescription VertexLayout = new (
         new VertexElementDescription(0, VertexElementFormat.Float3),
-        new VertexElementDescription(1, VertexElementFormat.Float4),
-        new VertexElementDescription(2, VertexElementFormat.Float2)
+        new VertexElementDescription(1, VertexElementFormat.Float4)//,
+        // new VertexElementDescription(2, VertexElementFormat.Float2)
     );
 }

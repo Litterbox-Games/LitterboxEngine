@@ -8,7 +8,6 @@ public class ResourceLayout
 public record ResourceLayoutDescription(params ResourceLayoutElementDescription[] Elements);
 
 public record ResourceLayoutElementDescription(
-    string Name,
     ResourceKind Kind,
     ShaderStages Stages);
 

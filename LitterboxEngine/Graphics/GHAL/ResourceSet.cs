@@ -4,3 +4,5 @@ public abstract class ResourceSet
 {
     
 }
+
+public record ResourceSetDescription(ResourceLayout Layout, Buffer Buffer);

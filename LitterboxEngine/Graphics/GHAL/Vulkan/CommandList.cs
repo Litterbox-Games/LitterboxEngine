@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using Silk.NET.Vulkan;
+﻿using Silk.NET.Vulkan;
 
 namespace LitterboxEngine.Graphics.GHAL.Vulkan;
 
@@ -10,7 +9,7 @@ public class CommandList: GHAL.CommandList
     private readonly SwapChain _swapChain;
 
     private Pipeline? _pipeline;
-    
+
     public CommandList(Vk vk, SwapChain swapChain)
     {
         _vk = vk;
@@ -22,7 +21,7 @@ public class CommandList: GHAL.CommandList
         ClearValue clearValue = new()
         {
             Color = new ClearColorValue
-                { Float32_0 = clearColor.R / 255f, Float32_1 = clearColor.G / 255f, Float32_2 = clearColor.B / 255f, Float32_3 = 1 },
+                { Float32_0 = clearColor.R, Float32_1 = clearColor.G, Float32_2 = clearColor.B, Float32_3 = 1 },
         };
         
         RenderPassBeginInfo renderPassInfo = new()
@@ -41,12 +40,6 @@ public class CommandList: GHAL.CommandList
         
         _swapChain.CurrentCommandBuffer.BeginRecording();
         _vk.CmdBeginRenderPass(_swapChain.CurrentCommandBuffer.VkCommandBuffer, &renderPassInfo, SubpassContents.Inline);
-        
-        // bind pipeline
-        
-        // bind vertex buffer
-        // bind index buffer
-        // draw indexed
     }
 
     public override void End()
@@ -63,16 +56,64 @@ public class CommandList: GHAL.CommandList
         _pipeline = vulkanPipeline;
 
         _vk.CmdBindPipeline(_swapChain.CurrentCommandBuffer.VkCommandBuffer, PipelineBindPoint.Graphics, vulkanPipeline.VkPipeline);
+        
+        // TODO: Revisit this after scissor rect is handled and resizing is handled properly
+        Viewport viewport = new()
+        {
+            X = 0,
+            Y = 0,
+            Width = _swapChain.Extent.Width,
+            Height = _swapChain.Extent.Height,
+            MinDepth = 0,
+            MaxDepth = 1
+        };
+            
+        Rect2D scissor = new()
+        {
+            Offset = { X = 0, Y = 0 },
+            Extent = _swapChain.Extent
+        };
+
+        _vk.CmdSetViewport(_swapChain.CurrentCommandBuffer.VkCommandBuffer, 0, 1, in viewport);
+        _vk.CmdSetScissor(_swapChain.CurrentCommandBuffer.VkCommandBuffer, 0, 1, in scissor);
     }
 
-    public override void SetIndexBuffer()
+    public override void SetIndexBuffer(GHAL.Buffer buffer, IndexFormat format)
     {
-        throw new NotImplementedException();
+        var indexBuffer = (buffer as Buffer)!.VkBuffer;
+        _vk.CmdBindIndexBuffer(_swapChain.CurrentCommandBuffer.VkCommandBuffer, indexBuffer, 0, IndexTypeFromIndexFormat(format));
     }
 
-    public override void UpdateBuffer()
+    public override unsafe void SetVertexBuffer(ulong offset, GHAL.Buffer buffer)
     {
-        throw new NotImplementedException();
+        var vertexBuffers = stackalloc[] { (buffer as Buffer)!.VkBuffer };
+        var offsets = stackalloc[] {offset};
+        _vk.CmdBindVertexBuffers(_swapChain.CurrentCommandBuffer.VkCommandBuffer, 0, 1, vertexBuffers, offsets);        
+    }
+
+    public override void UpdateBuffer<T>(GHAL.Buffer buffer, ulong offset, T data)
+    {
+        buffer.Update(offset, data);
+        // var vkBuffer = (buffer as Buffer)!.VkBuffer;
+        // _vk.CmdUpdateBuffer(_swapChain.CurrentCommandBuffer.VkCommandBuffer, vkBuffer, offset, (ulong)Unsafe.SizeOf<T>() ,ref data);
+    }
+
+    public override void UpdateBuffer<T>(GHAL.Buffer buffer, ulong offset, T[] data)
+    {
+        buffer.Update(offset, data);
+        // TODO: Revisit the below approach, problem is it cannot be done inside an active render pass
+        // var vkBuffer = (buffer as Buffer)!.VkBuffer;
+        // var span = new Span<T>(data);
+        // _vk.CmdUpdateBuffer(_swapChain.CurrentCommandBuffer.VkCommandBuffer, vkBuffer, offset, span);
+    }
+
+    private static IndexType IndexTypeFromIndexFormat(IndexFormat format)
+    {
+        return format switch
+        {
+            IndexFormat.UInt32 => IndexType.Uint32,
+            _ => throw new ArgumentOutOfRangeException(nameof(format), format, null)
+        };
     }
 
     public override unsafe void SetResourceSet(ResourceSet resourceSet)
@@ -87,13 +128,8 @@ public class CommandList: GHAL.CommandList
             _pipeline.VkPipelineLayout, 0, 1, descriptorSet.VkDescriptorSet, 0, null);
     }
 
-    public override void SetVertexBuffer()
+    public override void DrawIndexed(uint indexCount)
     {
-        throw new NotImplementedException();
-    }
-
-    public override void DrawIndexed()
-    {
-        throw new NotImplementedException();
+        _vk.CmdDrawIndexed(_swapChain.CurrentCommandBuffer.VkCommandBuffer, indexCount, 1, 0, 0, 0);
     }
 }

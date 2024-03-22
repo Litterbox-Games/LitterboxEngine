@@ -95,8 +95,6 @@ public class Pipeline: GHAL.Pipeline
             colorBlendState.BlendConstants[2] = 0;
             colorBlendState.BlendConstants[3] = 0;
             
-            // This allows us to dynamically change the viewport and scissor rect without recreating
-            // the entire pipeline!
             var dynamicStates = stackalloc[]
             {
                 DynamicState.Viewport,

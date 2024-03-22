@@ -10,7 +10,7 @@ public class DescriptorSet : ResourceSet
 
     public readonly Silk.NET.Vulkan.DescriptorSet VkDescriptorSet; 
     
-    public unsafe DescriptorSet(Vk vk, LogicalDevice logicalDevice, DescriptorPool pool, Buffer buffer, DescriptorSetLayout layout, uint binding, DescriptorType descriptorType)
+    public unsafe DescriptorSet(Vk vk, LogicalDevice logicalDevice, DescriptorPool pool, Buffer buffer, DescriptorSetLayout layout)
     {
         _vk = vk;
         _logicalDevice = logicalDevice;
@@ -40,8 +40,8 @@ public class DescriptorSet : ResourceSet
             {
                 SType = StructureType.WriteDescriptorSet,
                 DstSet = VkDescriptorSet,
-                DstBinding = binding,
-                DescriptorType = descriptorType,
+                DstBinding = 0, // TODO: I dont know if this can always be zero, but I think it should be fine?
+                DescriptorType = DescriptorType.UniformBuffer, // TODO: Un-hardcode, Will be different for textures/samplers 
                 DescriptorCount = 1,
                 PBufferInfo = &bufferInfo,
             };

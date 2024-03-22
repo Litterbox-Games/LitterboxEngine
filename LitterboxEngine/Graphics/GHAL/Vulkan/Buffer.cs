@@ -48,11 +48,19 @@ public class Buffer: GHAL.Buffer
             throw new Exception($"Failed to bind buffer memory with error: {result.ToString()}");
     }
 
-    public override unsafe void Update(uint offset, uint[] data)
+    public override unsafe void Update<T>(ulong offset, T[] data)
     {
         void* dataPtr;
         _vk.MapMemory(_logicalDevice.VkLogicalDevice, _vkBufferMemory, offset, Size, 0, &dataPtr);
-        data.AsSpan().CopyTo(new Span<uint>(dataPtr, data.Length));
+        data.AsSpan().CopyTo(new Span<T>(dataPtr, data.Length));
+        _vk.UnmapMemory(_logicalDevice.VkLogicalDevice, _vkBufferMemory);
+    }
+    
+    public override unsafe void Update<T>(ulong offset, T data)
+    {
+        void* dataPtr;
+        _vk.MapMemory(_logicalDevice.VkLogicalDevice, _vkBufferMemory, offset, Size, 0, &dataPtr);
+        new Span<T>(dataPtr, 1).Fill(data);
         _vk.UnmapMemory(_logicalDevice.VkLogicalDevice, _vkBufferMemory);
     }
 
@@ -82,6 +90,8 @@ public class Buffer: GHAL.Buffer
           _ => throw new ArgumentOutOfRangeException(nameof(usage), usage, null)
         };
     }
+
+    
 
     public override unsafe void Dispose()
     {

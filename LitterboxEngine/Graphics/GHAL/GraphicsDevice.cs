@@ -21,6 +21,7 @@ public abstract class GraphicsDevice: IDisposable
     public abstract ShaderProgram CreateShaderProgram(params ShaderDescription[] descriptions);
     public abstract Pipeline CreatePipeline(PipelineDescription description);
     public abstract ResourceLayout CreateResourceLayout(ResourceLayoutDescription description);
+    public abstract ResourceSet CreateResourceSet(ResourceSetDescription description);
     public abstract CommandList CreateCommandList();
     public abstract void SubmitCommands();
     public abstract void SwapBuffers();

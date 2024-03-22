@@ -61,6 +61,14 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
         return new DescriptorSetLayout(_vk, _logicalDevice, description);
     }
 
+    public override ResourceSet CreateResourceSet(ResourceSetDescription description)
+    {
+        
+        var layout = (description.Layout as DescriptorSetLayout)!;
+        var buffer = (description.Buffer as Buffer)!;
+        return new DescriptorSet(_vk, _logicalDevice, _descriptorPool, buffer, layout);
+    }
+
     public override CommandList CreateCommandList()
     {
         return new CommandList(_vk, _swapChain);
