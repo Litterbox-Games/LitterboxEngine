@@ -2,7 +2,7 @@
 
 namespace LitterboxEngine;
 
-// TODO: Move to Graphics folder and clean up
+// TODO: Handle resizing and propagate to swapchain/framebuffers
 
 public unsafe class Window : IDisposable
 {
@@ -11,8 +11,8 @@ public unsafe class Window : IDisposable
     public readonly string Title;
     public readonly MouseInput MouseInput;
 
-    public uint Width { get; private set; }
-    public uint Height { get; private set; }
+    public int Width { get; private set; }
+    public int Height { get; private set; }
     public bool IsResized { get; private set; }
 
     public Window(string title, GlfwCallbacks.KeyCallback? keyCallback = null)
@@ -31,12 +31,15 @@ public unsafe class Window : IDisposable
         Glfw.WindowHint(WindowHintBool.Maximized, false);
         
         var videoMode = Glfw.GetVideoMode(Glfw.GetPrimaryMonitor());
-        WindowHandle = Glfw.CreateWindow(videoMode->Width / 2, videoMode->Height / 2, title, null, null);
+
+        Width = videoMode->Width / 2;
+        Height = videoMode->Height / 2;
+        WindowHandle = Glfw.CreateWindow(Width, Height, title, null, null);
 
         if (WindowHandle == null)
             throw new Exception("Failed to create a GLFW window");
 
-        Glfw.SetFramebufferSizeCallback(WindowHandle, (_, w, h) => Resize((uint)w, (uint)h));
+        Glfw.SetFramebufferSizeCallback(WindowHandle, (_, w, h) => Resize(w, h));
 
         Glfw.SetKeyCallback(WindowHandle, (window, key, code, action, mods) =>
         {
@@ -49,7 +52,7 @@ public unsafe class Window : IDisposable
         MouseInput = new MouseInput(this);
     }
 
-    public void Resize(uint width, uint height)
+    public void Resize(int width, int height)
     {
         Width = width;
         Height = height;

@@ -6,16 +6,20 @@ public class Buffer: GHAL.Buffer
 {
     private readonly Vk _vk;
     private readonly LogicalDevice _logicalDevice;
-
+    private readonly CommandPool _commandPool;
+    private readonly Queue _queue;
+    
     public readonly uint Size;
     
     public readonly Silk.NET.Vulkan.Buffer VkBuffer;
     private readonly DeviceMemory _vkBufferMemory;
 
-    public unsafe Buffer(Vk vk, LogicalDevice logicalDevice, BufferDescription description, MemoryPropertyFlags properties)
+    public unsafe Buffer(Vk vk, LogicalDevice logicalDevice, BufferDescription description, MemoryPropertyFlags properties, CommandPool commandPool, Queue queue)
     {
         _vk = vk;
         _logicalDevice = logicalDevice;
+        _commandPool = commandPool;
+        _queue = queue;
         Size = description.Size;
         
         BufferCreateInfo bufferInfo = new()
@@ -50,18 +54,57 @@ public class Buffer: GHAL.Buffer
 
     public override unsafe void Update<T>(ulong offset, T[] data)
     {
+        var stagingBufferSize = (uint)(Size - offset);
+        var stagingBufferDescription = new BufferDescription(stagingBufferSize, BufferUsage.Transfer);                     
+        var stagingBuffer = new Buffer(_vk, _logicalDevice, stagingBufferDescription, 
+            MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit, _commandPool, _queue);
+
         void* dataPtr;
-        _vk.MapMemory(_logicalDevice.VkLogicalDevice, _vkBufferMemory, offset, Size, 0, &dataPtr);
+        _vk.MapMemory(_logicalDevice.VkLogicalDevice, stagingBuffer._vkBufferMemory, 0, stagingBufferSize, 0, &dataPtr);
         data.AsSpan().CopyTo(new Span<T>(dataPtr, data.Length));
-        _vk.UnmapMemory(_logicalDevice.VkLogicalDevice, _vkBufferMemory);
+        _vk.UnmapMemory(_logicalDevice.VkLogicalDevice, stagingBuffer._vkBufferMemory);
+        
+        var commandBuffer = new CommandBuffer(_vk, _commandPool, true, true);
+        commandBuffer.BeginRecording();
+        BufferCopy copyRegion = new() { DstOffset = offset, Size = stagingBufferSize };
+        _vk.CmdCopyBuffer(commandBuffer.VkCommandBuffer, stagingBuffer.VkBuffer, VkBuffer, 1, copyRegion);
+        commandBuffer.EndRecording();
+        
+        var fence = new Fence(_vk, _logicalDevice, true);
+        fence.Reset();
+        _queue.Submit(commandBuffer, null, fence);
+        fence.Wait();
+        fence.Dispose();
+        commandBuffer.Dispose();
+        stagingBuffer.Dispose();
     }
     
     public override unsafe void Update<T>(ulong offset, T data)
     {
+        var stagingBufferSize = (uint)(Size - offset);
+        var stagingBufferDescription = new BufferDescription(stagingBufferSize, BufferUsage.Transfer);                     
+        var stagingBuffer = new Buffer(_vk, _logicalDevice, stagingBufferDescription, 
+            MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit, _commandPool, _queue);
+        
         void* dataPtr;
-        _vk.MapMemory(_logicalDevice.VkLogicalDevice, _vkBufferMemory, offset, Size, 0, &dataPtr);
+        _vk.MapMemory(_logicalDevice.VkLogicalDevice, stagingBuffer._vkBufferMemory, 0, stagingBufferSize, 0, &dataPtr);
         new Span<T>(dataPtr, 1).Fill(data);
-        _vk.UnmapMemory(_logicalDevice.VkLogicalDevice, _vkBufferMemory);
+        _vk.UnmapMemory(_logicalDevice.VkLogicalDevice, stagingBuffer._vkBufferMemory);
+
+
+        var commandBuffer = new CommandBuffer(_vk, _commandPool, true, true);
+        commandBuffer.BeginRecording();
+        BufferCopy copyRegion = new() { DstOffset = offset, Size = stagingBufferSize };
+        _vk.CmdCopyBuffer(commandBuffer.VkCommandBuffer, stagingBuffer.VkBuffer, VkBuffer, 1, copyRegion);
+        commandBuffer.EndRecording();
+
+        var fence = new Fence(_vk, _logicalDevice, true);
+        fence.Reset();
+        _queue.Submit(commandBuffer, null, fence);
+        fence.Wait();
+        fence.Dispose();
+        commandBuffer.Dispose();
+        stagingBuffer.Dispose();
     }
 
     // Utility function to convert memory properties into memory type
@@ -80,14 +123,16 @@ public class Buffer: GHAL.Buffer
         throw new Exception("Failed to find suitable memory type");
     }
 
-    private BufferUsageFlags BufferUsageFlagsFromBufferUsage(BufferUsage usage)
+    private static BufferUsageFlags BufferUsageFlagsFromBufferUsage(BufferUsage usage)
     {
         return usage switch
         {
-          BufferUsage.Vertex => BufferUsageFlags.VertexBufferBit,
-          BufferUsage.Index => BufferUsageFlags.IndexBufferBit,
-          BufferUsage.Uniform => BufferUsageFlags.UniformBufferBit,
-          _ => throw new ArgumentOutOfRangeException(nameof(usage), usage, null)
+            BufferUsage.Transfer => BufferUsageFlags.TransferSrcBit, 
+            // These usages are reserved for non-staging buffers, TransferDstBit is required to allow staging buffers to copy to buffers using them
+            BufferUsage.Vertex => BufferUsageFlags.VertexBufferBit | BufferUsageFlags.TransferDstBit,
+            BufferUsage.Index => BufferUsageFlags.IndexBufferBit | BufferUsageFlags.TransferDstBit,
+            BufferUsage.Uniform => BufferUsageFlags.UniformBufferBit | BufferUsageFlags.TransferDstBit,
+            _ => throw new ArgumentOutOfRangeException(nameof(usage), usage, null)
         };
     }
 

@@ -276,7 +276,7 @@ public class SwapChain: IDisposable
     }
 }
 
-public readonly struct SwapChainSyncSemaphores: IDisposable
+public class SwapChainSyncSemaphores: IDisposable
 {
     public readonly Semaphore ImageAcquisition;
     public readonly Semaphore RenderComplete;

@@ -43,7 +43,7 @@ public class Renderer: IDisposable
     private Matrix4x4 _projection;
     private Matrix4x4 _view;
     
-    public Color ClearColor = System.Drawing.Color.Magenta;
+    public Color ClearColor = System.Drawing.Color.Black;
     
     public unsafe Renderer(Window window, GraphicsDevice graphicsDevice)
     {
@@ -65,7 +65,7 @@ public class Renderer: IDisposable
         };
     
         var indices = new uint[MaxIndices];
-    
+
         for (var i = 0; i < MaxQuads; i++)
         {
             var startIndex = i * IndicesPerQuad;
@@ -122,7 +122,11 @@ public class Renderer: IDisposable
     public void SetViewSize(Vector2 size)
     {   
         // Change zFarPlane to -1 if we want depth range to be [0, 1] rather than [-1, 0]
-        _projection = Matrix4x4.CreateOrthographicOffCenter(0f, size.X, size.Y, 0f, 0f, 1f);
+        // _projection = Matrix4x4.CreateOrthographicOffCenter(0f, size.X, size.Y, 0f, 0f, 1f);
+       // _projection = Matrix4x4.CreateOrthographicOffCenter(0f, size.X, size.Y, 0f, 0f, 1f);
+       // _projection = Matrix4x4.CreateScale(1 / size.X, 1 / size.Y, 1); 
+       _projection = Matrix4x4.CreateTranslation(-size.X / 2f, -size.Y / 2f, 0) * Matrix4x4.CreateScale(1 / (size.X / 2f), 1 / (size.Y / 2f), 1);
+       // _projection = Matrix4x4.Identity;
     }
     
     public unsafe void Begin(Matrix4x4? view = null)
@@ -133,7 +137,7 @@ public class Renderer: IDisposable
         _commandList.Begin(ClearColor);
         _commandList.SetPipeline(_pipeline);
         
-        _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt32);
+        
         
         _commandList.UpdateBuffer(_transformBuffer, 0, _projection);
         _commandList.UpdateBuffer(_transformBuffer, (ulong)sizeof(Matrix4x4), _view);
@@ -143,6 +147,7 @@ public class Renderer: IDisposable
     private void Flush()
     {
         _commandList.UpdateBuffer(_vertexBuffer, 0, _vertices);
+        _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt32);
         _commandList.SetVertexBuffer(0, _vertexBuffer);
 
         _commandList.DrawIndexed(_indexCount);

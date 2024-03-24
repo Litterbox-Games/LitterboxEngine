@@ -16,11 +16,9 @@ public class Queue
         vk.GetDeviceQueue(logicalDevice.VkLogicalDevice, QueueFamilyIndex, queueIndex, out VkQueue);
     }
 
-    public unsafe void Submit(CommandBuffer commandBuffer, SwapChainSyncSemaphores syncSemaphores, Fence fence)
+    public unsafe void Submit(CommandBuffer commandBuffer, SwapChainSyncSemaphores? syncSemaphores, Fence fence)
     {
         var vkCommandBuffer = commandBuffer.VkCommandBuffer;
-        var signalSemaphores = stackalloc[] { syncSemaphores.RenderComplete.VkSemaphore };
-        var waitSemaphores = stackalloc[] { syncSemaphores.ImageAcquisition.VkSemaphore };
         var stageMask = stackalloc[] { PipelineStageFlags.ColorAttachmentOutputBit };
 
         SubmitInfo submitInfo = new()
@@ -28,12 +26,19 @@ public class Queue
             SType = StructureType.SubmitInfo,
             CommandBufferCount = 1,
             PCommandBuffers = &vkCommandBuffer,
-            SignalSemaphoreCount = 1,
-            PSignalSemaphores = signalSemaphores,
-            WaitSemaphoreCount = 1,
-            PWaitSemaphores = waitSemaphores,
             PWaitDstStageMask = stageMask 
         };
+        
+        if (syncSemaphores != null)
+        {
+            var signalSemaphores = stackalloc[] { syncSemaphores.RenderComplete.VkSemaphore };
+            var waitSemaphores = stackalloc[] { syncSemaphores.ImageAcquisition.VkSemaphore };
+            
+            submitInfo.SignalSemaphoreCount = 1;
+            submitInfo.PSignalSemaphores = signalSemaphores;
+            submitInfo.WaitSemaphoreCount = 1;
+            submitInfo.PWaitSemaphores = waitSemaphores;
+        }
         
         var result = _vk.QueueSubmit(VkQueue, 1, submitInfo, fence.VkFence);
         if (result != Result.Success)

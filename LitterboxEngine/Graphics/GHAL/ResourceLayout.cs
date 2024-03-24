@@ -1,6 +1,6 @@
 ﻿namespace LitterboxEngine.Graphics.GHAL;
 
-public class ResourceLayout
+public abstract class ResourceLayout
 {
     
 }

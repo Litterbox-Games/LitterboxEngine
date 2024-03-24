@@ -32,12 +32,12 @@ public class Program: IGame
 
     public void Draw(Renderer renderer)
     {
-        // TODO: should the engine called begin and end for you? We would need to change how clear color works most likely or the first frame will have the default color
+        // TODO: should the engine call begin and end for you? We would need to change how clear color works most likely or the first frame will have the default color
         renderer.Begin();
         
-        renderer.DrawRectangle(new RectangleF(0, 0, 100, 100), new Color(1, 0, 0, 0));
-        
-        renderer.DrawRectangle(new RectangleF(0.5f, 0.5f, 0.5f, 0.5f), new Color(1, 0, 0, 0));
+        renderer.DrawRectangle(new RectangleF(0, 0, 100f, 100f), new Color(255, 0, 255, 0));
+        renderer.DrawRectangle(new RectangleF(100, 0, 100f, 100f), new Color(255, 0, 0, 0));
+        renderer.DrawRectangle(new RectangleF(0, 100, 100f, 100f), new Color(0, 0, 255, 0));
         
         renderer.End();
     }

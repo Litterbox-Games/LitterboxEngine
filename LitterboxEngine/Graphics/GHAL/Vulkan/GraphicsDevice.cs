@@ -38,7 +38,7 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
             // TODO: Experiment with these flags to see if a staging buffer would be better?
             // TODO: as far as I can tell staging buffers arent available on every GPU, especially integrated GPUS because they only have one heap
             // TODO: This makes things simple, but might not be the most performant
-            MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit);
+            MemoryPropertyFlags.DeviceLocalBit, _commandPool, _graphicsQueue);
     }
 
     public override void UpdateBuffer(GHAL.Buffer buffer, uint offset, uint[] data)
