@@ -9,7 +9,7 @@ public class ImageView: IDisposable
     public readonly Silk.NET.Vulkan.ImageView VkImageView;
     private readonly LogicalDevice _logicalDevice;
     
-    public unsafe ImageView(Vk vk, LogicalDevice logicalDevice, Image vkImage, ImageViewData imageViewData)
+    public unsafe ImageView(Vk vk, LogicalDevice logicalDevice, Silk.NET.Vulkan.Image vkImage, ImageViewData imageViewData)
     {
         _vk = vk;
         _logicalDevice = logicalDevice;

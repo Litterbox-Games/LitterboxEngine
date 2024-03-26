@@ -225,7 +225,7 @@ public class SwapChain: IDisposable
         if (imageCount == 0)
             throw new Exception($"No surface images were found");
         
-        Span<Image> swapChainImages = new Image[imageCount];
+        Span<Silk.NET.Vulkan.Image> swapChainImages = new Silk.NET.Vulkan.Image[imageCount];
 
         result = khrSwapchain.GetSwapchainImages(logicalDevice.VkLogicalDevice, swapchainKhr, &imageCount, swapChainImages);
 
