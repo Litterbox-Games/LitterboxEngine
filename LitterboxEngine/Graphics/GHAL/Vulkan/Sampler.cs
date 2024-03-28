@@ -39,8 +39,9 @@ public class Sampler: GHAL.Sampler
             throw new Exception($"Failed to create texture sampler with error: {result.ToString()}");
     }
     
-    public override void Dispose()
+    public override unsafe void Dispose()
     {
-        throw new NotImplementedException();
+        _vk.DestroySampler(_logicalDevice.VkLogicalDevice, VkSampler, null);
+        GC.SuppressFinalize(this);
     }
 }

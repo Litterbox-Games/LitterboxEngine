@@ -1,7 +1,4 @@
-﻿using System.Drawing;
-using System.Numerics;
-
-namespace LitterboxEngine.Graphics.GHAL;
+﻿namespace LitterboxEngine.Graphics.GHAL;
 
 public abstract class CommandList
 {
@@ -16,7 +13,6 @@ public abstract class CommandList
     public abstract void DrawIndexed(uint indexCount);
 }
 
-// TODO: Add more formats
 public enum IndexFormat
 {
     UInt32

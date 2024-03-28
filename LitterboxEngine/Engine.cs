@@ -50,6 +50,7 @@ public class Engine: IDisposable
     {
         _game.Dispose();
         _renderer.Dispose();
+        ResourceManager.DisposeResources();
         _graphicsDevice.Dispose();
         _window.Dispose();
         GC.SuppressFinalize(this);

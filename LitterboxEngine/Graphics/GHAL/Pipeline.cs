@@ -49,7 +49,6 @@ public record VertexElementDescription(uint Location, VertexElementFormat Format
 
 public enum VertexElementFormat
 {
-    // TODO: Fill with values equivalent to Silk.NET.Vulkan.Format
     Float,
     Float2,
     Float3,

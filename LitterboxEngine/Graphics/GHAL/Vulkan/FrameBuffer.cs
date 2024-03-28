@@ -9,7 +9,7 @@ public class FrameBuffer: IDisposable
     private readonly Vk _vk;
     private readonly LogicalDevice _logicalDevice;
     
-    public unsafe FrameBuffer(Vk vk, LogicalDevice logicalDevice, uint width, uint height, ImageView imageView, SwapChainRenderPass renderPass)
+    public unsafe FrameBuffer(Vk vk, LogicalDevice logicalDevice, uint width, uint height, ImageView imageView, RenderPass renderPass)
     {
         _vk = vk;
         _logicalDevice = logicalDevice;

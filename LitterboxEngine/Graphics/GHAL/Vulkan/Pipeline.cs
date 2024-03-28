@@ -50,7 +50,6 @@ public class Pipeline: GHAL.Pipeline
             {
                 Binding = description.ShaderSet.VertexLayout.Binding,
                 Stride = description.ShaderSet.VertexLayout.Stride,
-                // TODO: This prevents us from being able to use instance rendering atm
                 InputRate = VertexInputRate.Vertex
             };
             
@@ -266,10 +265,11 @@ public class Pipeline: GHAL.Pipeline
     }
     #endregion
 
-    public override void Dispose()
+    public override unsafe void Dispose()
     {
-        throw new NotImplementedException();
-        _descriptorSetLayouts.ForEach(l => l.Dispose());
+        _descriptorSetLayouts.ForEach(l => l.Dispose());   
+        _vk.DestroyPipeline(_logicalDevice.VkLogicalDevice, VkPipeline, null);
+        _vk.DestroyPipelineLayout(_logicalDevice.VkLogicalDevice, VkPipelineLayout, null);
         GC.SuppressFinalize(this);
     }
 }

@@ -4,70 +4,61 @@ namespace LitterboxEngine.Graphics.GHAL.Vulkan;
 
 public class Texture : LitterboxEngine.Graphics.Resources.Texture
 {
-    private readonly Vk _vk;
-    private readonly LogicalDevice _logicalDevice;
-
     public readonly ImageView ImageView;
-    public readonly Image Image;
-
-    // TODO: Can we just pass in a size and span instead maybe?
+    private readonly Image _image;
 
     public  unsafe Texture(Vk vk, LogicalDevice logicalDevice, CommandPool commandPool, Queue queue, uint width, uint height,
         RgbaByte color) : base(width, height)
     {
-        _vk = vk;
-        _logicalDevice = logicalDevice;
-
         var sizeInBytes = (ulong)(width * height * sizeof(RgbaByte));
         var stagingBufferDescription = new BufferDescription(sizeInBytes, BufferUsage.Transfer);                     
-        using var stagingBuffer = new Buffer(_vk, _logicalDevice, stagingBufferDescription, 
+        using var stagingBuffer = new Buffer(vk, logicalDevice, stagingBufferDescription, 
             MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit, commandPool, queue);
 
         void* dataPtr;
-        _vk.MapMemory(_logicalDevice.VkLogicalDevice, stagingBuffer.VkBufferMemory, 0, sizeInBytes, 0, &dataPtr);
+        vk.MapMemory(logicalDevice.VkLogicalDevice, stagingBuffer.VkBufferMemory, 0, sizeInBytes, 0, &dataPtr);
         new Span<RgbaByte>(dataPtr, (int)(width * height)).Fill(color);
-        _vk.UnmapMemory(_logicalDevice.VkLogicalDevice, stagingBuffer.VkBufferMemory);
+        vk.UnmapMemory(logicalDevice.VkLogicalDevice, stagingBuffer.VkBufferMemory);
         
-        Image = new Image(_vk, _logicalDevice, width, height, Format.R8G8B8A8Srgb,
+        _image = new Image(vk, logicalDevice, width, height, Format.R8G8B8A8Srgb,
             ImageUsageFlags.TransferDstBit | ImageUsageFlags.SampledBit);
         
-        Image.TransitionLayout(ImageLayout.Undefined, ImageLayout.TransferDstOptimal, commandPool, queue);
-        stagingBuffer.CopyTo(Image);
-        Image.TransitionLayout(ImageLayout.TransferDstOptimal, ImageLayout.ShaderReadOnlyOptimal, commandPool, queue);
+        _image.TransitionLayout(ImageLayout.Undefined, ImageLayout.TransferDstOptimal, commandPool, queue);
+        stagingBuffer.CopyTo(_image);
+        _image.TransitionLayout(ImageLayout.TransferDstOptimal, ImageLayout.ShaderReadOnlyOptimal, commandPool, queue);
 
-        ImageView = new ImageView(_vk, _logicalDevice, Image.VkImage,
+        ImageView = new ImageView(vk, logicalDevice, _image.VkImage,
             new ImageView.ImageViewData(Format.R8G8B8A8Srgb, ImageAspectFlags.ColorBit));
     }
     
     public unsafe Texture(Vk vk, LogicalDevice logicalDevice, CommandPool commandPool, Queue queue, uint width, uint height, Span<byte> data) : base(width, height)
     {
-        _vk = vk;
-        _logicalDevice = logicalDevice;
-
         var sizeInBytes = (ulong)data.Length;
         
         var stagingBufferDescription = new BufferDescription(sizeInBytes, BufferUsage.Transfer);                     
-        using var stagingBuffer = new Buffer(_vk, _logicalDevice, stagingBufferDescription, 
+        using var stagingBuffer = new Buffer(vk, logicalDevice, stagingBufferDescription, 
             MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit, commandPool, queue);
 
         void* dataPtr;
-        _vk.MapMemory(_logicalDevice.VkLogicalDevice, stagingBuffer.VkBufferMemory, 0, sizeInBytes, 0, &dataPtr);
+        vk.MapMemory(logicalDevice.VkLogicalDevice, stagingBuffer.VkBufferMemory, 0, sizeInBytes, 0, &dataPtr);
         data.CopyTo(new Span<byte>(dataPtr, (int)sizeInBytes));
-        _vk.UnmapMemory(_logicalDevice.VkLogicalDevice, stagingBuffer.VkBufferMemory);
+        vk.UnmapMemory(logicalDevice.VkLogicalDevice, stagingBuffer.VkBufferMemory);
         
-        Image = new Image(_vk, _logicalDevice, width, height, Format.R8G8B8A8Srgb,
+        _image = new Image(vk, logicalDevice, width, height, Format.R8G8B8A8Srgb,
             ImageUsageFlags.TransferDstBit | ImageUsageFlags.SampledBit);
         
-        Image.TransitionLayout(ImageLayout.Undefined, ImageLayout.TransferDstOptimal, commandPool, queue);
-        stagingBuffer.CopyTo(Image);
-        Image.TransitionLayout(ImageLayout.TransferDstOptimal, ImageLayout.ShaderReadOnlyOptimal, commandPool, queue);
+        _image.TransitionLayout(ImageLayout.Undefined, ImageLayout.TransferDstOptimal, commandPool, queue);
+        stagingBuffer.CopyTo(_image);
+        _image.TransitionLayout(ImageLayout.TransferDstOptimal, ImageLayout.ShaderReadOnlyOptimal, commandPool, queue);
 
-        ImageView = new ImageView(_vk, _logicalDevice, Image.VkImage,
+        ImageView = new ImageView(vk, logicalDevice, _image.VkImage,
             new ImageView.ImageViewData(Format.R8G8B8A8Srgb, ImageAspectFlags.ColorBit));
     }
 
     public override void Dispose()
     {
-        throw new NotImplementedException();
+        ImageView.Dispose();
+        _image.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

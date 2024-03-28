@@ -8,7 +8,7 @@ public class Image: IDisposable
     private readonly LogicalDevice _logicalDevice;
 
     public readonly Silk.NET.Vulkan.Image VkImage;
-    public readonly DeviceMemory VkMemory;
+    private readonly DeviceMemory _vkMemory;
 
     public readonly uint Width;
     public readonly uint Height;
@@ -56,12 +56,12 @@ public class Image: IDisposable
             MemoryTypeIndex = MemoryTypeFromProperties(memRequirements.MemoryTypeBits, 0),
         };
 
-        result = _vk.AllocateMemory(_logicalDevice.VkLogicalDevice, allocInfo, null, out VkMemory);
+        result = _vk.AllocateMemory(_logicalDevice.VkLogicalDevice, allocInfo, null, out _vkMemory);
 
         if (result != Result.Success)
             throw new Exception($"Failed to allocate image memory with error: {result.ToString()}");
 
-        _vk.BindImageMemory(_logicalDevice.VkLogicalDevice, VkImage, VkMemory, 0);
+        _vk.BindImageMemory(_logicalDevice.VkLogicalDevice, VkImage, _vkMemory, 0);
     }
 
     public unsafe void TransitionLayout(ImageLayout oldLayout, ImageLayout newLayout, CommandPool commandPool, Queue queue)
@@ -135,8 +135,10 @@ public class Image: IDisposable
         throw new Exception("Failed to find suitable memory type");
     }
 
-    public void Dispose()
+    public unsafe void Dispose()
     {
-        throw new NotImplementedException();
+        _vk.DestroyImage(_logicalDevice.VkLogicalDevice, VkImage, null);
+        _vk.FreeMemory(_logicalDevice.VkLogicalDevice, _vkMemory, null);
+        GC.SuppressFinalize(this);
     }
 }

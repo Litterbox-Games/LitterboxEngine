@@ -2,16 +2,14 @@
 
 namespace LitterboxEngine.Graphics.GHAL.Vulkan;
 
-// TODO: See about renaming this to just RenderPass
-
-public class SwapChainRenderPass: IDisposable
+public class RenderPass: IDisposable
 {
-    public readonly RenderPass VkRenderPass;
+    public readonly Silk.NET.Vulkan.RenderPass VkRenderPass;
     
     private readonly Vk _vk;
     private readonly LogicalDevice _logicalDevice;
     
-    public unsafe SwapChainRenderPass(Vk vk, LogicalDevice logicalDevice, Format format)
+    public unsafe RenderPass(Vk vk, LogicalDevice logicalDevice, Format format)
     {
         _vk = vk;
         _logicalDevice = logicalDevice;

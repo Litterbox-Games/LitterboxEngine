@@ -6,7 +6,6 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
 {
     private readonly Vk _vk;
     private readonly Instance _instance;
-    private readonly PhysicalDevice _physicalDevice;
     private readonly LogicalDevice _logicalDevice;
     private readonly Surface _surface;
     private readonly Queue _graphicsQueue;
@@ -23,8 +22,8 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
         _vk = Vk.GetApi();
         _window = window;
         _instance = new Instance(_vk, _window.Title, true);
-        _physicalDevice = PhysicalDevice.SelectPreferredPhysicalDevice(_vk, _instance);
-        _logicalDevice = new LogicalDevice(_vk, _physicalDevice);
+        var physicalDevice = PhysicalDevice.SelectPreferredPhysicalDevice(_vk, _instance);
+        _logicalDevice = new LogicalDevice(_vk, physicalDevice);
         _surface = new Surface(_vk, _instance, _window);
         _graphicsQueue = new GraphicsQueue(_vk, _logicalDevice, 0);
         _presentQueue = new PresentQueue(_vk, _logicalDevice, _surface, 0);
@@ -120,14 +119,16 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
         _presentQueue.WaitIdle();
         _graphicsQueue.WaitIdle();
         _logicalDevice.WaitIdle();
+     
+        _window.OnResize -= WindowResized;
         
         _pipelineCache.Dispose();
+        _descriptorPool.Dispose();
         SwapChain.Dispose();
         _commandPool.Dispose();
         _surface.Dispose();
         _logicalDevice.Dispose();
         _instance.Dispose();
         _vk.Dispose();
-        // GC.SuppressFinalize(this);
     }
 }

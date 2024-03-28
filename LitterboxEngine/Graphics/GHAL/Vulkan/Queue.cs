@@ -6,7 +6,7 @@ public class Queue
 {
     private readonly Vk _vk;
     public readonly Silk.NET.Vulkan.Queue VkQueue;
-    public readonly uint QueueFamilyIndex;     //TODO: change this to uint because better
+    public readonly uint QueueFamilyIndex;
     
     protected Queue(Vk vk, LogicalDevice logicalDevice, uint queueFamilyIndex, uint queueIndex)
     {

@@ -229,6 +229,9 @@ public class Renderer: IDisposable
 
     public void Dispose()
     {
+        _whiteTexture.Dispose();
+        _sampler.Dispose();
+        _transformBuffer.Dispose();
         _vertexBuffer.Dispose();
         _indexBuffer.Dispose();
         _pipeline.Dispose();

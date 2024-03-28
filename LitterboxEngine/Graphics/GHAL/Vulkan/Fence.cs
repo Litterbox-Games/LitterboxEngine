@@ -4,8 +4,7 @@ namespace LitterboxEngine.Graphics.GHAL.Vulkan;
 
 public class Fence: IDisposable
 {
-    public Silk.NET.Vulkan.Fence VkFence; // TODO: should never really have to interact with this directly
-    
+    public Silk.NET.Vulkan.Fence VkFence;
     private readonly Vk _vk;
     private readonly LogicalDevice _logicalDevice;
     

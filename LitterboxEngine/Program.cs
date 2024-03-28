@@ -37,7 +37,6 @@ public class Program: IGame
 
     public void Draw(Renderer renderer)
     {
-        // TODO: should the engine call begin and end for you? We would need to change how clear color works most likely or the first frame will have the default color
         renderer.Begin();
         
         renderer.DrawRectangle(new RectangleF(0, 0, 100f, 100f), Color.Yellow);

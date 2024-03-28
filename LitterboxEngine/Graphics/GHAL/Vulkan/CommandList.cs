@@ -59,7 +59,6 @@ public class CommandList: GHAL.CommandList
 
         _vk.CmdBindPipeline(SwapChain.CurrentCommandBuffer.VkCommandBuffer, PipelineBindPoint.Graphics, vulkanPipeline.VkPipeline);
         
-        // TODO: Revisit this after scissor rect is handled and resizing is handled properly
         Viewport viewport = new()
         {
             X = 0,
@@ -96,17 +95,11 @@ public class CommandList: GHAL.CommandList
     public override void UpdateBuffer<T>(GHAL.Buffer buffer, ulong offset, T data)
     {
         buffer.Update(offset, data);
-        // var vkBuffer = (buffer as Buffer)!.VkBuffer;
-        // _vk.CmdUpdateBuffer(_swapChain.CurrentCommandBuffer.VkCommandBuffer, vkBuffer, offset, (ulong)Unsafe.SizeOf<T>() ,ref data);
     }
 
     public override void UpdateBuffer<T>(GHAL.Buffer buffer, ulong offset, T[] data)
     {
         buffer.Update(offset, data);
-        // TODO: Revisit the below approach, problem is it cannot be done inside an active render pass
-        // var vkBuffer = (buffer as Buffer)!.VkBuffer;
-        // var span = new Span<T>(data);
-        // _vk.CmdUpdateBuffer(_swapChain.CurrentCommandBuffer.VkCommandBuffer, vkBuffer, offset, span);
     }
 
     private static IndexType IndexTypeFromIndexFormat(IndexFormat format)

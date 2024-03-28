@@ -12,7 +12,7 @@ public class SwapChain: IDisposable
     public readonly LogicalDevice LogicalDevice;
     
     private readonly SwapChainSyncSemaphores[] _syncSemaphores;
-    public readonly SwapChainRenderPass RenderPass;
+    public readonly RenderPass RenderPass;
     private readonly FrameBuffer[] _frameBuffers;
     private readonly Fence[] _fences;
     private readonly CommandBuffer[] _commandBuffers;
@@ -80,7 +80,7 @@ public class SwapChain: IDisposable
         _imageViews = CreateImageViews(vk, LogicalDevice, _khrSwapChain, VkSwapChain, surfaceFormat.Format);
         _syncSemaphores = _imageViews.Select(_ => new SwapChainSyncSemaphores(vk, LogicalDevice)).ToArray();
         
-        RenderPass = new SwapChainRenderPass(vk, LogicalDevice, surfaceFormat.Format);
+        RenderPass = new RenderPass(vk, LogicalDevice, surfaceFormat.Format);
 
         // Create a frame buffer for each swap chain image
         _frameBuffers = _imageViews
@@ -291,5 +291,6 @@ public class SwapChainSyncSemaphores: IDisposable
     {
         ImageAcquisition.Dispose();
         RenderComplete.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
