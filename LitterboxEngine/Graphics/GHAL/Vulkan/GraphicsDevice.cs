@@ -38,25 +38,11 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
 
     private void WindowResized(int width, int height)
     {
-        // device.waitIdle();
-        // graphQueue.waitIdle();
-        // 
-        // swapChain.cleanup();
-        // 
-        // swapChain = new SwapChain(device, surface, window, engProps.getRequestedImages(), engProps.isvSync(),
-        //     presentQueue, new Queue[]{graphQueue});
-        // fwdRenderActivity.resize(swapChain);
-        
-        
         _logicalDevice.WaitIdle();
         _graphicsQueue.WaitIdle();
-        
         SwapChain.Dispose();
-        
         SwapChain = new SwapChain(_vk, _instance, _logicalDevice, _surface, _commandPool, _window, 3, 
             false, _presentQueue, new []{_graphicsQueue});
-        
-        //TODO: IS THIS NEEDED?? _swapChain.AcquireNextImage();
     }
     
     public override GHAL.Buffer CreateBuffer(BufferDescription description)
