@@ -26,8 +26,8 @@ public class Renderer: IDisposable
     private const int MaxIndices = MaxQuads * IndicesPerQuad;
     
     private uint _quadCount;
-    private uint _vertexCount => _quadCount * VerticesPerQuad;
-    private uint _indexCount => _quadCount * IndicesPerQuad;
+    private uint VertexCount => _quadCount * VerticesPerQuad;
+    private uint IndexCount => _quadCount * IndicesPerQuad;
     
     private int _textureCount = 1;
 
@@ -141,12 +141,8 @@ public class Renderer: IDisposable
 
     public void SetViewSize(Vector2 size)
     {   
-        // Change zFarPlane to -1 if we want depth range to be [0, 1] rather than [-1, 0]
-        // _projection = Matrix4x4.CreateOrthographicOffCenter(0f, size.X, size.Y, 0f, 0f, 1f);
-       // _projection = Matrix4x4.CreateOrthographicOffCenter(0f, size.X, size.Y, 0f, 0f, 1f);
-       // _projection = Matrix4x4.CreateScale(1 / size.X, 1 / size.Y, 1); 
-       _projection = Matrix4x4.CreateTranslation(-size.X / 2f, -size.Y / 2f, 0) * Matrix4x4.CreateScale(1 / (size.X / 2f), 1 / (size.Y / 2f), 1);
-       // _projection = Matrix4x4.Identity;
+       _projection = Matrix4x4.CreateTranslation(-size.X / 2f, -size.Y / 2f, 0) 
+                     * Matrix4x4.CreateScale(1 / (size.X / 2f), 1 / (size.Y / 2f), 1);
     }
     
     public unsafe void Begin(Matrix4x4? view = null)
@@ -172,7 +168,7 @@ public class Renderer: IDisposable
         _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt32);
         _commandList.SetVertexBuffer(0, _vertexBuffer);
 
-        _commandList.DrawIndexed(_indexCount);
+        _commandList.DrawIndexed(IndexCount);
 
         _quadCount = 0;
         _textureCount = 1;
@@ -185,18 +181,6 @@ public class Renderer: IDisposable
         _commandList.End();
         _graphicsDevice.SubmitCommands();
     }
-    
-    /*
-    public void DrawRectangle(RectangleF destination, Color color, float depth = 0.0f /* depth should be in the range [-1, 0] )
-    {
-        AddQuad(
-            new Vertex { Position = new Vector3(destination.Left, destination.Top, depth), Color = color, TexCoords = new Vector2(0, 0), TexIndex = 0},
-            new Vertex { Position = new Vector3(destination.Right, destination.Top, depth), Color = color, TexCoords = new Vector2(1, 0), TexIndex = 0 },
-            new Vertex { Position = new Vector3(destination.Left, destination.Bottom, depth), Color = color, TexCoords = new Vector2(0, 1), TexIndex = 0 },
-            new Vertex { Position = new Vector3(destination.Right, destination.Bottom, depth), Color = color, TexCoords = new Vector2(1, 1), TexIndex = 0}
-        );
-    }
-    */
 
     public void DrawRectangle(RectangleF destination, Color color, float depth = 0.0f)
     {
@@ -233,12 +217,12 @@ public class Renderer: IDisposable
     private void AddQuad(Vertex topLeft, Vertex topRight, Vertex bottomLeft, Vertex bottomRight)
     {
         // Flush the vertex buffer if its full
-        if (_vertexCount >= MaxVertices) Flush();
+        if (VertexCount >= MaxVertices) Flush();
         
-        _vertices[_vertexCount] = topLeft;
-        _vertices[_vertexCount + 1] = topRight;
-        _vertices[_vertexCount + 2] = bottomLeft;
-        _vertices[_vertexCount + 3] = bottomRight;
+        _vertices[VertexCount] = topLeft;
+        _vertices[VertexCount + 1] = topRight;
+        _vertices[VertexCount + 2] = bottomLeft;
+        _vertices[VertexCount + 3] = bottomRight;
 
         _quadCount++;
     }
@@ -256,10 +240,10 @@ public class Renderer: IDisposable
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct Vertex
 {
-    public required Vector3 Position { get; init; }
-    public required RgbaFloat Color { get; init; }
-    public required Vector2 TexCoords { get; init; }
-    public required int TexIndex { get; init; }
+    public required Vector3 Position;
+    public required RgbaFloat Color;
+    public required Vector2 TexCoords;
+    public required int TexIndex;
 
     public static readonly VertexLayoutDescription VertexLayout = new (
         new VertexElementDescription(0, VertexElementFormat.Float3),
