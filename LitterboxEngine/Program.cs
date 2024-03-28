@@ -9,6 +9,7 @@ namespace LitterboxEngine;
 public class Program: IGame
 {
     private Texture _logo;
+    private Texture _objects;
     
     public static void Main()
     {
@@ -20,6 +21,7 @@ public class Program: IGame
     public void Init(Window window)
     {
         _logo = ResourceManager.Get<Texture>("Resources/Textures/litterbox_logo.png");
+        _objects = ResourceManager.Get<Texture>("Resources/Textures/Objects.png");
     }
 
     public void Input(Window window)
@@ -43,6 +45,7 @@ public class Program: IGame
         renderer.DrawRectangle(new RectangleF(0, 100, 100f, 100f), Color.Blue);
         
         renderer.DrawTexture(_logo, new RectangleF(100, 100, 100f, 100f), Color.Purple);
+        renderer.DrawTexture(_objects, new Rectangle(0, 0, 16, 16), new RectangleF(100, 100, 100f, 100f), Color.White);
         
         renderer.End();
     }

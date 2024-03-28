@@ -19,8 +19,8 @@ public class Sampler: GHAL.Sampler
         SamplerCreateInfo samplerInfo = new()
         {
             SType = StructureType.SamplerCreateInfo,
-            MagFilter = Filter.Linear,
-            MinFilter = Filter.Linear,
+            MagFilter = Filter.Nearest,
+            MinFilter = Filter.Nearest,
             AddressModeU = SamplerAddressMode.Repeat,
             AddressModeV = SamplerAddressMode.Repeat,
             AddressModeW = SamplerAddressMode.Repeat,
@@ -30,7 +30,7 @@ public class Sampler: GHAL.Sampler
             UnnormalizedCoordinates = false,
             CompareEnable = false,
             CompareOp = CompareOp.Always,
-            MipmapMode = SamplerMipmapMode.Linear
+            MipmapMode = SamplerMipmapMode.Nearest
         };
 
         var result = _vk.CreateSampler(_logicalDevice.VkLogicalDevice, samplerInfo, null, out VkSampler);
