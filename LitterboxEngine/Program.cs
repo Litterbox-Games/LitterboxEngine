@@ -45,7 +45,7 @@ public class Program: IGame
         renderer.DrawRectangle(new RectangleF(0, 100, 100f, 100f), Color.Blue);
         
         renderer.DrawTexture(_logo, new RectangleF(100, 100, 100f, 100f), Color.Purple);
-        renderer.DrawTexture(_objects, new Rectangle(0, 0, 16, 16), new RectangleF(100, 100, 100f, 100f), Color.White);
+        renderer.DrawTexture(_objects, new Rectangle(16, 16, 16, 16), new RectangleF(200, 0, 100f, 100f), Color.White);
         
         renderer.End();
     }

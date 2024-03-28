@@ -11,27 +11,54 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
     private readonly Surface _surface;
     private readonly Queue _graphicsQueue;
     private readonly Queue _presentQueue;
-    private readonly SwapChain _swapChain;
     private readonly CommandPool _commandPool;
     private readonly PipelineCache _pipelineCache;
     private readonly DescriptorPool _descriptorPool;
+    private readonly Window _window;
+    
+    public SwapChain SwapChain;
     
     public GraphicsDevice(Window window, GraphicsDeviceDescription description)
     {
         _vk = Vk.GetApi();
-        _instance = new Instance(_vk, window.Title, true);
+        _window = window;
+        _instance = new Instance(_vk, _window.Title, true);
         _physicalDevice = PhysicalDevice.SelectPreferredPhysicalDevice(_vk, _instance);
         _logicalDevice = new LogicalDevice(_vk, _physicalDevice);
-        _surface = new Surface(_vk, _instance, window);
+        _surface = new Surface(_vk, _instance, _window);
         _graphicsQueue = new GraphicsQueue(_vk, _logicalDevice, 0);
         _presentQueue = new PresentQueue(_vk, _logicalDevice, _surface, 0);
         _commandPool = new CommandPool(_vk, _logicalDevice, _graphicsQueue.QueueFamilyIndex);
-        _swapChain = new SwapChain(_vk, _instance, _logicalDevice, _surface, _commandPool, window, 3, 
+        SwapChain = new SwapChain(_vk, _instance, _logicalDevice, _surface, _commandPool, _window, 3, 
             false, _presentQueue, new []{_graphicsQueue});
-        _descriptorPool = new DescriptorPool(_vk, _logicalDevice, _swapChain.ImageCount);
+        _descriptorPool = new DescriptorPool(_vk, _logicalDevice, SwapChain.ImageCount);
         _pipelineCache = new PipelineCache(_vk, _logicalDevice);
+        _window.OnResize += WindowResized;
     }
 
+    private void WindowResized(int width, int height)
+    {
+        // device.waitIdle();
+        // graphQueue.waitIdle();
+        // 
+        // swapChain.cleanup();
+        // 
+        // swapChain = new SwapChain(device, surface, window, engProps.getRequestedImages(), engProps.isvSync(),
+        //     presentQueue, new Queue[]{graphQueue});
+        // fwdRenderActivity.resize(swapChain);
+        
+        
+        _logicalDevice.WaitIdle();
+        _graphicsQueue.WaitIdle();
+        
+        SwapChain.Dispose();
+        
+        SwapChain = new SwapChain(_vk, _instance, _logicalDevice, _surface, _commandPool, _window, 3, 
+            false, _presentQueue, new []{_graphicsQueue});
+        
+        //TODO: IS THIS NEEDED?? _swapChain.AcquireNextImage();
+    }
+    
     public override GHAL.Buffer CreateBuffer(BufferDescription description)
     {
         return new Buffer(_vk, _logicalDevice, description, MemoryPropertyFlags.DeviceLocalBit, _commandPool, _graphicsQueue);
@@ -59,7 +86,7 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
 
     public override Pipeline CreatePipeline(PipelineDescription description)
     {
-        return new Pipeline(_vk, _swapChain, _pipelineCache, description);
+        return new Pipeline(_vk, SwapChain, _pipelineCache, description);
     }
 
     public override ResourceLayout CreateResourceLayout(ResourceLayoutDescription description)
@@ -80,19 +107,21 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
 
     public override CommandList CreateCommandList()
     {
-        return new CommandList(_vk, _swapChain);
+        return new CommandList(_vk, this);
     }
 
     public override void SubmitCommands()
     {
-        _swapChain.Submit(_graphicsQueue);
-        _swapChain.PresentImage(_presentQueue);
+        SwapChain.Submit(_graphicsQueue);
+        if(SwapChain.PresentImage(_presentQueue)) 
+            WindowResized(_window.Width, _window.Height);
     }
 
     public override void SwapBuffers()
     {
-        _swapChain.WaitForFence();
-        _swapChain.AcquireNextImage();
+        SwapChain.WaitForFence();
+        if(SwapChain.AcquireNextImage()) 
+            WindowResized(_window.Width, _window.Height);
     }
 
     public override void WaitIdle()
@@ -107,7 +136,7 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
         _logicalDevice.WaitIdle();
         
         _pipelineCache.Dispose();
-        _swapChain.Dispose();
+        SwapChain.Dispose();
         _commandPool.Dispose();
         _surface.Dispose();
         _logicalDevice.Dispose();

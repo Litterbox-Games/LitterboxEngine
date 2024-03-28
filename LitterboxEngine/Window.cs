@@ -14,6 +14,7 @@ public unsafe class Window : IDisposable
     public int Width { get; private set; }
     public int Height { get; private set; }
     public bool IsResized { get; private set; }
+    public event Action<int, int> OnResize; 
 
     public Window(string title, GlfwCallbacks.KeyCallback? keyCallback = null)
     {
@@ -56,7 +57,8 @@ public unsafe class Window : IDisposable
     {
         Width = width;
         Height = height;
-        IsResized = true;
+        // IsResized = true;
+        OnResize.Invoke(width, height);
     }
 
     public bool IsKeyPressed(Keys key)
@@ -64,10 +66,12 @@ public unsafe class Window : IDisposable
         return Glfw.GetKey(WindowHandle, key) == (int)InputAction.Press;
     }
     
+    /*
     public void ResetResized()
     {
         IsResized = false;
     }
+    */
 
     public void WaitEvents()
     {
