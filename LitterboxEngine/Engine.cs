@@ -1,5 +1,6 @@
 ﻿using LitterboxEngine.Graphics;
 using LitterboxEngine.Graphics.GHAL;
+using LitterboxEngine.Resource;
 
 namespace LitterboxEngine;
 
@@ -16,6 +17,7 @@ public class Engine: IDisposable
         _game = game;
         _window = new Window(title);
         _graphicsDevice = GraphicsDevice.Create(_window, new GraphicsDeviceDescription(), GraphicsBackend.Vulkan);
+        ResourceManager.SetGraphicsDevice(_graphicsDevice);
         _renderer = new Renderer(_window, _graphicsDevice);
         _game.Init(_window);
     }

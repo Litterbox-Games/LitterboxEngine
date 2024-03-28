@@ -1,4 +1,6 @@
-﻿namespace LitterboxEngine.Graphics.GHAL;
+﻿using LitterboxEngine.Graphics.Resources;
+
+namespace LitterboxEngine.Graphics.GHAL;
 
 public abstract class GraphicsDevice: IDisposable
 {
@@ -19,9 +21,12 @@ public abstract class GraphicsDevice: IDisposable
     public abstract Buffer CreateBuffer(BufferDescription description);
     public abstract void UpdateBuffer(Buffer buffer, uint offset, uint[] data);
     public abstract ShaderProgram CreateShaderProgram(params ShaderDescription[] descriptions);
+    public abstract Texture CreateTexture(uint width, uint height, Span<byte> data);
+    public abstract Texture CreateTexture(uint width, uint height, RgbaByte color);
     public abstract Pipeline CreatePipeline(PipelineDescription description);
     public abstract ResourceLayout CreateResourceLayout(ResourceLayoutDescription description);
-    public abstract ResourceSet CreateResourceSet(ResourceSetDescription description);
+    public abstract ResourceSet CreateResourceSet(ResourceLayout layout);
+    public abstract Sampler CreateSampler();
     public abstract CommandList CreateCommandList();
     public abstract void SubmitCommands();
     public abstract void SwapBuffers();

@@ -23,7 +23,12 @@ public class DescriptorPool : IDisposable
             },
             new() // Sampler Pool Size
             {
-                Type = DescriptorType.CombinedImageSampler,
+                Type = DescriptorType.Sampler,
+                DescriptorCount = descriptorCount,
+            },
+            new() // Sampler Pool Size
+            {
+                Type = DescriptorType.SampledImage,
                 DescriptorCount = descriptorCount,
             }
         };

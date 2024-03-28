@@ -1,4 +1,6 @@
-﻿namespace LitterboxEngine.Resource;
+﻿using LitterboxEngine.Graphics.GHAL;
+
+namespace LitterboxEngine.Resource;
 
 /// <summary>
 ///     A contract representing a loadable resource.
@@ -10,7 +12,7 @@ public interface IResource
     /// </summary>
     /// <param name="path">The path used to locate the resource.</param>
     /// <returns>An instance of the resource.</returns>
-    public static virtual IResource LoadFromFile(string path)
+    public static virtual IResource LoadFromFile(string path, GraphicsDevice? graphicsDevice)
     {
         throw new NotImplementedException();
     }

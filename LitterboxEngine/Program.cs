@@ -1,12 +1,15 @@
 ﻿using System.Drawing;
 using LitterboxEngine.Graphics;
+using LitterboxEngine.Graphics.Resources;
+using LitterboxEngine.Resource;
 using Silk.NET.GLFW;
-using Color = LitterboxEngine.Graphics.Color;
 
 namespace LitterboxEngine;
 
 public class Program: IGame
 {
+    private Texture _logo;
+    
     public static void Main()
     {
         var engine = new Engine("Sample Game", new Program());
@@ -16,7 +19,7 @@ public class Program: IGame
     
     public void Init(Window window)
     {
-        
+        _logo = ResourceManager.Get<Texture>("Resources/Textures/litterbox_logo.png");
     }
 
     public void Input(Window window)
@@ -35,9 +38,11 @@ public class Program: IGame
         // TODO: should the engine call begin and end for you? We would need to change how clear color works most likely or the first frame will have the default color
         renderer.Begin();
         
-        renderer.DrawRectangle(new RectangleF(0, 0, 100f, 100f), new Color(255, 0, 255, 0));
-        renderer.DrawRectangle(new RectangleF(100, 0, 100f, 100f), new Color(255, 0, 0, 0));
-        renderer.DrawRectangle(new RectangleF(0, 100, 100f, 100f), new Color(0, 0, 255, 0));
+        renderer.DrawRectangle(new RectangleF(0, 0, 100f, 100f), Color.Yellow);
+        renderer.DrawRectangle(new RectangleF(100, 0, 100f, 100f), Color.Red);
+        renderer.DrawRectangle(new RectangleF(0, 100, 100f, 100f), Color.Blue);
+        
+        renderer.DrawTexture(_logo, new RectangleF(100, 100, 100f, 100f), Color.Purple);
         
         renderer.End();
     }

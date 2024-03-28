@@ -155,10 +155,11 @@ public class Pipeline: GHAL.Pipeline
     {
         return format switch
         {
-            VertexElementFormat.Float1 => Format.R32Sfloat,
+            VertexElementFormat.Float => Format.R32Sfloat,
             VertexElementFormat.Float2 => Format.R32G32Sfloat,
             VertexElementFormat.Float3 => Format.R32G32B32Sfloat,
             VertexElementFormat.Float4 => Format.R32G32B32A32Sfloat,
+            VertexElementFormat.Int => Format.R32Sint,
             _ => throw new NotImplementedException($"Cannot convert VertexElementFormat \"{format}\" to Format")
         };
     } 

@@ -10,7 +10,7 @@ public class DescriptorSet : ResourceSet
 
     public readonly Silk.NET.Vulkan.DescriptorSet VkDescriptorSet; 
     
-    public unsafe DescriptorSet(Vk vk, LogicalDevice logicalDevice, DescriptorPool pool, Buffer buffer, DescriptorSetLayout layout)
+    public unsafe DescriptorSet(Vk vk, LogicalDevice logicalDevice, DescriptorPool pool, DescriptorSetLayout layout)
     {
         _vk = vk;
         _logicalDevice = logicalDevice;
@@ -22,31 +22,81 @@ public class DescriptorSet : ResourceSet
                 SType = StructureType.DescriptorSetAllocateInfo,
                 DescriptorPool = pool.VkDescriptorPool,
                 DescriptorSetCount = 1,
-                PSetLayouts = layoutsPtr,
+                PSetLayouts = layoutsPtr
             };         
             
             var result = _vk.AllocateDescriptorSets(_logicalDevice.VkLogicalDevice, allocateInfo, out VkDescriptorSet);
             if (result != Result.Success)
                 throw new Exception($"Failed to allocate descriptor sets with error: {result.ToString()}");
-        
-            DescriptorBufferInfo bufferInfo = new()
-            {
-                Buffer = buffer.VkBuffer,
-                Offset = 0,
-                Range = buffer.Size
-            };
-
-            var descriptorWrite = new WriteDescriptorSet
-            {
-                SType = StructureType.WriteDescriptorSet,
-                DstSet = VkDescriptorSet,
-                DstBinding = 0, // TODO: I dont know if this can always be zero, but I think it should be fine?
-                DescriptorType = DescriptorType.UniformBuffer, // TODO: Un-hardcode, Will be different for textures/samplers 
-                DescriptorCount = 1,
-                PBufferInfo = &bufferInfo,
-            };
-            
-            _vk.UpdateDescriptorSets(_logicalDevice.VkLogicalDevice, 1, &descriptorWrite, 0, null);
         }
+    }
+
+    public override unsafe void Update(uint binding, GHAL.Buffer buffer, uint index = 0)
+    {
+        var vkBuffer = (buffer as Buffer)!;
+        DescriptorBufferInfo bufferInfo = new()
+        {
+            Buffer = vkBuffer.VkBuffer,
+            Offset = 0,
+            Range = vkBuffer.Size
+        };
+
+        var descriptorWrite = new WriteDescriptorSet
+        {
+            SType = StructureType.WriteDescriptorSet,
+            DstSet = VkDescriptorSet,
+            DstBinding = binding,
+            DescriptorType = DescriptorType.UniformBuffer,
+            DescriptorCount = 1,
+            DstArrayElement = index,
+            PBufferInfo = &bufferInfo,
+        };
+        
+        _vk.UpdateDescriptorSets(_logicalDevice.VkLogicalDevice, 1, &descriptorWrite, 0, null);
+    }
+
+    public override unsafe void Update(uint binding, GHAL.Sampler sampler, uint index = 0)
+    {
+        var vkSampler = (sampler as Sampler)!;
+        DescriptorImageInfo samplerInfo = new()
+        {
+          Sampler = vkSampler.VkSampler
+        };
+
+        var descriptorWrite = new WriteDescriptorSet
+        {
+            SType = StructureType.WriteDescriptorSet,
+            DstSet = VkDescriptorSet,
+            DstBinding = binding,
+            DescriptorType = DescriptorType.Sampler,
+            DescriptorCount = 1,
+            DstArrayElement = index,
+            PImageInfo = &samplerInfo,
+        };
+        
+        _vk.UpdateDescriptorSets(_logicalDevice.VkLogicalDevice, 1, &descriptorWrite, 0, null);
+    }
+
+    public override unsafe void Update(uint binding, Resources.Texture texture, uint index = 0)
+    {
+        var vkTexture = (texture as Texture)!;
+        DescriptorImageInfo imageInfo = new()
+        {
+            ImageView = vkTexture.ImageView.VkImageView,
+            ImageLayout = ImageLayout.ShaderReadOnlyOptimal
+        };
+        
+        var descriptorWrite = new WriteDescriptorSet
+        {
+            SType = StructureType.WriteDescriptorSet,
+            DstSet = VkDescriptorSet,
+            DstBinding = binding,
+            DescriptorType = DescriptorType.SampledImage,
+            DescriptorCount = 1,
+            DstArrayElement = index,
+            PImageInfo = &imageInfo,
+        };
+        
+        _vk.UpdateDescriptorSets(_logicalDevice.VkLogicalDevice, 1, &descriptorWrite, 0, null);
     }
 }

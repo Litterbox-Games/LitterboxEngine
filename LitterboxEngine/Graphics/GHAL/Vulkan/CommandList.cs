@@ -16,7 +16,7 @@ public class CommandList: GHAL.CommandList
         _swapChain = swapChain;
     }
 
-    public override unsafe void Begin(Color clearColor)
+    public override unsafe void Begin(RgbaFloat clearColor)
     {
         ClearValue clearValue = new()
         {
@@ -116,7 +116,7 @@ public class CommandList: GHAL.CommandList
         };
     }
 
-    public override unsafe void SetResourceSet(ResourceSet resourceSet)
+    public override unsafe void SetResourceSet(uint set, ResourceSet resourceSet)
     {
         if (resourceSet is not DescriptorSet descriptorSet)
             throw new Exception("Cannot use non-vulkan resource set with a vulkan command list");
@@ -125,7 +125,7 @@ public class CommandList: GHAL.CommandList
             throw new Exception("A pipeline must be set on the command list before setting a resource set");
 
         _vk.CmdBindDescriptorSets(_swapChain.CurrentCommandBuffer.VkCommandBuffer, PipelineBindPoint.Graphics,
-            _pipeline.VkPipelineLayout, 0, 1, descriptorSet.VkDescriptorSet, 0, null);
+            _pipeline.VkPipelineLayout, set, 1, descriptorSet.VkDescriptorSet, 0, null);
     }
 
     public override void DrawIndexed(uint indexCount)

@@ -2,7 +2,7 @@
 
 namespace LitterboxEngine.Graphics.GHAL.Vulkan;
 
-public class Sampler: IDisposable
+public class Sampler: GHAL.Sampler
 {
     private readonly Vk _vk;
     private readonly LogicalDevice _logicalDevice;
@@ -30,7 +30,7 @@ public class Sampler: IDisposable
             UnnormalizedCoordinates = false,
             CompareEnable = false,
             CompareOp = CompareOp.Always,
-            MipmapMode = SamplerMipmapMode.Linear,
+            MipmapMode = SamplerMipmapMode.Linear
         };
 
         var result = _vk.CreateSampler(_logicalDevice.VkLogicalDevice, samplerInfo, null, out VkSampler);
@@ -39,7 +39,7 @@ public class Sampler: IDisposable
             throw new Exception($"Failed to create texture sampler with error: {result.ToString()}");
     }
     
-    public void Dispose()
+    public override void Dispose()
     {
         throw new NotImplementedException();
     }

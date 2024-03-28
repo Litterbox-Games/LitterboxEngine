@@ -50,10 +50,11 @@ public record VertexElementDescription(uint Location, VertexElementFormat Format
 public enum VertexElementFormat
 {
     // TODO: Fill with values equivalent to Silk.NET.Vulkan.Format
-    Float1,
+    Float,
     Float2,
     Float3,
-    Float4
+    Float4,
+    Int
 }
 
 public static class VertexElementFormatExtensions
@@ -62,10 +63,11 @@ public static class VertexElementFormatExtensions
     {
         return format switch
         {
-            VertexElementFormat.Float1 => 4,
+            VertexElementFormat.Float => 4,
             VertexElementFormat.Float2 => 8,
             VertexElementFormat.Float3 => 12,
             VertexElementFormat.Float4 => 16,
+            VertexElementFormat.Int => 4,
             _ => throw new ArgumentOutOfRangeException(nameof(format), format, null)
         };
     }

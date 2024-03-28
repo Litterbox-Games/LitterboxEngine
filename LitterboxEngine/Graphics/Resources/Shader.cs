@@ -1,8 +1,9 @@
-﻿using System.Text;
-using LitterboxEngine.Graphics.GHAL;
+﻿using LitterboxEngine.Graphics.GHAL;
 using LitterboxEngine.Resource;
 
 namespace LitterboxEngine.Graphics.Resources;
+
+// TODO: Move this and Texture to GHAL
 
 public class Shader : IResource, IDisposable
 {
@@ -13,7 +14,7 @@ public class Shader : IResource, IDisposable
         ShaderDescription = description;
     }
     
-    public static IResource LoadFromFile(string path)
+    public static IResource LoadFromFile(string path, GraphicsDevice? graphicsDevice)
     {
         var shaderSource = File.ReadAllBytes(path);
         var extension = Path.GetExtension(path);

@@ -9,7 +9,7 @@ public class Buffer: GHAL.Buffer
     private readonly CommandPool _commandPool;
     private readonly Queue _queue;
     
-    public readonly uint Size;
+    public readonly ulong Size;
     
     public readonly Silk.NET.Vulkan.Buffer VkBuffer;
     public readonly DeviceMemory VkBufferMemory;
@@ -125,6 +125,11 @@ public class Buffer: GHAL.Buffer
 
         _vk.CmdCopyBufferToImage(commandBuffer.VkCommandBuffer, VkBuffer, image.VkImage, ImageLayout.TransferDstOptimal, 1, region);
         commandBuffer.EndRecording();
+        
+        using var fence = new Fence(_vk, _logicalDevice, true);
+        fence.Reset();
+        _queue.Submit(commandBuffer, null, fence);
+        fence.Wait();
     }
 
     // Utility function to convert memory properties into memory type

@@ -9,7 +9,8 @@ public record ResourceLayoutDescription(params ResourceLayoutElementDescription[
 
 public record ResourceLayoutElementDescription(
     ResourceKind Kind,
-    ShaderStages Stages);
+    ShaderStages Stages,
+    uint ArraySize = 1);
 
 public enum ResourceKind
 {

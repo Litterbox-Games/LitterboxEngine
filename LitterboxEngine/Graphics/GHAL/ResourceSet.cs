@@ -1,8 +1,10 @@
-﻿namespace LitterboxEngine.Graphics.GHAL;
+﻿using LitterboxEngine.Graphics.Resources;
+
+namespace LitterboxEngine.Graphics.GHAL;
 
 public abstract class ResourceSet
 {
-    
+    public abstract void Update(uint binding, Buffer buffer, uint index = 0);
+    public abstract void Update(uint binding, Texture texture, uint index = 0);
+    public abstract void Update(uint binding, Sampler sampler, uint index = 0);
 }
-
-public record ResourceSetDescription(ResourceLayout Layout, Buffer Buffer);

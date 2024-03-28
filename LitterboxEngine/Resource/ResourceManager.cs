@@ -1,4 +1,5 @@
-﻿using LitterboxEngine.Resource.Exceptions;
+﻿using LitterboxEngine.Graphics.GHAL;
+using LitterboxEngine.Resource.Exceptions;
 using MoreLinq;
 
 namespace LitterboxEngine.Resource;
@@ -23,6 +24,12 @@ public static class ResourceManager
         _logger = logger;
     }
     */
+
+    private static GraphicsDevice? _graphicsDevice;
+    public static void SetGraphicsDevice(GraphicsDevice graphicsDevice)
+    {
+        _graphicsDevice = graphicsDevice;
+    }
     
     /// <summary>
     ///     Get a resource of a specific type at a given path.
@@ -44,7 +51,7 @@ public static class ResourceManager
         if (Resources.TryGetValue(path, out var value))
             return (T)value;
         
-        var r = (T)T.LoadFromFile(path);
+        var r = (T)T.LoadFromFile(path, _graphicsDevice);
         Resources[path] = r;
         return r;
     }

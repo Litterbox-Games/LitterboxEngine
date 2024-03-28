@@ -8,7 +8,7 @@ public abstract class Buffer : IDisposable
 }
 
 public record BufferDescription(
-    uint Size,
+    ulong Size,
     BufferUsage Usage);
 
 public enum BufferUsage

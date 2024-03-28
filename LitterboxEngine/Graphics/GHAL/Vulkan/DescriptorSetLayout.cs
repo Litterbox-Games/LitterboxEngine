@@ -17,7 +17,7 @@ public class DescriptorSetLayout : ResourceLayout, IDisposable
         var bindings = description.Elements
             .Select((e, i) => new DescriptorSetLayoutBinding {
                 Binding = (uint)i,
-                DescriptorCount = 1,
+                DescriptorCount = e.ArraySize,
                 DescriptorType = DescriptorTypeFromResourceKind(e.Kind),
                 PImmutableSamplers = null,
                 StageFlags = ShaderStageFlagsFromShaderStages(e.Stages)
@@ -53,7 +53,7 @@ public class DescriptorSetLayout : ResourceLayout, IDisposable
         return kind switch
         {
           ResourceKind.Sampler => DescriptorType.Sampler,
-          ResourceKind.TextureReadOnly => DescriptorType.CombinedImageSampler,
+          ResourceKind.TextureReadOnly => DescriptorType.SampledImage,
           ResourceKind.UniformBuffer => DescriptorType.UniformBuffer,
           _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null)
         };

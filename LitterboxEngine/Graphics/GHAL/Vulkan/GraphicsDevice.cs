@@ -34,11 +34,7 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
 
     public override GHAL.Buffer CreateBuffer(BufferDescription description)
     {
-        return new Buffer(_vk, _logicalDevice, description,
-            // TODO: Experiment with these flags to see if a staging buffer would be better?
-            // TODO: as far as I can tell staging buffers arent available on every GPU, especially integrated GPUS because they only have one heap
-            // TODO: This makes things simple, but might not be the most performant
-            MemoryPropertyFlags.DeviceLocalBit, _commandPool, _graphicsQueue);
+        return new Buffer(_vk, _logicalDevice, description, MemoryPropertyFlags.DeviceLocalBit, _commandPool, _graphicsQueue);
     }
 
     public override void UpdateBuffer(GHAL.Buffer buffer, uint offset, uint[] data)
@@ -51,6 +47,16 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
         return new ShaderProgram(_vk, _logicalDevice, descriptions);
     }
 
+    public override Resources.Texture CreateTexture(uint width, uint height, Span<byte> data)
+    {
+        return new Texture(_vk, _logicalDevice, _commandPool, _graphicsQueue, width, height, data);
+    }
+
+    public override Resources.Texture CreateTexture(uint width, uint height, RgbaByte color)
+    {
+        return new Texture(_vk, _logicalDevice, _commandPool, _graphicsQueue, width, height, color);
+    }
+
     public override Pipeline CreatePipeline(PipelineDescription description)
     {
         return new Pipeline(_vk, _swapChain, _pipelineCache, description);
@@ -61,12 +67,15 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
         return new DescriptorSetLayout(_vk, _logicalDevice, description);
     }
 
-    public override ResourceSet CreateResourceSet(ResourceSetDescription description)
+    public override ResourceSet CreateResourceSet(ResourceLayout layout)
     {
-        
-        var layout = (description.Layout as DescriptorSetLayout)!;
-        var buffer = (description.Buffer as Buffer)!;
-        return new DescriptorSet(_vk, _logicalDevice, _descriptorPool, buffer, layout);
+        var descriptorSetLayout = (layout as DescriptorSetLayout)!;
+        return new DescriptorSet(_vk, _logicalDevice, _descriptorPool, descriptorSetLayout);
+    }
+
+    public override GHAL.Sampler CreateSampler()
+    {
+        return new Sampler(_vk, _logicalDevice);
     }
 
     public override CommandList CreateCommandList()
