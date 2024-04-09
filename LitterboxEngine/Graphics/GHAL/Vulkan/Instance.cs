@@ -112,7 +112,11 @@ public class Instance: IDisposable
             throw new Exception($"Failed to enumerate instance extension properties with error: ${result.ToString()}");
 
         return extensions.ToArray()
-            .Select(ext => SilkMarshal.PtrToString((nint)ext.ExtensionName)!)
+            .Select(ext =>
+            {
+                // ReSharper disable once ConvertToLambdaExpression
+                return SilkMarshal.PtrToString((nint) ext.ExtensionName)!;
+            })
             .Where(name => RequestedExtensions.Contains(name))
             .ToArray();
     }
@@ -131,7 +135,11 @@ public class Instance: IDisposable
             throw new Exception($"Failed to enumerate instance layer properties with error: ${result.ToString()}");
 
         return layers.ToArray()
-            .Select(p => SilkMarshal.PtrToString((nint) p.LayerName)!)
+            .Select(p =>
+            {
+                // ReSharper disable once ConvertToLambdaExpression
+                return SilkMarshal.PtrToString((nint) p.LayerName)!;
+            })
             .Where(name => RequestedValidationLayers.Contains(name))
             .ToArray();
     }

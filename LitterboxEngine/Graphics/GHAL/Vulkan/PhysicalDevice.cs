@@ -40,8 +40,11 @@ public class PhysicalDevice
             throw new Exception($"Failed to get extension properties with error: {result.ToString()}");
 
         AvailableDeviceExtensions = deviceExtensions.ToArray()
-            .Select(ext => SilkMarshal.PtrToString((nint) ext.ExtensionName)!)
-            .ToArray();
+            .Select(ext =>
+            {
+                // ReSharper disable once ConvertToLambdaExpression
+                return SilkMarshal.PtrToString((nint) ext.ExtensionName)!;
+            }).ToArray();
 
         // Queue family properties
         uint queueCount = 0;
