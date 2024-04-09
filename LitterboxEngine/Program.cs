@@ -8,8 +8,8 @@ namespace LitterboxEngine;
 
 public class Program: IGame
 {
-    private Texture _logo;
-    private Texture _objects;
+    private Texture _logo = null!;
+    private Texture _objects = null!;
     
     public static void Main()
     {

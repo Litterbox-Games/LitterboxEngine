@@ -11,7 +11,7 @@ public unsafe class Window : IDisposable
 
     public int Width { get; private set; }
     public int Height { get; private set; }
-    public event Action<int, int> OnResize; 
+    public event Action<int, int>? OnResize; 
 
     public Window(string title, GlfwCallbacks.KeyCallback? keyCallback = null)
     {
@@ -54,7 +54,7 @@ public unsafe class Window : IDisposable
     {
         Width = width;
         Height = height;
-        OnResize.Invoke(width, height);
+        OnResize?.Invoke(width, height);
     }
 
     public bool IsKeyPressed(Keys key)
