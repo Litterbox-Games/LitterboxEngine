@@ -8,7 +8,8 @@ public class Buffer: GHAL.Buffer
     private readonly LogicalDevice _logicalDevice;
     private readonly CommandPool _commandPool;
     private readonly Queue _queue;
-    
+    private readonly StagingBuffer _stagingBuffer;
+
     public readonly ulong Size;
     
     public readonly Silk.NET.Vulkan.Buffer VkBuffer;
@@ -50,24 +51,23 @@ public class Buffer: GHAL.Buffer
         result = _vk.BindBufferMemory(_logicalDevice.VkLogicalDevice, VkBuffer, VkBufferMemory, 0);
         if (result != Result.Success)
             throw new Exception($"Failed to bind buffer memory with error: {result.ToString()}");
+
+        _stagingBuffer = new StagingBuffer(_vk, _logicalDevice, _commandPool, _queue, Size);
     }
 
     public override unsafe void Update<T>(ulong offset, T[] data)
     {
-        var stagingBufferSize = (uint)(Size - offset);
-        var stagingBufferDescription = new BufferDescription(stagingBufferSize, BufferUsage.Transfer);                     
-        using var stagingBuffer = new Buffer(_vk, _logicalDevice, stagingBufferDescription, 
-            MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit, _commandPool, _queue);
-
+        var dataSize = (ulong)(sizeof(T) * data.Length);
+        
         void* dataPtr;
-        _vk.MapMemory(_logicalDevice.VkLogicalDevice, stagingBuffer.VkBufferMemory, 0, stagingBufferSize, 0, &dataPtr);
+        _vk.MapMemory(_logicalDevice.VkLogicalDevice, _stagingBuffer.VkBufferMemory, 0, dataSize, 0, &dataPtr);
         data.AsSpan().CopyTo(new Span<T>(dataPtr, data.Length));
-        _vk.UnmapMemory(_logicalDevice.VkLogicalDevice, stagingBuffer.VkBufferMemory);
+        _vk.UnmapMemory(_logicalDevice.VkLogicalDevice, _stagingBuffer.VkBufferMemory);
         
         using var commandBuffer = new CommandBuffer(_vk, _commandPool, true, true);
         commandBuffer.BeginRecording();
-        BufferCopy copyRegion = new() { DstOffset = offset, Size = stagingBufferSize };
-        _vk.CmdCopyBuffer(commandBuffer.VkCommandBuffer, stagingBuffer.VkBuffer, VkBuffer, 1, copyRegion);
+        BufferCopy copyRegion = new() { DstOffset = offset, Size = dataSize };
+        _vk.CmdCopyBuffer(commandBuffer.VkCommandBuffer, _stagingBuffer.VkBuffer, VkBuffer, 1, copyRegion);
         commandBuffer.EndRecording();
         
         using var fence = new Fence(_vk, _logicalDevice, true);
@@ -78,21 +78,18 @@ public class Buffer: GHAL.Buffer
     
     public override unsafe void Update<T>(ulong offset, T data)
     {
-        var stagingBufferSize = (uint)(Size - offset);
-        var stagingBufferDescription = new BufferDescription(stagingBufferSize, BufferUsage.Transfer);                     
-        using var stagingBuffer = new Buffer(_vk, _logicalDevice, stagingBufferDescription, 
-            MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit, _commandPool, _queue);
+        var dataSize = (ulong)sizeof(T);
         
         void* dataPtr;
-        _vk.MapMemory(_logicalDevice.VkLogicalDevice, stagingBuffer.VkBufferMemory, 0, stagingBufferSize, 0, &dataPtr);
+        _vk.MapMemory(_logicalDevice.VkLogicalDevice, _stagingBuffer.VkBufferMemory, 0, dataSize, 0, &dataPtr);
         new Span<T>(dataPtr, 1).Fill(data);
-        _vk.UnmapMemory(_logicalDevice.VkLogicalDevice, stagingBuffer.VkBufferMemory);
+        _vk.UnmapMemory(_logicalDevice.VkLogicalDevice, _stagingBuffer.VkBufferMemory);
 
 
         using var commandBuffer = new CommandBuffer(_vk, _commandPool, true, true);
         commandBuffer.BeginRecording();
-        BufferCopy copyRegion = new() { DstOffset = offset, Size = stagingBufferSize };
-        _vk.CmdCopyBuffer(commandBuffer.VkCommandBuffer, stagingBuffer.VkBuffer, VkBuffer, 1, copyRegion);
+        BufferCopy copyRegion = new() { DstOffset = offset, Size = dataSize };
+        _vk.CmdCopyBuffer(commandBuffer.VkCommandBuffer, _stagingBuffer.VkBuffer, VkBuffer, 1, copyRegion);
         commandBuffer.EndRecording();
 
         using var fence = new Fence(_vk, _logicalDevice, true);
@@ -100,37 +97,7 @@ public class Buffer: GHAL.Buffer
         _queue.Submit(commandBuffer, null, fence);
         fence.Wait();
     }
-
-    public void CopyTo(Image image)
-    {
-        using var commandBuffer = new CommandBuffer(_vk, _commandPool, true, true);
-        commandBuffer.BeginRecording();
-        
-        BufferImageCopy region = new()
-        {
-            BufferOffset = 0,
-            BufferRowLength = 0,
-            BufferImageHeight = 0,
-            ImageSubresource =
-            {
-                AspectMask = ImageAspectFlags.ColorBit,
-                MipLevel = 0,
-                BaseArrayLayer = 0,
-                LayerCount = 1,
-            },
-            ImageOffset = new Offset3D(0, 0, 0),
-            ImageExtent = new Extent3D(image.Width, image.Height, 1),
-
-        };
-
-        _vk.CmdCopyBufferToImage(commandBuffer.VkCommandBuffer, VkBuffer, image.VkImage, ImageLayout.TransferDstOptimal, 1, region);
-        commandBuffer.EndRecording();
-        
-        using var fence = new Fence(_vk, _logicalDevice, true);
-        fence.Reset();
-        _queue.Submit(commandBuffer, null, fence);
-        fence.Wait();
-    }
+    
 
     // Utility function to convert memory properties into memory type
     private uint MemoryTypeFromProperties(uint typeFilter, MemoryPropertyFlags properties)
@@ -152,7 +119,6 @@ public class Buffer: GHAL.Buffer
     {
         return usage switch
         {
-            BufferUsage.Transfer => BufferUsageFlags.TransferSrcBit, 
             // These usages are reserved for non-staging buffers, TransferDstBit is required to allow staging buffers to copy to buffers using them
             BufferUsage.Vertex => BufferUsageFlags.VertexBufferBit | BufferUsageFlags.TransferDstBit,
             BufferUsage.Index => BufferUsageFlags.IndexBufferBit | BufferUsageFlags.TransferDstBit,
@@ -165,6 +131,7 @@ public class Buffer: GHAL.Buffer
 
     public override unsafe void Dispose()
     {
+        _stagingBuffer.Dispose();
         _vk.DestroyBuffer(_logicalDevice.VkLogicalDevice, VkBuffer, null);
         _vk.FreeMemory(_logicalDevice.VkLogicalDevice, VkBufferMemory, null);
         GC.SuppressFinalize(this);
