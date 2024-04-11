@@ -7,6 +7,7 @@ namespace LitterboxEngine.Graphics.GHAL.Vulkan;
 public class PhysicalDevice
 {
     private readonly Vk _vk;
+    public readonly Instance Instance;
     public readonly Silk.NET.Vulkan.PhysicalDevice VkPhysicalDevice;
     private readonly PhysicalDeviceProperties _vkPhysicalDeviceProperties;
     public readonly string[] AvailableDeviceExtensions;
@@ -20,9 +21,10 @@ public class PhysicalDevice
             return SilkMarshal.PtrToString((nint)namePtr)!; }}
     }
 
-    private unsafe PhysicalDevice(Vk vk, Silk.NET.Vulkan.PhysicalDevice vkPhysicalDevice)
+    private unsafe PhysicalDevice(Vk vk, Instance instance, Silk.NET.Vulkan.PhysicalDevice vkPhysicalDevice)
     {
         _vk = vk;
+        Instance = instance;
         VkPhysicalDevice = vkPhysicalDevice;
         
         // Device properties
@@ -81,7 +83,7 @@ public class PhysicalDevice
         PhysicalDevice? selectedPhysicalDevice = null;
         foreach (var vkPhysicalDevice in vkPhysicalDevices)
         {
-            var physicalDevice = new PhysicalDevice(vk, vkPhysicalDevice);
+            var physicalDevice = new PhysicalDevice(vk, instance, vkPhysicalDevice);
 
             var deviceName = physicalDevice.Name;
 

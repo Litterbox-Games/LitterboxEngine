@@ -10,13 +10,11 @@ public class Texture : LitterboxEngine.Graphics.Resources.Texture
     public  unsafe Texture(Vk vk, LogicalDevice logicalDevice, CommandPool commandPool, Queue queue, uint width, uint height,
         RgbaByte color) : base(width, height)
     {
-        var sizeInBytes = (ulong)(width * height * sizeof(RgbaByte));
-        var stagingBufferDescription = new BufferDescription(sizeInBytes, BufferUsage.Transfer);                     
-        using var stagingBuffer = new Buffer(vk, logicalDevice, stagingBufferDescription, 
-            MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit, commandPool, queue);
-
+        var size = (ulong)(width * height * sizeof(RgbaByte));
+        using var stagingBuffer = new StagingBuffer(vk, logicalDevice, commandPool, queue, size);
+        
         void* dataPtr;
-        vk.MapMemory(logicalDevice.VkLogicalDevice, stagingBuffer.VkBufferMemory, 0, sizeInBytes, 0, &dataPtr);
+        vk.MapMemory(logicalDevice.VkLogicalDevice, stagingBuffer.VkBufferMemory, 0, size, 0, &dataPtr);
         new Span<RgbaByte>(dataPtr, (int)(width * height)).Fill(color);
         vk.UnmapMemory(logicalDevice.VkLogicalDevice, stagingBuffer.VkBufferMemory);
         

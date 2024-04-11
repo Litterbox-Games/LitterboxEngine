@@ -6,16 +6,16 @@ public class CommandList: GHAL.CommandList
 {
 
     private readonly Vk _vk;
-    private SwapChain SwapChain => _graphicsDevice.SwapChain;
-    private readonly GraphicsDevice _graphicsDevice;
+    private readonly SwapChain _swapChain;
+    private readonly RenderPass _renderPass;
 
     private Pipeline? _pipeline;
 
-    public CommandList(Vk vk, GraphicsDevice graphicsDevice)
+    public CommandList(Vk vk, SwapChain swapChain, RenderPass renderPass)
     {
         _vk = vk;
-        _graphicsDevice = graphicsDevice;
-        //_swapChain = swapChain;
+        _swapChain = swapChain;
+        _renderPass = renderPass;
     }
 
     public override unsafe void Begin(RgbaFloat clearColor)
@@ -29,25 +29,25 @@ public class CommandList: GHAL.CommandList
         RenderPassBeginInfo renderPassInfo = new()
         {
             SType = StructureType.RenderPassBeginInfo,
-            RenderPass = SwapChain.RenderPass.VkRenderPass,
-            Framebuffer = SwapChain.CurrentFrameBuffer.VkFrameBuffer,
+            RenderPass = _renderPass.VkRenderPass,
+            Framebuffer = _swapChain.CurrentFrameBuffer.VkFrameBuffer,
             RenderArea =
             {
                 Offset = { X = 0, Y = 0 },
-                Extent = SwapChain.Extent
+                Extent = _swapChain.Extent
             },
             ClearValueCount = 1,
             PClearValues = &clearValue
         };
         
-        SwapChain.CurrentCommandBuffer.BeginRecording();
-        _vk.CmdBeginRenderPass(SwapChain.CurrentCommandBuffer.VkCommandBuffer, &renderPassInfo, SubpassContents.Inline);
+        _swapChain.CurrentCommandBuffer.BeginRecording();
+        _vk.CmdBeginRenderPass(_swapChain.CurrentCommandBuffer.VkCommandBuffer, &renderPassInfo, SubpassContents.Inline);
     }
 
     public override void End()
     {
-        _vk.CmdEndRenderPass(SwapChain.CurrentCommandBuffer.VkCommandBuffer);
-        SwapChain.CurrentCommandBuffer.EndRecording();
+        _vk.CmdEndRenderPass(_swapChain.CurrentCommandBuffer.VkCommandBuffer);
+        _swapChain.CurrentCommandBuffer.EndRecording();
     }
 
     public override void SetPipeline(GHAL.Pipeline pipeline)
@@ -57,14 +57,14 @@ public class CommandList: GHAL.CommandList
 
         _pipeline = vulkanPipeline;
 
-        _vk.CmdBindPipeline(SwapChain.CurrentCommandBuffer.VkCommandBuffer, PipelineBindPoint.Graphics, vulkanPipeline.VkPipeline);
+        _vk.CmdBindPipeline(_swapChain.CurrentCommandBuffer.VkCommandBuffer, PipelineBindPoint.Graphics, vulkanPipeline.VkPipeline);
         
         Viewport viewport = new()
         {
             X = 0,
             Y = 0,
-            Width = SwapChain.Extent.Width,
-            Height = SwapChain.Extent.Height,
+            Width = _swapChain.Extent.Width,
+            Height = _swapChain.Extent.Height,
             MinDepth = 0,
             MaxDepth = 1
         };
@@ -72,24 +72,24 @@ public class CommandList: GHAL.CommandList
         Rect2D scissor = new()
         {
             Offset = { X = 0, Y = 0 },
-            Extent = SwapChain.Extent
+            Extent = _swapChain.Extent
         };
 
-        _vk.CmdSetViewport(SwapChain.CurrentCommandBuffer.VkCommandBuffer, 0, 1, in viewport);
-        _vk.CmdSetScissor(SwapChain.CurrentCommandBuffer.VkCommandBuffer, 0, 1, in scissor);
+        _vk.CmdSetViewport(_swapChain.CurrentCommandBuffer.VkCommandBuffer, 0, 1, in viewport);
+        _vk.CmdSetScissor(_swapChain.CurrentCommandBuffer.VkCommandBuffer, 0, 1, in scissor);
     }
 
     public override void SetIndexBuffer(GHAL.Buffer buffer, IndexFormat format)
     {
         var indexBuffer = (buffer as Buffer)!.VkBuffer;
-        _vk.CmdBindIndexBuffer(SwapChain.CurrentCommandBuffer.VkCommandBuffer, indexBuffer, 0, IndexTypeFromIndexFormat(format));
+        _vk.CmdBindIndexBuffer(_swapChain.CurrentCommandBuffer.VkCommandBuffer, indexBuffer, 0, IndexTypeFromIndexFormat(format));
     }
 
     public override unsafe void SetVertexBuffer(ulong offset, GHAL.Buffer buffer)
     {
         var vertexBuffers = stackalloc[] { (buffer as Buffer)!.VkBuffer };
         var offsets = stackalloc[] {offset};
-        _vk.CmdBindVertexBuffers(SwapChain.CurrentCommandBuffer.VkCommandBuffer, 0, 1, vertexBuffers, offsets);        
+        _vk.CmdBindVertexBuffers(_swapChain.CurrentCommandBuffer.VkCommandBuffer, 0, 1, vertexBuffers, offsets);        
     }
 
     public override void UpdateBuffer<T>(GHAL.Buffer buffer, ulong offset, T data)
@@ -119,12 +119,12 @@ public class CommandList: GHAL.CommandList
         if (_pipeline is null)
             throw new Exception("A pipeline must be set on the command list before setting a resource set");
 
-        _vk.CmdBindDescriptorSets(SwapChain.CurrentCommandBuffer.VkCommandBuffer, PipelineBindPoint.Graphics,
+        _vk.CmdBindDescriptorSets(_swapChain.CurrentCommandBuffer.VkCommandBuffer, PipelineBindPoint.Graphics,
             _pipeline.VkPipelineLayout, set, 1, descriptorSet.VkDescriptorSet, 0, null);
     }
 
     public override void DrawIndexed(uint indexCount)
     {
-        _vk.CmdDrawIndexed(SwapChain.CurrentCommandBuffer.VkCommandBuffer, indexCount, 1, 0, 0, 0);
+        _vk.CmdDrawIndexed(_swapChain.CurrentCommandBuffer.VkCommandBuffer, indexCount, 1, 0, 0, 0);
     }
 }

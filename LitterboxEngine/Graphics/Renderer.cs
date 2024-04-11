@@ -16,7 +16,7 @@ namespace LitterboxEngine.Graphics;
 public class Renderer: IDisposable
 {
     
-    private const int MaxQuads = 100;
+    private const int MaxQuads = 400;
     private const int MaxTextures = 8;
     
     private const int IndicesPerQuad = 6;
@@ -141,6 +141,7 @@ public class Renderer: IDisposable
 
     public void SetViewSize(Vector2 size)
     {   
+        //_projection = Matrix4x4.Identity;
        _projection = Matrix4x4.CreateTranslation(-size.X / 2f, -size.Y / 2f, 0) 
                      * Matrix4x4.CreateScale(1 / (size.X / 2f), 1 / (size.Y / 2f), 1);
     }
@@ -192,7 +193,7 @@ public class Renderer: IDisposable
         DrawTexture(texture, new Rectangle(0, 0, (int)texture.Width, (int)texture.Height), destination, color, depth);
     }
     
-    public void DrawTexture(Texture texture, Rectangle source, RectangleF destination, Color color, float depth = 0.0f /* depth should be in the range [-1, 0] */)
+    public void DrawTexture(Texture texture, Rectangle source, RectangleF destination, Color color, float depth = 1.0f /* depth should be in the range [-1, 0] */)
     {
         var texIndex = Array.IndexOf(_textures, texture, 0, _textureCount);
         

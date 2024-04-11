@@ -19,6 +19,7 @@ public class FrameBuffer: IDisposable
         {
             SType = StructureType.FramebufferCreateInfo,
             RenderPass = renderPass.VkRenderPass,
+            // If we ever need to change attachmentCount, we will need to edit the pipeline and swapchain
             AttachmentCount = 1,
             PAttachments = &attachment,
             Width = width,
