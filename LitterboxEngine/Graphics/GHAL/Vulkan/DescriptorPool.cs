@@ -38,7 +38,7 @@ public class DescriptorPool : IDisposable
             DescriptorPoolCreateInfo poolInfo = new()
             {
                 SType = StructureType.DescriptorPoolCreateInfo,
-                PoolSizeCount = 1,
+                PoolSizeCount = (uint)poolSizes.Length,
                 PPoolSizes = poolSizesPtr,
                 MaxSets = descriptorCount,
             };

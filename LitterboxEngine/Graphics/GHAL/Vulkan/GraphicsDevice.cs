@@ -32,7 +32,7 @@ public sealed class GraphicsDevice: GHAL.GraphicsDevice
         _commandPool = new CommandPool(_vk, _logicalDevice, _graphicsQueue.QueueFamilyIndex);
         _swapChain = new SwapChain(_vk, _logicalDevice, _surface, _renderPass, _commandPool, _window, 3, 
             false, _presentQueue, new []{_graphicsQueue});
-        _descriptorPool = new DescriptorPool(_vk, _logicalDevice, _swapChain.ImageCount);
+        _descriptorPool = new DescriptorPool(_vk, _logicalDevice);
         _pipelineCache = new PipelineCache(_vk, _logicalDevice);
         _window.OnResize += WindowResized;
     }
