@@ -20,7 +20,7 @@
 
     <ItemGroup>
         <None Update="Resources\Textures\litterbox_logo.png">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
         <None Update="Resources\Textures\Objects.png">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
