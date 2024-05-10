@@ -1,5 +1,6 @@
 ﻿using System.Resources;
 using Client.Graphics;
+using Client.Graphics.Input;
 using Client.Host;
 using Common.Logging;
 
@@ -14,7 +15,7 @@ internal static class Program
         var logger = host.Resolve<ILoggingService>();
         ResourceManager.SetLogger(logger);
 
-        var window = new Window(GraphicsBackend.Vulkan, host);
+        var window = new GlfwWindowService(GraphicsBackend.Vulkan, host);
         window.Run();
     }
 }
