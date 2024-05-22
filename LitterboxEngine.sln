@@ -1,7 +1,5 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LitterboxEngine", "LitterboxEngine\LitterboxEngine.csproj", "{7DF2F744-CE62-4FF6-9319-FCD2A6CAFB33}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{5EA78970-4CF4-4A5C-818D-FEBCFF1215FD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Server\Server.csproj", "{128039E5-A044-4E7A-B5B2-DBE352AA730D}"
@@ -14,10 +12,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7DF2F744-CE62-4FF6-9319-FCD2A6CAFB33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7DF2F744-CE62-4FF6-9319-FCD2A6CAFB33}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7DF2F744-CE62-4FF6-9319-FCD2A6CAFB33}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7DF2F744-CE62-4FF6-9319-FCD2A6CAFB33}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5EA78970-4CF4-4A5C-818D-FEBCFF1215FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5EA78970-4CF4-4A5C-818D-FEBCFF1215FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5EA78970-4CF4-4A5C-818D-FEBCFF1215FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
