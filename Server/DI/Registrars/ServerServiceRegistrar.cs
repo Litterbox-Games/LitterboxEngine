@@ -5,6 +5,7 @@ using Common.Host;
 using Common.Logging;
 using Common.Network;
 using Common.Player;
+using Common.Resource;
 
 namespace Server.DI.Registrars;
 
@@ -18,6 +19,8 @@ public class ServerServiceRegistrar : IServiceRegistrar
     public void RegisterServices(AbstractHost host)
     {
         host.RegisterSingleton<ILoggingService, ConsoleLoggingService>("console");
+        
+        host.RegisterSingleton<IResourceService, ServerResourceService>();
         
         // Register Services Here
         host.RegisterSingleton<INetworkService, ServerNetworkService>();

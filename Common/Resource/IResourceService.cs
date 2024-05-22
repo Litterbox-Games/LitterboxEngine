@@ -1,6 +1,8 @@
-﻿namespace Common.Resource;
+﻿using Common.DI;
 
-public interface IResourceService
+namespace Common.Resource;
+
+public interface IResourceService : IService
 {
     public T Get<T>(string path) where T : IResource;
 }
