@@ -1,6 +1,4 @@
-﻿using Common.Resource;
-
-namespace Client.Graphics;
+﻿namespace Common.Resource;
 
 public interface IResourceService
 {

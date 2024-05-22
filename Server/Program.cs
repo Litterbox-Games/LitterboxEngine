@@ -11,9 +11,6 @@ internal static class Program
     {
         using var host = new ServerHost();
 
-        var logger = host.Resolve<ILoggingService>();
-        ResourceManager.SetLogger(logger);
-        
         var stopWatch = new Stopwatch();
 
         float deltaTime = 0;

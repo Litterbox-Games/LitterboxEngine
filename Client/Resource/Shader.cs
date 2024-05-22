@@ -1,8 +1,7 @@
 ﻿using Client.Graphics.GHAL;
+using Common.Resource;
 
-namespace Client.Graphics.Resources;
-
-// TODO: Move this and Texture to GHAL
+namespace Client.Resource;
 
 public class Shader : IResource, IDisposable
 {
@@ -13,7 +12,7 @@ public class Shader : IResource, IDisposable
         ShaderDescription = description;
     }
     
-    public static IResource LoadFromFile(string path, GraphicsDevice? graphicsDevice)
+    public static IResource LoadFromFile(string path)
     {
         var shaderSource = File.ReadAllBytes(path);
         var extension = Path.GetExtension(path);

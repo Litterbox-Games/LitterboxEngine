@@ -1,4 +1,5 @@
-﻿using MoreLinq;
+﻿using Client.Graphics.Input;
+using MoreLinq;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
 

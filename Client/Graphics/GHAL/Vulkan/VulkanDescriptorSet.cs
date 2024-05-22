@@ -1,4 +1,5 @@
-﻿using Silk.NET.Vulkan;
+﻿using Client.Resource;
+using Silk.NET.Vulkan;
 
 namespace Client.Graphics.GHAL.Vulkan;
 
@@ -76,7 +77,7 @@ public class VulkanDescriptorSet : ResourceSet
         _vk.UpdateDescriptorSets(_logicalDevice.VkLogicalDevice, 1, &descriptorWrite, 0, null);
     }
 
-    public override unsafe void Update(uint binding, Resources.Texture texture, uint index = 0)
+    public override unsafe void Update(uint binding, Texture texture, uint index = 0)
     {
         var vkTexture = (texture as VulkanTexture)!;
         DescriptorImageInfo imageInfo = new()

@@ -1,10 +1,11 @@
 ﻿using Client.Graphics.Input;
+using Client.Resource;
 using Silk.NET.Vulkan;
 
 namespace Client.Graphics.GHAL.Vulkan;
 
 // TODO: where should this be disposed and should IGraphicsDeviceService inherit from IDisposable?
-public sealed class VulkanGraphicsDeviceService: IGraphicsDeviceService
+public sealed class VulkanGraphicsDeviceService: IGraphicsDeviceService, IDisposable
 {
     private readonly Vk _vk;
     private readonly VulkanInstance _instance;
@@ -43,12 +44,12 @@ public sealed class VulkanGraphicsDeviceService: IGraphicsDeviceService
         _swapChain.Recreate();
     }
     
-    public GHAL.Buffer CreateBuffer(BufferDescription description)
+    public Buffer CreateBuffer(BufferDescription description)
     {
         return new VulkanBuffer(_vk, _logicalDevice, description, MemoryPropertyFlags.DeviceLocalBit, _commandPool, _graphicsQueue);
     }
 
-    public void UpdateBuffer(GHAL.Buffer buffer, uint offset, uint[] data)
+    public void UpdateBuffer(Buffer buffer, uint offset, uint[] data)
     {
         buffer.Update(offset, data);
         
@@ -72,22 +73,29 @@ public sealed class VulkanGraphicsDeviceService: IGraphicsDeviceService
         */
     }
 
-    public GHAL.ShaderProgram CreateShaderProgram(params ShaderDescription[] descriptions)
+    public ShaderProgram CreateShaderProgram(params ShaderDescription[] descriptions)
     {
         return new VulkanShaderProgram(_vk, _logicalDevice, descriptions);
     }
 
-    public Resources.Texture CreateTexture(uint width, uint height, Span<byte> data)
+    public Texture CreateTexture(uint width, uint height, Span<byte> data)
     {
         return new VulkanTexture(_vk, _logicalDevice, _commandPool, _graphicsQueue, width, height, data);
     }
 
-    public Resources.Texture CreateTexture(uint width, uint height, RgbaByte color)
+    public Texture CreateTexture(uint width, uint height, RgbaByte color)
     {
-        return new VulkanTexture(_vk, _logicalDevice, _commandPool, _graphicsQueue, width, height, color);
+        var pixelCount = (int)(width * height);
+        var singlePixelColor = new[] { color.R, color.G, color.B, color.A };
+        var data = Enumerable.Range(0, pixelCount)
+            .Select(_ => singlePixelColor)
+            .SelectMany(x => x)
+            .ToArray();
+
+        return new VulkanTexture(_vk, _logicalDevice, _commandPool, _graphicsQueue, width, height, data);
     }
 
-    public GHAL.Pipeline CreatePipeline(PipelineDescription description)
+    public Pipeline CreatePipeline(PipelineDescription description)
     {
         return new VulkanPipeline(_vk, _logicalDevice, _renderPass, _pipelineCache, description);
     }
@@ -103,12 +111,12 @@ public sealed class VulkanGraphicsDeviceService: IGraphicsDeviceService
         return new VulkanDescriptorSet(_vk, _logicalDevice, _descriptorPool, descriptorSetLayout);
     }
 
-    public GHAL.Sampler CreateSampler()
+    public Sampler CreateSampler()
     {
         return new VulkanSampler(_vk, _logicalDevice);
     }
 
-    public GHAL.CommandList CreateCommandList()
+    public CommandList CreateCommandList()
     {
         return new VulkanCommandList(_vk, _swapChain, _renderPass);
     }

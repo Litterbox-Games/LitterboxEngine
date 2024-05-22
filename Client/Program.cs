@@ -1,8 +1,8 @@
-﻿using System.Resources;
+﻿using System.Diagnostics;
 using Client.Graphics;
+using Client.Graphics.GHAL;
 using Client.Graphics.Input;
 using Client.Host;
-using Common.Logging;
 
 namespace Client;
 
@@ -12,10 +12,35 @@ internal static class Program
     {
         using var host = new HostOrSinglePlayerHost(false);
 
-        var logger = host.Resolve<ILoggingService>();
-        ResourceManager.SetLogger(logger);
+        var windowService = host.Resolve<IWindowService>();
+        var graphicsDeviceService = host.Resolve<IGraphicsDeviceService>();
+        var rendererService = host.Resolve<IRendererService>();
+        // Probably need to resolve KeyboardService and MouseService
+        var cameraService = host.Resolve<CameraService>();
+        
+        var stopWatch = new Stopwatch();
 
-        var window = new GlfwWindowService(GraphicsBackend.Vulkan, host);
-        window.Run();
+        float deltaTime = 0;
+        
+        while (!windowService.ShouldClose())
+        {
+            stopWatch.Start();
+            
+            windowService.PollEvents();
+
+            // Update
+            host.Update(deltaTime);
+            
+            // Draw
+            rendererService.Begin(cameraService.Camera.ViewMatrix);
+            host.Draw();
+            rendererService.End();
+
+            stopWatch.Stop();
+            deltaTime = (float)stopWatch.Elapsed.TotalSeconds;
+            stopWatch.Reset();
+        }
+        
+        graphicsDeviceService.WaitIdle();
     }
 }

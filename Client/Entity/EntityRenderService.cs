@@ -1,34 +1,35 @@
 ﻿using System.Drawing;
-using System.Resources;
 using Client.Graphics;
-using Client.Graphics.Resources;
+using Client.Resource;
 using Common.DI;
 using Common.Entity;
+using Common.Resource;
 using MoreLinq;
 
 namespace Client.Entity;
 
 public class EntityRenderService : ITickableService
 {
-    private IEntityService _entityService;
-    private IRendererService _rendererService;
+    private readonly IEntityService _entityService;
+    private readonly IRendererService _rendererService;
+    private readonly IResourceService _resourceService;
     private Texture? _textureAtlas;
 
-    public EntityRenderService(IEntityService entityService, IRendererService rendererService)
+    public EntityRenderService(IEntityService entityService, IRendererService rendererService, IResourceService resourceService)
     {
         _entityService = entityService;
         _rendererService = rendererService;
+        _resourceService = resourceService;
     }
     
     public void Update(float deltaTime) { }
 
     public void Draw()
     {
-        _textureAtlas ??= ResourceManager.Get<Texture>("Objects.png");
+        _textureAtlas ??= _resourceService.Get<Texture>("Objects.png");
 
         _entityService.Entities.ForEach(x =>
         {
-            // TODO: add TextureAtlas class
             _rendererService.DrawTexture(_textureAtlas, _textureAtlas.GetSourceRectangle(5, 0), new Rectangle((int) x.Position.X, (int) x.Position.Y, 50, 50), Color.White);
         });
     }

@@ -2,7 +2,9 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Client.Graphics.GHAL;
-using Client.Graphics.Resources;
+using Client.Graphics.Input;
+using Client.Resource;
+using Common.Resource;
 using Buffer = Client.Graphics.GHAL.Buffer;
 
 namespace Client.Graphics;

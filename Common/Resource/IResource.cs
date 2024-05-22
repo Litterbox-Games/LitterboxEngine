@@ -10,7 +10,7 @@ public interface IResource
     /// </summary>
     /// <param name="path">The path used to locate the resource.</param>
     /// <returns>An instance of the resource.</returns>
-    public static virtual IResource LoadFromFile(string path, GraphicsDevice? graphicsDevice)
+    public static virtual IResource LoadFromFile(string path)
     {
         throw new NotImplementedException();
     }

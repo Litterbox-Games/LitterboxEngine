@@ -1,4 +1,4 @@
-﻿using Client.Graphics.Resources;
+﻿using Client.Resource;
 
 namespace Client.Graphics.GHAL;
 
