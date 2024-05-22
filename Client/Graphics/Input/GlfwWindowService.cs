@@ -12,9 +12,9 @@ public unsafe class GlfwWindowService : IWindowService, IDisposable
     public event Action<int, int>? OnResize; 
     public event Action? OnPollEvents;
 
-    public GlfwWindowService(string title, GlfwCallbacks.KeyCallback? keyCallback = null)
+    public GlfwWindowService(GlfwCallbacks.KeyCallback? keyCallback = null)
     {
-        Title = title;
+        Title = "Litterbox Engine";
         
         Glfw = Glfw.GetApi();
         if (!Glfw.Init()) 
@@ -31,7 +31,7 @@ public unsafe class GlfwWindowService : IWindowService, IDisposable
 
         Width = videoMode->Width / 2;
         Height = videoMode->Height / 2;
-        WindowHandle = Glfw.CreateWindow(Width, Height, title, null, null);
+        WindowHandle = Glfw.CreateWindow(Width, Height, Title, null, null);
 
         if (WindowHandle == null)
             throw new Exception("Failed to create a GLFW window");
