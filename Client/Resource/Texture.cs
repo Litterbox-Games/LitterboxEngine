@@ -23,7 +23,7 @@ public class Texture : IResource, IGraphicsResource, IDisposable
         var xTexCoord = 16 * x;
         var yTexCoord = 16 * y;
 
-        return new Rectangle(xTexCoord, yTexCoord, (int)Width, (int)Height);
+        return new Rectangle(xTexCoord, yTexCoord, 16, 16);
     }
 
     public IResource UploadToGraphicsDevice(IGraphicsDeviceService graphicsDeviceService)

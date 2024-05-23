@@ -1,16 +1,14 @@
 #version 450
 
-layout(location = 0) in vec4 Color;
-layout(location = 1) in vec2 TexCoord;
+layout(set = 1, binding = 0) uniform texture2D textures[8];
+layout(set = 1, binding = 1) uniform sampler samp;
 
-layout(location = 0) out vec4 color;
+layout(location = 0) in vec4 fragColor;
+layout(location = 1) in vec2 fragTexCoords;
+layout(location = 2) flat in int fragTexIndex;
 
-layout(set = 1, binding = 0) uniform texture2D tex0;
-layout(set = 1, binding = 1) uniform sampler Sampler;
+layout(location = 0) out vec4 outColor;
 
-void main()
-{
-    vec4 textureColor = texture(sampler2D(tex0, Sampler), TexCoord);
-    
-    color = textureColor * Color;
+void main() {
+    outColor = texture(sampler2D(textures[fragTexIndex], samp), fragTexCoords) * fragColor;
 }
