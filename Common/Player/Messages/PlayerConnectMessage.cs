@@ -8,17 +8,17 @@ public sealed class PlayerConnectMessage : INetworkMessage
 {
     public NetDeliveryMethod NetworkChannel => NetDeliveryMethod.ReliableUnordered;
 
-    public Player Player;
+    public NetworkPlayer NetworkPlayer;
 
     public void Serialize(NetOutgoingMessage writer)
     {
-        if (Player == null)
+        if (NetworkPlayer == null)
         {
             throw new InvalidOperationException("Player cannot be null");
         }
 
-        writer.Write(Player.PlayerID);
-        writer.Write(Player.PlayerName);
+        writer.Write(NetworkPlayer.PlayerID);
+        writer.Write(NetworkPlayer.PlayerName);
     }
 
     public void Deserialize(NetIncomingMessage reader)
@@ -26,6 +26,6 @@ public sealed class PlayerConnectMessage : INetworkMessage
         var playerId = reader.ReadUInt64();
         var playerName = reader.ReadString();
 
-        Player = new Player(playerId, playerName);
+        NetworkPlayer = new NetworkPlayer(playerId, playerName);
     }
 }

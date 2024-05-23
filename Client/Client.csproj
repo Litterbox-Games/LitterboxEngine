@@ -39,6 +39,9 @@
       <None Update="Resources\Terrain.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
+      <None Update="Resources\Items.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
     <Target Name="BuildVulkanShader" AfterTargets="Build">

@@ -8,7 +8,7 @@ public sealed class PlayerListSyncMessage : INetworkMessage
 {
     public NetDeliveryMethod NetworkChannel => NetDeliveryMethod.ReliableUnordered;
 
-    public readonly List<Player> Players = new();
+    public readonly List<NetworkPlayer> Players = new();
 
     public void Serialize(NetOutgoingMessage writer)
     {
@@ -30,7 +30,7 @@ public sealed class PlayerListSyncMessage : INetworkMessage
             var playerId = reader.ReadUInt64();
             var playerName = reader.ReadString();
 
-            Players.Add(new Player(playerId, playerName));
+            Players.Add(new NetworkPlayer(playerId, playerName));
         }
     }
 }

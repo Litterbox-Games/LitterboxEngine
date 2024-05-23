@@ -2,18 +2,17 @@
 using Common.Network;
 using Common.Player;
 using Common.Player.Messages;
-using ClientPlayer = Common.Player.Player;
 
 namespace Client.Player;
 
 public class ClientPlayerService : IPlayerService
 {
-    private readonly List<Common.Player.Player> _players = new();
+    private readonly List<Common.Player.NetworkPlayer> _players = new();
 
     private IHost _host;
     private INetworkService _network;
 
-    public IEnumerable<Common.Player.Player> Players => _players;
+    public IEnumerable<Common.Player.NetworkPlayer> Players => _players;
 
     public ClientPlayerService(IHost host, INetworkService networkService)
     {
@@ -25,20 +24,20 @@ public class ClientPlayerService : IPlayerService
         _network.RegisterMessageHandle<PlayerListSyncMessage>(OnPlayerListSyncMessage);
     }
 
-    private void OnPlayerConnectMessage(INetworkMessage message, ClientPlayer? _)
+    private void OnPlayerConnectMessage(INetworkMessage message, NetworkPlayer? _)
     {
         var castedMessage = (PlayerConnectMessage) message;
-        _players.Add(castedMessage.Player!);
+        _players.Add(castedMessage.NetworkPlayer!);
     }
 
-    private void OnPlayerDisconnectMessage(INetworkMessage message, ClientPlayer? _)
+    private void OnPlayerDisconnectMessage(INetworkMessage message, NetworkPlayer? _)
     {
         var castedMessage = (PlayerDisconnectMessage) message;
 
         _players.Remove(_players.First(x => x.PlayerID == castedMessage.PlayerId));
     }
 
-    private void OnPlayerListSyncMessage(INetworkMessage message, ClientPlayer? _)
+    private void OnPlayerListSyncMessage(INetworkMessage message, NetworkPlayer? _)
     {
         var castedMessage = (PlayerListSyncMessage) message;
 

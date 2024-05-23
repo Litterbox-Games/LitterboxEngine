@@ -8,7 +8,7 @@ namespace Common.Player;
 
 public sealed class ServerPlayerService : IPlayerService
 {
-    public IEnumerable<Common.Player.Player> Players => _network.Players;
+    public IEnumerable<Common.Player.NetworkPlayer> Players => _network.Players;
 
     private ServerNetworkService _network;
 
@@ -41,7 +41,7 @@ public sealed class ServerPlayerService : IPlayerService
 
         var connectMessage = new PlayerConnectMessage
         {
-            Player = player
+            NetworkPlayer = player
         };
 
         foreach (var p in Players)

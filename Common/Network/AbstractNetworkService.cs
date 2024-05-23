@@ -2,6 +2,7 @@
 using Common.Entity.Messages;
 using Common.Logging;
 using Common.Player.Messages;
+using Common.World.Messages;
 using Lidgren.Network;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
@@ -30,6 +31,9 @@ public abstract class AbstractNetworkService : INetworkService
         RegisterMessageType<EntitySpawnMessage>();
         RegisterMessageType<EntityDespawnMessage>();
         RegisterMessageType<EntityMoveMessage>();
+        
+        RegisterMessageType<ChunkDataMessage>();
+        RegisterMessageType<ChunkRequestMessage>();
     }
 
     public virtual void Update(float deltaTime) { }
@@ -111,4 +115,4 @@ public abstract class AbstractNetworkService : INetworkService
     }
 }
 
-public delegate void OnMessage(INetworkMessage message, Player.Player? player);
+public delegate void OnMessage(INetworkMessage message, Player.NetworkPlayer? player);

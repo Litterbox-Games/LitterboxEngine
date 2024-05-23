@@ -76,7 +76,7 @@ public class ServerEntityService : AbstractEntityService
     /// <inheritdoc />
     public override void Draw() { }
     
-     private void OnEntityMoveMessage(INetworkMessage message, Player.Player? player)
+     private void OnEntityMoveMessage(INetworkMessage message, Player.NetworkPlayer? player)
     {
         var castedMessage = (EntityMoveMessage) message;
 

@@ -19,28 +19,6 @@ public class CameraService : ITickableService
     /// <inheritdoc />
     public void Update(float deltaTime)
     {
-        const int moveSpeed = 1000;
-        
-        if (_keyboardService.IsKeyDown(Key.W))
-        {
-            Camera.Position.Y -= moveSpeed * deltaTime;
-        }
-        
-        if (_keyboardService.IsKeyDown(Key.S))
-        {
-            Camera.Position.Y += moveSpeed * deltaTime;
-        }
-        
-        if (_keyboardService.IsKeyDown(Key.A))
-        {
-            Camera.Position.X -= moveSpeed * deltaTime;
-        }
-        
-        if (_keyboardService.IsKeyDown(Key.D))
-        {
-            Camera.Position.X += moveSpeed * deltaTime;
-        }
-        
         Camera.Update();    
     }
 
