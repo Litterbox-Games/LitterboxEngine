@@ -1,4 +1,5 @@
-﻿using Client.Graphics.Input;
+﻿using System.Numerics;
+using Client.Graphics.Input;
 using Common.DI;
 using Common.DI.Attributes;
 
@@ -8,18 +9,26 @@ namespace Client.Graphics;
 public class CameraService : ITickableService
 {
     public readonly Camera Camera;
-    private readonly IKeyboardService _keyboardService;
+    public int ScaleFactor;
     
-    public CameraService(IKeyboardService keyboardService)
+    public CameraService(IWindowService windowService)
     {
-        Camera = new Camera();
-        _keyboardService = keyboardService;
+        Camera = new Camera(Vector2.Zero, new Vector2(windowService.Width, windowService.Height));
+        RecalculateCamera(windowService.Width, windowService.Height);
+        windowService.OnResize += RecalculateCamera;
+    }
+
+    private void RecalculateCamera(int width, int height)
+    {
+        ScaleFactor = width / 20;
+        Camera.Size = new Vector2(width, height) / ScaleFactor;
+        Camera.Update();
     }
     
     /// <inheritdoc />
     public void Update(float deltaTime)
     {
-        Camera.Update();    
+        // Camera.Update();    
     }
 
     /// <inheritdoc />

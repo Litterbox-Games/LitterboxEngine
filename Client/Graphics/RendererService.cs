@@ -43,18 +43,14 @@ public class RendererService: IRendererService
     private readonly Texture[] _textures;
     private readonly ResourceSet _textureSet;
     
-    private Matrix4x4 _projection;
-    private Matrix4x4 _view;
+    private Matrix4x4 _mvp;
     
     public Color ClearColor { get; set; } = Color.Black;
     
-    public unsafe RendererService(IWindowService windowService, IResourceService resourceService, IGraphicsDeviceService graphicsDeviceService)
+    public unsafe RendererService(IResourceService resourceService, IGraphicsDeviceService graphicsDeviceService)
     {
         _graphicsDeviceService = graphicsDeviceService;
-        
-        // Initialize projection matrix
-        SetViewSize(new Vector2(windowService.Width, windowService.Height));
-        
+
         // Vertex Buffer
         _vertices = new Vertex[MaxVertices];
         _vertexBuffer = _graphicsDeviceService.CreateBuffer(new BufferDescription(MaxVertices * Vertex.VertexLayout.Stride, BufferUsage.Vertex));
@@ -91,7 +87,7 @@ public class RendererService: IRendererService
 
         using var shaderProgram = _graphicsDeviceService.CreateShaderProgram(vertexShaderDesc, fragmentShaderDesc);
 
-        _transformBuffer = _graphicsDeviceService.CreateBuffer(new BufferDescription(2 * (uint)sizeof(Matrix4x4), BufferUsage.Uniform));
+        _transformBuffer = _graphicsDeviceService.CreateBuffer(new BufferDescription((uint)sizeof(Matrix4x4), BufferUsage.Uniform));
         var transformLayout = _graphicsDeviceService.CreateResourceLayout(
             // TODO: Rename ResourceLayoutElementDescription to Binding and remove ResourceLayoutDescription
             new ResourceLayoutDescription(
@@ -134,17 +130,9 @@ public class RendererService: IRendererService
         _commandList = _graphicsDeviceService.CreateCommandList();
     }
 
-
-    public void SetViewSize(Vector2 size)
-    {   
-        //_projection = Matrix4x4.Identity;
-       _projection = Matrix4x4.CreateTranslation(-size.X / 2f, -size.Y / 2f, 0) 
-                     * Matrix4x4.CreateScale(1 / (size.X / 2f), 1 / (size.Y / 2f), 1);
-    }
-    
-    public unsafe void Begin(Matrix4x4? view = null)
+    public unsafe void Begin(Matrix4x4? mvp = null)
     {
-        _view = view ?? Matrix4x4.Identity;
+        _mvp = mvp ?? Matrix4x4.Identity;
         
         _graphicsDeviceService.SwapBuffers();
         _commandList.Begin(ClearColor);
@@ -152,8 +140,7 @@ public class RendererService: IRendererService
         
         
         
-        _commandList.UpdateBuffer(_transformBuffer, 0, _projection);
-        _commandList.UpdateBuffer(_transformBuffer, (ulong)sizeof(Matrix4x4), _view);
+        _commandList.UpdateBuffer(_transformBuffer, 0, _mvp);
         _commandList.SetResourceSet(0, _transformSet);
     }
 
@@ -189,7 +176,7 @@ public class RendererService: IRendererService
         DrawTexture(texture, new Rectangle(0, 0, (int)texture.Width, (int)texture.Height), destination, color, depth);
     }
     
-    public void DrawTexture(Texture texture, Rectangle source, RectangleF destination, Color color, float depth = 1.0f /* depth should be in the range [-1, 0] */)
+    public void DrawTexture(Texture texture, Rectangle source, RectangleF destination, Color color, float depth = 0.0f /* depth should be in the range [-1, 0] */)
     {
         var texIndex = Array.IndexOf(_textures, texture, 0, _textureCount);
         

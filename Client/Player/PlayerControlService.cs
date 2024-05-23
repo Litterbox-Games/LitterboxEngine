@@ -13,13 +13,17 @@ public class PlayerControlService : ITickableService
 {
     private readonly INetworkService _networkService;
     private readonly IKeyboardService _keyboardService;
+    private readonly CameraService _cameraService;
+    private readonly IWindowService _windowService;
     
     private GameEntity? _playerEntity;
     
-    public PlayerControlService(INetworkService networkService, IEntityService entityService, IKeyboardService keyboardService)
+    public PlayerControlService(INetworkService networkService, IEntityService entityService, IKeyboardService keyboardService, CameraService cameraService, IWindowService windowService)
     {
         _networkService = networkService;
         _keyboardService = keyboardService;
+        _cameraService = cameraService;
+        _windowService = windowService;
 
         entityService.EventOnEntitySpawn += OnEntitySpawn;
         entityService.EventOnEntityDespawn += OnEntityDespawn;
@@ -32,7 +36,7 @@ public class PlayerControlService : ITickableService
             return;
 
         var playerEntityPosition = _playerEntity.Position;
-        const float speed = 150f;
+        const float speed = 15f;
         var direction = Vector2.Zero;
         
         if (_keyboardService.IsKeyDown(Key.W))
@@ -54,6 +58,22 @@ public class PlayerControlService : ITickableService
         }
         
         _playerEntity.Position = playerEntityPosition;
+
+         var endCameraPosition = playerEntityPosition with
+         {
+             X = playerEntityPosition.X + 0.5f - (float)_windowService.Width / _cameraService.ScaleFactor / 2,
+             Y = playerEntityPosition.Y + 0.5f - (float)_windowService.Height / _cameraService.ScaleFactor / 2
+         };
+
+         _cameraService.Camera.Position = Vector2.Lerp(_cameraService.Camera.Position, endCameraPosition, speed * deltaTime);
+         
+         _cameraService.Camera.Position *= _cameraService.ScaleFactor;
+         
+         _cameraService.Camera.Position = new Vector2(MathF.Round(_cameraService.Camera.Position.X), MathF.Round(_cameraService.Camera.Position.Y));
+         
+         _cameraService.Camera.Position /= _cameraService.ScaleFactor;
+
+         _cameraService.Camera.Update();
     }
     
     private void OnEntitySpawn(GameEntity entity)

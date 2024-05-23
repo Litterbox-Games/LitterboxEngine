@@ -16,7 +16,7 @@ public class ClientEntityService : AbstractEntityService
     public override event Action<GameEntity>? EventOnEntityDespawn;
     public override event Action<GameEntity>? EventOnEntityMove;
 
-    private ClientNetworkService _network;
+    private readonly ClientNetworkService _network;
 
     public ClientEntityService(INetworkService network)
     {
@@ -71,7 +71,7 @@ public class ClientEntityService : AbstractEntityService
 
     public override void Draw() { }
 
-    private void OnEntitySpawnMessage(INetworkMessage message, Common.Player.NetworkPlayer? _)
+    private void OnEntitySpawnMessage(INetworkMessage message, NetworkPlayer? _)
     {
         var castedMessage = (EntitySpawnMessage) message;
 
@@ -93,7 +93,7 @@ public class ClientEntityService : AbstractEntityService
         EventOnEntitySpawn?.Invoke(entity);
     }
 
-    private void OnEntityMoveMessage(INetworkMessage message, Common.Player.NetworkPlayer? _)
+    private void OnEntityMoveMessage(INetworkMessage message, NetworkPlayer? _)
     {
         var castedMessage = (EntityMoveMessage) message;
 
@@ -111,7 +111,7 @@ public class ClientEntityService : AbstractEntityService
         EventOnEntityMove?.Invoke(entity);
     }
 
-    private void OnEntityDespawnMessage(INetworkMessage message, Common.Player.NetworkPlayer? _)
+    private void OnEntityDespawnMessage(INetworkMessage message, NetworkPlayer? _)
     {
         var castedMessage = (EntityDespawnMessage) message;
 

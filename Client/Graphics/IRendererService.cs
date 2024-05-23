@@ -8,8 +8,6 @@ namespace Client.Graphics;
 public interface IRendererService: IService, IDisposable
 {
     public Color ClearColor { get; set; }
-    
-    public void SetViewSize(Vector2 size);
 
     public void Begin(Matrix4x4? view = null);
 

@@ -33,7 +33,7 @@ public sealed class VulkanGraphicsDeviceService: IGraphicsDeviceService, IDispos
         _presentQueue = new PresentQueue(_vk, _logicalDevice, _surface, 0);
         _commandPool = new VulkanCommandPool(_vk, _logicalDevice, _graphicsQueue.QueueFamilyIndex);
         _swapChain = new VulkanSwapChain(_vk, _logicalDevice, _surface, _renderPass, _commandPool, _windowService, 3, 
-            false, _presentQueue, new []{_graphicsQueue});
+            true, _presentQueue, new []{_graphicsQueue});
         _descriptorPool = new VulkanDescriptorPool(_vk, _logicalDevice);
         _pipelineCache = new VulkanPipelineCache(_vk, _logicalDevice);
         _windowService.OnResize += WindowResized;

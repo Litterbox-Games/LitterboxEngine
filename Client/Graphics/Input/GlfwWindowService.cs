@@ -12,7 +12,7 @@ public unsafe class GlfwWindowService : IWindowService, IDisposable
     public event Action<int, int>? OnResize; 
     public event Action? OnPollEvents;
 
-    public GlfwWindowService(GlfwCallbacks.KeyCallback? keyCallback = null)
+    public GlfwWindowService()
     {
         Title = "Litterbox Engine";
         
@@ -27,10 +27,14 @@ public unsafe class GlfwWindowService : IWindowService, IDisposable
         Glfw.WindowHint(WindowHintClientApi.ClientApi, ClientApi.NoApi);
         Glfw.WindowHint(WindowHintBool.Maximized, false);
         
-        var videoMode = Glfw.GetVideoMode(Glfw.GetPrimaryMonitor());
+        // var videoMode = Glfw.GetVideoMode(Glfw.GetPrimaryMonitor());
+        // 
+        // Width = videoMode->Width / 2;
+        // Height = videoMode->Height / 2;
 
-        Width = videoMode->Width / 2;
-        Height = videoMode->Height / 2;
+        Width = 1920;
+        Height = 1080;
+        
         WindowHandle = Glfw.CreateWindow(Width, Height, Title, null, null);
 
         if (WindowHandle == null)

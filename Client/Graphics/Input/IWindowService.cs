@@ -7,7 +7,6 @@ public interface IWindowService: IService
     public string Title { get; }
     public int Height { get; }
     public int Width { get; }
-
     public event Action<int, int>? OnResize;
     public void PollEvents();
     public event Action? OnPollEvents;
