@@ -7,12 +7,12 @@ namespace Client.Player;
 
 public class ClientPlayerService : IPlayerService
 {
-    private readonly List<Common.Player.NetworkPlayer> _players = new();
+    private readonly List<NetworkPlayer> _players = new();
 
     private IHost _host;
     private INetworkService _network;
 
-    public IEnumerable<Common.Player.NetworkPlayer> Players => _players;
+    public IEnumerable<NetworkPlayer> Players => _players;
 
     public ClientPlayerService(IHost host, INetworkService networkService)
     {

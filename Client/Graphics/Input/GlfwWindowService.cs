@@ -9,8 +9,7 @@ public unsafe class GlfwWindowService : IWindowService, IDisposable
     public string Title { get; }
     public int Width { get; private set; }
     public int Height { get; private set; }
-    public event Action<int, int>? OnResize; 
-    public event Action? OnPollEvents;
+    public event Action<int, int>? OnResize;
 
     public GlfwWindowService()
     {
@@ -63,7 +62,6 @@ public unsafe class GlfwWindowService : IWindowService, IDisposable
     public void PollEvents()
     {
         Glfw.PollEvents();
-        OnPollEvents?.Invoke();
     }
     
     public bool ShouldClose()

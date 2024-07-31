@@ -16,7 +16,12 @@ public class GlfwMouseService: IMouseService
     public unsafe GlfwMouseService(GlfwWindowService windowService)
     {
         windowService.Glfw.SetCursorPosCallback(windowService.WindowHandle, 
-            (_, x, y) => CurrentPosition = new Vector2((float)x, (float)y));
+            (_, x, y) =>
+            {
+                PreviousPosition = CurrentPosition;
+                CurrentPosition = new Vector2((float) x, (float) y);
+                Displacement = CurrentPosition - PreviousPosition;
+            });
         windowService.Glfw.SetCursorEnterCallback(windowService.WindowHandle, 
             (handle, entered) => InWindow = entered);
         windowService.Glfw.SetMouseButtonCallback(windowService.WindowHandle, (_, button, action, _) =>
@@ -24,12 +29,5 @@ public class GlfwMouseService: IMouseService
             IsLeftButtonPressed = button == MouseButton.Left && action == InputAction.Press;
             IsRightButtonPressed = button == MouseButton.Right && action == InputAction.Press;
         });
-        windowService.OnPollEvents += Input;
-    }
-
-    private void Input()
-    {
-        Displacement = CurrentPosition - PreviousPosition;
-        PreviousPosition = CurrentPosition;
     }
 }

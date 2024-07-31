@@ -45,8 +45,12 @@ public class Camera
 
     private Matrix4x4 CalculateViewMatrix()
     {
-        return Matrix4x4.CreateScale(1, 1, 1) *
-               Matrix4x4.CreateTranslation(-Position.X - Size.X / 2f, -Position.Y - Size.Y / 2f, 0f) *
-               Matrix4x4.CreateOrthographic(Size.X * Zoom, Size.Y * Zoom, -1, 1);
+        return 
+            // Offset by the camera's position
+            Matrix4x4.CreateTranslation(-Position.X, -Position.Y, 0)
+            // Center the camera (Vulkan's origin is in the center of the screen)
+            * Matrix4x4.CreateTranslation(-0.5f, -0.5f, 0f)
+            // Convert from screen coords to world coords
+            * Matrix4x4.CreateScale(new Vector3(2.0f / Size.X * 96, 2.0f / Size.Y * 96, 0), Vector3.Zero);
     }
 }

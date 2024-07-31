@@ -30,6 +30,7 @@ public class EntityRenderService : ITickableService
 
         _entityService.Entities.ForEach(x =>
         {
+            _rendererService.DrawRectangle(new RectangleF(x.Position.X, x.Position.Y, 1, 1), Color.Red);
             _rendererService.DrawTexture(_textureAtlas, _textureAtlas.GetSourceRectangle(5, 0), new RectangleF(x.Position.X, x.Position.Y, 1, 1), Color.White);
         });
     }

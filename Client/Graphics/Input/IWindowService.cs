@@ -9,7 +9,6 @@ public interface IWindowService: IService
     public int Width { get; }
     public event Action<int, int>? OnResize;
     public void PollEvents();
-    public event Action? OnPollEvents;
     public bool ShouldClose();
     public void SetShouldClose();
     

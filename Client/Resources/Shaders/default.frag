@@ -10,5 +10,9 @@ layout(location = 2) flat in int fragTexIndex;
 layout(location = 0) out vec4 outColor;
 
 void main() {
-    outColor = texture(sampler2D(textures[fragTexIndex], samp), fragTexCoords) * fragColor;
+    vec4 textureColor = texture(sampler2D(textures[fragTexIndex], samp), fragTexCoords);
+    if (textureColor.w == 0.0f)
+        discard;
+    else
+        outColor = textureColor * fragColor;
 }

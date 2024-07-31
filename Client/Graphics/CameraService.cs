@@ -9,8 +9,9 @@ namespace Client.Graphics;
 public class CameraService : ITickableService
 {
     public readonly Camera Camera;
-    public int ScaleFactor;
-    
+    public float Speed = 15;
+    public Vector2 Target;
+
     public CameraService(IWindowService windowService)
     {
         Camera = new Camera(Vector2.Zero, new Vector2(windowService.Width, windowService.Height));
@@ -20,15 +21,17 @@ public class CameraService : ITickableService
 
     private void RecalculateCamera(int width, int height)
     {
-        ScaleFactor = width / 20;
-        Camera.Size = new Vector2(width, height) / ScaleFactor;
+        Camera.Size = new Vector2(width, height);
         Camera.Update();
     }
     
     /// <inheritdoc />
     public void Update(float deltaTime)
     {
-        // Camera.Update();    
+        if (Camera.Position == Target) return;
+        
+        Camera.Position = Vector2.Lerp(Camera.Position, Target, Speed * deltaTime);
+        Camera.Update();
     }
 
     /// <inheritdoc />
