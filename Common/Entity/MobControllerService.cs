@@ -34,15 +34,18 @@ public class MobControllerService : ITickableService
         _entityService.SpawnEntity(entity);
     }
 
-    private float totalTime = 0f;
+    private float _totalTime = 0f;
     
     public void Update(float deltaTime)
     {
-        totalTime += deltaTime;
+        _totalTime += deltaTime;
         
         _entities.ForEach(x =>
         {
-            x.Position = new Vector2(MathF.Sin(totalTime) * 2, x.Position.Y);
+            x.Position = x.Position with
+            {
+                X = MathF.Sin(_totalTime) * 2
+            };
         });
     }
 
