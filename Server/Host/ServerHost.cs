@@ -1,4 +1,6 @@
-﻿using Common.Host;
+﻿using System.Numerics;
+using Common.Entity;
+using Common.Host;
 using Common.Network;
 
 namespace Server.Host;
@@ -18,5 +20,8 @@ public class ServerHost : AbstractHost
         const ushort port = 7777;
         
         networking.Listen(port);
+        
+        Resolve<MobControllerService>().SpawnMobEntity(new Vector2(5, 5));
+        Resolve<MobControllerService>().SpawnMobEntity(new Vector2(-5, 5));
     }
 }

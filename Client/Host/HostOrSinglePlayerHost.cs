@@ -21,6 +21,7 @@ public class HostOrSinglePlayerHost : AbstractHost
         var networkService = (ServerNetworkService)Resolve<INetworkService>();
         networkService.Listen(7777);
         
-        Resolve<MobControllerService>().SpawnMobEntity(new Vector2(0, 5));
+        Resolve<MobControllerService>().SpawnMobEntity(new Vector2(5, 5));
+        Resolve<MobControllerService>().SpawnMobEntity(new Vector2(-5, 5));
     }
 }
