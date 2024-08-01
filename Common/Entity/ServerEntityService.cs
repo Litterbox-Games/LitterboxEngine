@@ -69,14 +69,13 @@ public class ServerEntityService : AbstractEntityService
                 if (interpolationFactor <= 1)
                     x.Position = Vector2.Lerp(arr[0].Position, arr[1].Position, (float) interpolationFactor);
             }
-
         });
     }
 
     /// <inheritdoc />
     public override void Draw() { }
-    
-     private void OnEntityMoveMessage(INetworkMessage message, Player.NetworkPlayer? player)
+
+    private void OnEntityMoveMessage(INetworkMessage message, Player.NetworkPlayer? player)
     {
         var castedMessage = (EntityMoveMessage) message;
 
@@ -103,6 +102,36 @@ public class ServerEntityService : AbstractEntityService
         EventOnEntityMove?.Invoke(entity);
     }
 
+    public void SpawnEntity(GameEntity entity)
+    {
+        _entities.Add(entity);
+
+        var entitySpawnMessage = new EntitySpawnMessage()
+        {
+            EntityType = entity.EntityType,
+            EntityId = entity.EntityId,
+            EntityOwner = entity.OwnerId,
+            EntityPosition = entity.Position
+        };
+        
+        _network.SendToAllPlayers(entitySpawnMessage);
+        EventOnEntitySpawn?.Invoke(entity);
+    }
+
+    public void DespawnEntity(GameEntity entity)
+    {
+        _entities.Remove(entity);
+
+        var entityDeleteMessage = new EntityDespawnMessage()
+        {
+            EntityId = entity.EntityId
+        };
+        
+        _network.SendToAllPlayers(entityDeleteMessage);
+        
+        EventOnEntityDespawn?.Invoke(entity);
+    }
+
     private void OnPlayerConnect(ServerPlayer player)
     {
         var entity = new PlayerEntity
@@ -113,21 +142,11 @@ public class ServerEntityService : AbstractEntityService
             Position = Vector2.Zero
         };
 
-        _entities.Add(entity);
-
-        var entitySpawnMessage = new EntitySpawnMessage
-        {
-            EntityType = 0,
-            EntityId = entity.EntityId,
-            EntityOwner = entity.OwnerId,
-            EntityPosition = entity.Position
-        };
-
-        _network.SendToAllPlayers(entitySpawnMessage);
-
+        SpawnEntity(entity);
+        
         foreach (var entityToSend in _entities.Where(entityToSend => entityToSend.EntityId != player.PlayerID))
         {
-            entitySpawnMessage = new EntitySpawnMessage
+           var entitySpawnMessage = new EntitySpawnMessage
             {
                 EntityId = entityToSend.EntityId,
                 EntityOwner = entityToSend.OwnerId,
@@ -138,8 +157,6 @@ public class ServerEntityService : AbstractEntityService
 
             _network.SendToPlayer(entitySpawnMessage, player);
         }
-
-        EventOnEntitySpawn?.Invoke(entity);
     }
 
     private void OnPlayerDisconnect(ServerPlayer player)
@@ -148,7 +165,8 @@ public class ServerEntityService : AbstractEntityService
 
         _entities.Remove(entity);
 
-        var entityDespawnMessage = new EntityDespawnMessage()
+        // TODO: Allow this to use DespawnEntity Method
+        var entityDespawnMessage = new EntityDespawnMessage
         {
             EntityId = player.PlayerID
         };

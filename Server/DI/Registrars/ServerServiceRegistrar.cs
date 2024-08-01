@@ -27,6 +27,7 @@ public class ServerServiceRegistrar : IServiceRegistrar
         host.RegisterSingleton<INetworkService, ServerNetworkService>();
         host.RegisterSingleton<IPlayerService, ServerPlayerService>();
         host.RegisterSingleton<IEntityService, ServerEntityService>();
+        host.RegisterSingleton<MobControllerService, MobControllerService>();
         host.RegisterSingleton<IWorldGenerator, EarthGenerator>("earth");
         host.RegisterSingleton<IWorldService, ServerWorldService>();
     }

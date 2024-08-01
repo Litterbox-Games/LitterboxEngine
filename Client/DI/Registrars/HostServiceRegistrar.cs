@@ -39,6 +39,7 @@ public class HostServiceRegistrar : IServiceRegistrar
         
         host.RegisterSingleton<CameraService, CameraService>();
         host.RegisterSingleton<PlayerControlService, PlayerControlService>();
+        host.RegisterSingleton<MobControllerService, MobControllerService>();
         
         host.RegisterSingleton<INetworkService, ServerNetworkService>();
         host.RegisterSingleton<IPlayerService, ServerPlayerService>();
