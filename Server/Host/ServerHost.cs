@@ -22,6 +22,6 @@ public class ServerHost : AbstractHost
         networking.Listen(port);
         
         Resolve<MobControllerService>().SpawnMobEntity(new Vector2(5, 5));
-        Resolve<MobControllerService>().SpawnMobEntity(new Vector2(-5, 5));
+        Resolve<MobControllerService>().SpawnMobEntity(new Vector2(-5, -5));
     }
 }

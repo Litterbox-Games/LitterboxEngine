@@ -8,6 +8,8 @@ public class MobControllerService : ITickableService
     private ServerEntityService _entityService;
 
     private readonly List<MobEntity> _entities = [];
+
+    private Random _random = new();
     
     public MobControllerService(IEntityService entityService)
     {
@@ -26,29 +28,21 @@ public class MobControllerService : ITickableService
         {
             Position = position,
             OwnerId = 0,
-            EntityId = (ulong) new Random(DateTime.Now.Millisecond).Next()
+            EntityId = (ulong) _random.Next()
         };
         
         _entityService.SpawnEntity(entity);
     }
 
-    private bool movingPosX = true;
+    private float totalTime = 0f;
     
     public void Update(float deltaTime)
     {
+        totalTime += deltaTime;
+        
         _entities.ForEach(x =>
         {
-            movingPosX = x.Position.X switch
-            {
-                > 5 => false,
-                < -5 => true,
-                _ => movingPosX
-            };
-
-            if (movingPosX)
-                x.Position += new Vector2(deltaTime * 5, 0);
-            else
-                x.Position -= new Vector2(deltaTime * 5, 0);
+            x.Position = new Vector2(MathF.Sin(totalTime) * 2, x.Position.Y);
         });
     }
 
