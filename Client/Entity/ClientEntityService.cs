@@ -31,7 +31,7 @@ public class ClientEntityService : AbstractEntityService
     {
         _entities.ForEach(x =>
         {
-            if ((x.OwnerId == _network.PlayerId || x.OwnerId == 0) &&
+            if ((x.OwnerId == _network.PlayerId) &&
                 x.Position != x.LastSentPosition &&
                 (DateTime.Now - x.LastUpdateTime).TotalMilliseconds > 50)
             {
