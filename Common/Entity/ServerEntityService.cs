@@ -32,11 +32,14 @@ public class ServerEntityService : AbstractEntityService
     /// <inheritdoc />
     public override void Update(float deltaTime)
     {
+        var now = DateTime.Now;
+        var renderTime = now - new TimeSpan(0, 0, 0, 0, 100); 
         _entities.ForEach(x =>
         {
+            
             if ((x.OwnerId == _network.PlayerId || x.OwnerId == 0)
                 && x.Position != x.LastSentPosition
-                && (DateTime.Now - x.LastUpdateTime).TotalMilliseconds > 50)
+                && (now - x.LastUpdateTime).TotalMilliseconds > 50)
             {
                 var message = new EntityMoveMessage
                 {
@@ -47,35 +50,35 @@ public class ServerEntityService : AbstractEntityService
                 _network.SendToAllPlayers(message);
 
                 x.LastSentPosition = x.Position;
-                x.LastUpdateTime = DateTime.Now;
+                x.LastUpdateTime = now;
             }
             else
             {
-                var renderTime = DateTime.Now - new TimeSpan(0, 0, 0, 0, 100);
-                if (x.QueuedMovements.Count <= 1)
+                if (x.QueuedMovements.Count <= 1)   
                     return;
-                
-                while (x.QueuedMovements.Count > 2 && renderTime > x.QueuedMovements.ToArray()[1].TimeStamp)
+
+                while (x.QueuedMovements.Count > 2 && renderTime > x.QueuedMovements.ElementAt(1).TimeStamp)
                 {
                     x.QueuedMovements.Dequeue();
                 }
 
-                var arr = x.QueuedMovements.ToArray();
+                var firstMovement = x.QueuedMovements.ElementAt(0);
+                var secondMovement = x.QueuedMovements.ElementAt(1);
+                
+                var interpolationFactor = (renderTime - firstMovement.TimeStamp).TotalMilliseconds /
+                                          (secondMovement.TimeStamp - firstMovement.TimeStamp).TotalMilliseconds;
 
-                var interpolationFactor = (renderTime - arr[0].TimeStamp).TotalMilliseconds /
-                                          (arr[1].TimeStamp -
-                                           arr[0].TimeStamp).TotalMilliseconds;
-
-                if (interpolationFactor <= 1)
-                    x.Position = Vector2.Lerp(arr[0].Position, arr[1].Position, (float) interpolationFactor);
+                interpolationFactor = interpolationFactor <= 1 ? interpolationFactor : 1;
+                x.Position = Vector2.Lerp(firstMovement.Position, secondMovement.Position, (float) interpolationFactor);
             }
+            
         });
     }
 
     /// <inheritdoc />
     public override void Draw() { }
 
-    private void OnEntityMoveMessage(INetworkMessage message, Player.NetworkPlayer? player)
+    private void OnEntityMoveMessage(INetworkMessage message, NetworkPlayer? player)
     {
         var castedMessage = (EntityMoveMessage) message;
 
@@ -87,8 +90,6 @@ public class ServerEntityService : AbstractEntityService
 
         // TODO: Shouldn't need to do this unless Entity changes owners (car maybe?)
         entity.LastSentPosition = castedMessage.NewPosition;
-
-        entity.LastUpdateTime = DateTime.Now;
 
         // Forward this packet to all players
         foreach (var networkPlayer in _network.Players)

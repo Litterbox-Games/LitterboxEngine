@@ -7,10 +7,10 @@ public class MobControllerService : ITickableService
 {
     private ServerEntityService _entityService;
 
-    private readonly List<MobEntity> _entities = [];
+    private readonly List<MobEntity> _entities = new();
 
     private Random _random = new();
-    
+
     public MobControllerService(IEntityService entityService)
     {
         if (entityService is not ServerEntityService service)
@@ -28,7 +28,8 @@ public class MobControllerService : ITickableService
         {
             Position = position,
             OwnerId = 0,
-            EntityId = (ulong) _random.Next()
+            EntityId = (ulong) _random.Next(),
+            SpawnPosition = position
         };
         
         _entityService.SpawnEntity(entity);
@@ -44,7 +45,7 @@ public class MobControllerService : ITickableService
         {
             x.Position = x.Position with
             {
-                X = MathF.Sin(_totalTime) * 2
+                X = x.SpawnPosition.X + MathF.Sin(_totalTime)
             };
         });
     }

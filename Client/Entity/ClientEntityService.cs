@@ -29,11 +29,13 @@ public class ClientEntityService : AbstractEntityService
 
     public override void Update(float deltaTime)
     {
+        var now = DateTime.Now;
+        var renderTime = now - new TimeSpan(0, 0, 0, 0, 100);
         _entities.ForEach(x =>
         {
-            if ((x.OwnerId == _network.PlayerId) &&
+            if (x.OwnerId == _network.PlayerId &&
                 x.Position != x.LastSentPosition &&
-                (DateTime.Now - x.LastUpdateTime).TotalMilliseconds > 50)
+                (now - x.LastUpdateTime).TotalMilliseconds > 50)
             {
                 var message = new EntityMoveMessage
                 {
@@ -44,27 +46,27 @@ public class ClientEntityService : AbstractEntityService
                 _network.SendToServer(message);
 
                 x.LastSentPosition = x.Position;
-                x.LastUpdateTime = DateTime.Now;
+                x.LastUpdateTime = now;
             }
             else
             {
-                var renderTime = DateTime.Now - new TimeSpan(0, 0, 0, 0, 100);
                 if (x.QueuedMovements.Count <= 1)
                     return;
+                    
                 
-                while (x.QueuedMovements.Count > 2 && renderTime > x.QueuedMovements.ToArray()[1].TimeStamp)
+                while (x.QueuedMovements.Count > 2 && renderTime > x.QueuedMovements.ElementAt(1).TimeStamp)
                 {
                     x.QueuedMovements.Dequeue();
                 }
 
-                var arr = x.QueuedMovements.ToArray();
-
-                var interpolationFactor = (renderTime - arr[0].TimeStamp).TotalMilliseconds /
-                                          (arr[1].TimeStamp -
-                                           arr[0].TimeStamp).TotalMilliseconds;
-
-                if (interpolationFactor <= 1)
-                    x.Position = Vector2.Lerp(arr[0].Position, arr[1].Position, (float) interpolationFactor);
+                var firstMovement = x.QueuedMovements.ElementAt(0);
+                var secondMovement = x.QueuedMovements.ElementAt(1);
+                
+                var interpolationFactor = (renderTime - firstMovement.TimeStamp).TotalMilliseconds /
+                                          (secondMovement.TimeStamp - firstMovement.TimeStamp).TotalMilliseconds;
+                
+                interpolationFactor = interpolationFactor <= 1 ? interpolationFactor : 1;
+                x.Position = Vector2.Lerp(firstMovement.Position, secondMovement.Position, (float) interpolationFactor);
             }
         });
     }
@@ -99,14 +101,13 @@ public class ClientEntityService : AbstractEntityService
 
         var entity = _entities.FirstOrDefault(x => x.EntityId == castedMessage.EntityId);
 
-        if (entity == null) return;
+        if (entity == null)
+            return;
 
         entity.QueuedMovements.Enqueue(new QueuedMovement(castedMessage.NewPosition, DateTime.Now));
 
         // TODO: Shouldn't need to do this unless Entity changes owners (car maybe?)
         entity.LastSentPosition = castedMessage.NewPosition;
-
-        entity.LastUpdateTime = DateTime.Now;
 
         EventOnEntityMove?.Invoke(entity);
     }

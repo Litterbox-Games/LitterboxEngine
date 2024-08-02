@@ -20,8 +20,13 @@ public class ServerHost : AbstractHost
         const ushort port = 7777;
         
         networking.Listen(port);
-        
-        Resolve<MobControllerService>().SpawnMobEntity(new Vector2(5, 5));
-        Resolve<MobControllerService>().SpawnMobEntity(new Vector2(-5, -5));
+
+        for (var x = 0; x < 9; x++)
+        {
+            for (var y = 0; y < 20; y++)
+            {
+                Resolve<MobControllerService>().SpawnMobEntity(new Vector2(x * 2, y * 2));
+            }    
+        }
     }
 }

@@ -11,7 +11,7 @@ namespace Client.Graphics;
 
 public class RendererService: IRendererService
 {
-    private const int MaxQuads = 400;
+    private const int MaxQuads = 3000;
     private const int MaxTextures = 8;
     
     private const int IndicesPerQuad = 6;
