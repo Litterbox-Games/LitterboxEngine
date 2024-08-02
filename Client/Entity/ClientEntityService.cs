@@ -29,6 +29,8 @@ public class ClientEntityService : AbstractEntityService
 
     public override void Update(float deltaTime)
     {
+        var moveMessage = new EntityMoveMessage();
+        
         var now = DateTime.Now;
         var renderTime = now - new TimeSpan(0, 0, 0, 0, 100);
         _entities.ForEach(x =>
@@ -37,13 +39,11 @@ public class ClientEntityService : AbstractEntityService
                 x.Position != x.LastSentPosition &&
                 (now - x.LastUpdateTime).TotalMilliseconds > 50)
             {
-                var message = new EntityMoveMessage
+                moveMessage.Entities.Add(new EntityMovement
                 {
                     EntityId = x.EntityId,
                     NewPosition = x.Position
-                };
-
-                _network.SendToServer(message);
+                });
 
                 x.LastSentPosition = x.Position;
                 x.LastUpdateTime = now;
@@ -69,6 +69,9 @@ public class ClientEntityService : AbstractEntityService
                 x.Position = Vector2.Lerp(firstMovement.Position, secondMovement.Position, (float) interpolationFactor);
             }
         });
+        
+        if (moveMessage.Entities.Count > 0)
+            _network.SendToServer(moveMessage);
     }
 
     public override void Draw() { }
@@ -99,17 +102,20 @@ public class ClientEntityService : AbstractEntityService
     {
         var castedMessage = (EntityMoveMessage) message;
 
-        var entity = _entities.FirstOrDefault(x => x.EntityId == castedMessage.EntityId);
+        castedMessage.Entities.ForEach(entityMovement =>
+        {
+            var entity = _entities.FirstOrDefault(x => x.EntityId == entityMovement.EntityId);
 
-        if (entity == null)
-            return;
+            if (entity == null)
+                return;
 
-        entity.QueuedMovements.Enqueue(new QueuedMovement(castedMessage.NewPosition, DateTime.Now));
+            entity.QueuedMovements.Enqueue(new QueuedMovement(entityMovement.NewPosition, DateTime.Now));
 
-        // TODO: Shouldn't need to do this unless Entity changes owners (car maybe?)
-        entity.LastSentPosition = castedMessage.NewPosition;
+            // TODO: Shouldn't need to do this unless Entity changes owners (car maybe?)
+            entity.LastSentPosition = entityMovement.NewPosition;
 
-        EventOnEntityMove?.Invoke(entity);
+            EventOnEntityMove?.Invoke(entity);    
+        });
     }
 
     private void OnEntityDespawnMessage(INetworkMessage message, NetworkPlayer? _)

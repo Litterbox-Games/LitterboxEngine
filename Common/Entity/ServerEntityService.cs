@@ -32,22 +32,21 @@ public class ServerEntityService : AbstractEntityService
     /// <inheritdoc />
     public override void Update(float deltaTime)
     {
+        var moveMessage = new EntityMoveMessage();
+        
         var now = DateTime.Now;
-        var renderTime = now - new TimeSpan(0, 0, 0, 0, 100); 
+        var renderTime = now - new TimeSpan(0, 0, 0, 0, 100);
         _entities.ForEach(x =>
         {
-            
             if ((x.OwnerId == _network.PlayerId || x.OwnerId == 0)
                 && x.Position != x.LastSentPosition
                 && (now - x.LastUpdateTime).TotalMilliseconds > 50)
             {
-                var message = new EntityMoveMessage
+                moveMessage.Entities.Add(new EntityMovement
                 {
                     EntityId = x.EntityId,
                     NewPosition = x.Position
-                };
-
-                _network.SendToAllPlayers(message);
+                });
 
                 x.LastSentPosition = x.Position;
                 x.LastUpdateTime = now;
@@ -71,8 +70,10 @@ public class ServerEntityService : AbstractEntityService
                 interpolationFactor = interpolationFactor <= 1 ? interpolationFactor : 1;
                 x.Position = Vector2.Lerp(firstMovement.Position, secondMovement.Position, (float) interpolationFactor);
             }
-            
         });
+        
+        if (moveMessage.Entities.Count > 0)
+            _network.SendToAllPlayers(moveMessage);
     }
 
     /// <inheritdoc />
@@ -82,25 +83,20 @@ public class ServerEntityService : AbstractEntityService
     {
         var castedMessage = (EntityMoveMessage) message;
 
-        var entity = _entities.FirstOrDefault(x => x.EntityId == castedMessage.EntityId);
-
-        if (entity == null) return;
-
-        entity.QueuedMovements.Enqueue(new QueuedMovement(castedMessage.NewPosition, DateTime.Now));
-
-        // TODO: Shouldn't need to do this unless Entity changes owners (car maybe?)
-        entity.LastSentPosition = castedMessage.NewPosition;
-
-        // Forward this packet to all players
-        foreach (var networkPlayer in _network.Players)
+        castedMessage.Entities.ForEach(entityMovement =>
         {
-            if (networkPlayer != player)
-            {
-                _network.SendToPlayer(castedMessage, networkPlayer);
-            }
-        }
+            var entity = _entities.FirstOrDefault(x => x.EntityId == entityMovement.EntityId);
 
-        EventOnEntityMove?.Invoke(entity);
+            if (entity == null)
+                return;
+
+            entity.QueuedMovements.Enqueue(new QueuedMovement(entityMovement.NewPosition, DateTime.Now));
+
+            // TODO: Shouldn't need to do this unless Entity changes owners (car maybe?)
+            entity.LastSentPosition = entityMovement.NewPosition;
+
+            EventOnEntityMove?.Invoke(entity);    
+        });
     }
 
     public void SpawnEntity(GameEntity entity)
