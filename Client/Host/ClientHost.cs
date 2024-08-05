@@ -15,7 +15,7 @@ public class ClientHost : AbstractHost
     {
         RegisterServices();
 
-        var networkService = (ClientNetworkService)Resolve<INetworkService>();
+        var networkService = Resolve<ClientNetworkService>();
         
         // Warm Service Singletons
         Resolve<IPlayerService>();

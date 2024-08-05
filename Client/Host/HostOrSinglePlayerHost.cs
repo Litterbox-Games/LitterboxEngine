@@ -18,7 +18,7 @@ public class HostOrSinglePlayerHost : AbstractHost
         if (GameMode != EGameMode.Host)
             return;
         
-        var networkService = (ServerNetworkService)Resolve<INetworkService>();
+        var networkService = Resolve<ServerNetworkService>();
         networkService.Listen(7777);
         
         Resolve<MobControllerService>().SpawnMobEntity(new Vector2(5, 5));

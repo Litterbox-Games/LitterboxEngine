@@ -15,7 +15,7 @@ public class ServerHost : AbstractHost
     {
         RegisterServices();
         
-        var networking = (ServerNetworkService)Resolve<INetworkService>();
+        var networking = Resolve<ServerNetworkService>();
 
         const ushort port = 7777;
         
