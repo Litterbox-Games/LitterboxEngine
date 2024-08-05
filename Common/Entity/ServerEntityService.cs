@@ -81,6 +81,7 @@ public class ServerEntityService : AbstractEntityService
 
     private void OnEntityMoveMessage(INetworkMessage message, NetworkPlayer? player)
     {
+        var now = DateTime.Now;
         var castedMessage = (EntityMoveMessage) message;
 
         castedMessage.Entities.ForEach(entityMovement =>
@@ -90,13 +91,22 @@ public class ServerEntityService : AbstractEntityService
             if (entity == null)
                 return;
 
-            entity.QueuedMovements.Enqueue(new QueuedMovement(entityMovement.NewPosition, DateTime.Now));
+            entity.QueuedMovements.Enqueue(new QueuedMovement(entityMovement.NewPosition, now));
 
             // TODO: Shouldn't need to do this unless Entity changes owners (car maybe?)
             entity.LastSentPosition = entityMovement.NewPosition;
 
             EventOnEntityMove?.Invoke(entity);    
         });
+        
+        // Forward this packet to all players
+        foreach (var networkPlayer in _network.Players)
+        {
+            if (networkPlayer != player)
+            {
+                _network.SendToPlayer(castedMessage, networkPlayer);
+            }
+        }
     }
 
     public void SpawnEntity(GameEntity entity)

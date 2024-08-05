@@ -100,6 +100,7 @@ public class ClientEntityService : AbstractEntityService
 
     private void OnEntityMoveMessage(INetworkMessage message, NetworkPlayer? _)
     {
+        var now = DateTime.Now;
         var castedMessage = (EntityMoveMessage) message;
 
         castedMessage.Entities.ForEach(entityMovement =>
@@ -109,7 +110,7 @@ public class ClientEntityService : AbstractEntityService
             if (entity == null)
                 return;
 
-            entity.QueuedMovements.Enqueue(new QueuedMovement(entityMovement.NewPosition, DateTime.Now));
+            entity.QueuedMovements.Enqueue(new QueuedMovement(entityMovement.NewPosition, now));
 
             // TODO: Shouldn't need to do this unless Entity changes owners (car maybe?)
             entity.LastSentPosition = entityMovement.NewPosition;
