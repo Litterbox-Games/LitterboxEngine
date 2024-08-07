@@ -15,6 +15,7 @@ public enum BufferUsage
 {
     Vertex,
     Index,
-    Uniform
+    Uniform,
+    StorageBuffer
 }
     

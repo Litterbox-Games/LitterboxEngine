@@ -45,6 +45,8 @@ public class Camera
 
     private Matrix4x4 CalculateViewMatrix()
     {
+
+        // return Matrix4x4.CreateTranslation(-0.5f, -0.5f, 0f); 
         return 
             // Offset by the camera's position
             Matrix4x4.CreateTranslation(-Position.X, -Position.Y, 0)

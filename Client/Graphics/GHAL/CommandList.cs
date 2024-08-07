@@ -11,6 +11,7 @@ public abstract class CommandList
     public abstract void UpdateBuffer<T>(Buffer buffer, ulong offset, T[] data) where T : unmanaged;
     public abstract void SetResourceSet(uint set, ResourceSet resourceSet);
     public abstract void DrawIndexed(uint indexCount);
+    public abstract void Draw(uint indexCount);
 }
 
 public enum IndexFormat

@@ -16,5 +16,6 @@ public enum ResourceKind
 {
     Sampler,
     TextureReadOnly,
-    UniformBuffer
+    UniformBuffer,
+    StorageBuffer
 }

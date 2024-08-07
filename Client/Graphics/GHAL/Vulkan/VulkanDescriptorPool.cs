@@ -30,6 +30,11 @@ public class VulkanDescriptorPool : IDisposable
             {
                 Type = DescriptorType.SampledImage,
                 DescriptorCount = descriptorCount,
+            },
+            new() // Storage Buffer Pool Size
+            {
+                Type = DescriptorType.StorageBuffer,
+                DescriptorCount = descriptorCount,
             }
         };
 

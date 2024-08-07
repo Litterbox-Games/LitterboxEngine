@@ -56,9 +56,9 @@ public class VulkanPipeline: Pipeline
             var vertexInputState = new PipelineVertexInputStateCreateInfo
             {
                 SType = StructureType.PipelineVertexInputStateCreateInfo,
-                VertexBindingDescriptionCount = 1,
+                // VertexBindingDescriptionCount = 1,
                 VertexAttributeDescriptionCount = (uint)attributeDescriptions.Length,
-                PVertexBindingDescriptions = &bindingDescription,
+                // PVertexBindingDescriptions = &bindingDescription,
                 PVertexAttributeDescriptions = attributeDescriptionsPtr,
             };
             

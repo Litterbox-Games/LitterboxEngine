@@ -127,4 +127,9 @@ public class VulkanCommandList: CommandList
     {
         _vk.CmdDrawIndexed(_swapChain.CurrentCommandBuffer.VkCommandBuffer, indexCount, 1, 0, 0, 0);
     }
+
+    public override void Draw(uint indexCount)
+    {
+        _vk.CmdDraw(_swapChain.CurrentCommandBuffer.VkCommandBuffer, indexCount, 1, 0, 0);        
+    }
 }

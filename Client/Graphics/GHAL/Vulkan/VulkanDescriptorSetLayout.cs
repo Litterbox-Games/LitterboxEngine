@@ -55,6 +55,7 @@ public class VulkanDescriptorSetLayout : ResourceLayout, IDisposable
           ResourceKind.Sampler => DescriptorType.Sampler,
           ResourceKind.TextureReadOnly => DescriptorType.SampledImage,
           ResourceKind.UniformBuffer => DescriptorType.UniformBuffer,
+          ResourceKind.StorageBuffer => DescriptorType.StorageBuffer,
           _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null)
         };
     }

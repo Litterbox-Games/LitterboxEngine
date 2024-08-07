@@ -15,7 +15,7 @@ public class VulkanDescriptorSet : ResourceSet
         _vk = vk;
         _logicalDevice = logicalDevice;
         
-        fixed (Silk.NET.Vulkan.DescriptorSetLayout* layoutsPtr = new[] { layout.VkDescriptorSetLayout })
+        fixed (DescriptorSetLayout* layoutsPtr = new[] { layout.VkDescriptorSetLayout })
         {
             DescriptorSetAllocateInfo allocateInfo = new()
             {
@@ -31,7 +31,31 @@ public class VulkanDescriptorSet : ResourceSet
         }
     }
 
-    public override unsafe void Update(uint binding, GHAL.Buffer buffer, uint index = 0)
+    public override unsafe void UpdateStorageBuffer(uint binding, Buffer buffer, uint index = 0)
+    {
+        var vkBuffer = (buffer as VulkanBuffer)!;
+        DescriptorBufferInfo bufferInfo = new()
+        {
+            Buffer = vkBuffer.VkBuffer,
+            Offset = 0,
+            Range = vkBuffer.Size
+        };
+
+        var descriptorWrite = new WriteDescriptorSet
+        {
+            SType = StructureType.WriteDescriptorSet,
+            DstSet = VkDescriptorSet,
+            DstBinding = binding,
+            DescriptorType = DescriptorType.StorageBuffer,
+            DescriptorCount = 1,
+            DstArrayElement = index,
+            PBufferInfo = &bufferInfo,
+        };
+        
+        _vk.UpdateDescriptorSets(_logicalDevice.VkLogicalDevice, 1, &descriptorWrite, 0, null);
+    }
+    
+    public override unsafe void Update(uint binding, Buffer buffer, uint index = 0)
     {
         var vkBuffer = (buffer as VulkanBuffer)!;
         DescriptorBufferInfo bufferInfo = new()
@@ -55,7 +79,7 @@ public class VulkanDescriptorSet : ResourceSet
         _vk.UpdateDescriptorSets(_logicalDevice.VkLogicalDevice, 1, &descriptorWrite, 0, null);
     }
 
-    public override unsafe void Update(uint binding, GHAL.Sampler sampler, uint index = 0)
+    public override unsafe void Update(uint binding, Sampler sampler, uint index = 0)
     {
         var vkSampler = (sampler as VulkanSampler)!;
         DescriptorImageInfo samplerInfo = new()

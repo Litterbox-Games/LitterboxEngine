@@ -30,10 +30,15 @@ public class RendererService: IRendererService
     private readonly Pipeline _pipeline;
     private readonly CommandList _commandList;
 
-    private readonly Vertex[] _vertices;
+    // private readonly Vertex[] _vertices;
     
-    private readonly Buffer _vertexBuffer;
-    private readonly Buffer _indexBuffer;
+    // private readonly Buffer _vertexBuffer;
+    // private readonly Buffer _indexBuffer;
+
+    private readonly Quad[] _quads;
+    
+    private readonly Buffer _quadsBuffer;
+    private readonly ResourceSet _quadsSet;
 
     private readonly Buffer _transformBuffer;
     private readonly ResourceSet _transformSet;
@@ -52,11 +57,11 @@ public class RendererService: IRendererService
         _graphicsDeviceService = graphicsDeviceService;
 
         // Vertex Buffer
-        _vertices = new Vertex[MaxVertices];
-        _vertexBuffer = _graphicsDeviceService.CreateBuffer(new BufferDescription(MaxVertices * Vertex.VertexLayout.Stride, BufferUsage.Vertex));
+        // _vertices = new Vertex[MaxVertices];
+        // _vertexBuffer = _graphicsDeviceService.CreateBuffer(new BufferDescription(MaxVertices * Vertex.VertexLayout.Stride, BufferUsage.Vertex));
         
         // Index Buffer
-        var indicesTemplate = new ushort[]
+        /*var indicesTemplate = new ushort[]
         {
             // Since indices are read clock wise:
             0, 1, 2, // tri 1
@@ -77,25 +82,45 @@ public class RendererService: IRendererService
             indices[startIndex + 3] = (uint)(indicesTemplate[3] + offset);
             indices[startIndex + 4] = (uint)(indicesTemplate[4] + offset);
             indices[startIndex + 5] = (uint)(indicesTemplate[5] + offset);
-        }
+        }*/
         
-        _indexBuffer = _graphicsDeviceService.CreateBuffer(new BufferDescription(MaxIndices * sizeof(uint), BufferUsage.Index));
-        _graphicsDeviceService.UpdateBuffer(_indexBuffer, 0, indices);
+        // _indexBuffer = _graphicsDeviceService.CreateBuffer(new BufferDescription(MaxIndices * sizeof(uint), BufferUsage.Index));
+        // _graphicsDeviceService.UpdateBuffer(_indexBuffer, 0, indices);
+        
+        _quads = new Quad[MaxQuads];
         
         var vertexShaderDesc = resourceService.Get<Shader>("Shaders/default.vert").ShaderDescription;
         var fragmentShaderDesc = resourceService.Get<Shader>("Shaders/default.frag").ShaderDescription;
 
         using var shaderProgram = _graphicsDeviceService.CreateShaderProgram(vertexShaderDesc, fragmentShaderDesc);
 
+        // default.vert:15-17
+        // layout(set = 0, binding = 0) uniform MVPBuffer {
+        //     mat4 uMVP;
+        // };
         _transformBuffer = _graphicsDeviceService.CreateBuffer(new BufferDescription((uint)sizeof(Matrix4x4), BufferUsage.Uniform));
         var transformLayout = _graphicsDeviceService.CreateResourceLayout(
-            // TODO: Rename ResourceLayoutElementDescription to Binding and remove ResourceLayoutDescription
-            new ResourceLayoutDescription(
-                new ResourceLayoutElementDescription(ResourceKind.UniformBuffer, ShaderStages.Vertex)));                                                                       
+            new ResourceLayoutDescription(new ResourceLayoutElementDescription(ResourceKind.UniformBuffer, ShaderStages.Vertex)));                                                                       
         
         _transformSet = _graphicsDeviceService.CreateResourceSet(transformLayout);
         _transformSet.Update(0, _transformBuffer);
-
+        
+        Console.WriteLine(sizeof(Quad));
+        
+        // default.vert:20-22
+        // layout(std140, set = 1, binding = 0) buffer QuadBlock {
+        //     Quad quads[];
+        // };
+        _quadsBuffer = _graphicsDeviceService.CreateBuffer(new BufferDescription((uint)sizeof(Quad) * MaxQuads, BufferUsage.StorageBuffer));
+        var quadsLayout = _graphicsDeviceService.CreateResourceLayout(
+            new ResourceLayoutDescription(new ResourceLayoutElementDescription(ResourceKind.StorageBuffer, ShaderStages.Vertex)));
+        
+        _quadsSet = _graphicsDeviceService.CreateResourceSet(quadsLayout);
+        _quadsSet.UpdateStorageBuffer(0, _quadsBuffer);
+        
+        // default.frag:3-4
+        // layout(set = 2, binding = 0) uniform texture2D textures[8];
+        // layout(set = 2, binding = 1) uniform sampler samp;
         var textureLayout = _graphicsDeviceService.CreateResourceLayout(
             new ResourceLayoutDescription(
                 new ResourceLayoutElementDescription(ResourceKind.TextureReadOnly, ShaderStages.Fragment, MaxTextures),
@@ -119,10 +144,11 @@ public class RendererService: IRendererService
                 EnableScissor: true,
                 EnableDepthTest: true),
             PrimitiveTopology: PrimitiveTopology.TriangleList,
-            ResourceLayouts: new []{ transformLayout , textureLayout },
+            ResourceLayouts: new []{ transformLayout, quadsLayout, textureLayout },
             ShaderSet: new ShaderSetDescription(
                 ShaderProgram: shaderProgram,
-                VertexLayout: Vertex.VertexLayout)
+                // Make VertexLayout nullable
+                VertexLayout: Quad.VertexLayout)
         );
 
         _pipeline = _graphicsDeviceService.CreatePipeline(pipelineDescription);
@@ -130,7 +156,7 @@ public class RendererService: IRendererService
         _commandList = _graphicsDeviceService.CreateCommandList();
     }
 
-    public unsafe void Begin(Matrix4x4? mvp = null)
+    public void Begin(Matrix4x4? mvp = null)
     {
         _mvp = mvp ?? Matrix4x4.Identity;
         
@@ -138,21 +164,22 @@ public class RendererService: IRendererService
         _commandList.Begin(ClearColor);
         _commandList.SetPipeline(_pipeline);
         
-        
-        
         _commandList.UpdateBuffer(_transformBuffer, 0, _mvp);
         _commandList.SetResourceSet(0, _transformSet);
     }
 
     private void Flush()
     {
-        _commandList.SetResourceSet(1, _textureSet);
+        _commandList.SetResourceSet(2, _textureSet);
         
-        _commandList.UpdateBuffer(_vertexBuffer, 0, _vertices);
-        _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt32);
-        _commandList.SetVertexBuffer(0, _vertexBuffer);
-
-        _commandList.DrawIndexed(IndexCount);
+        // _commandList.UpdateBuffer(_vertexBuffer, 0, _vertices);
+        // _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt32);
+        // _commandList.SetVertexBuffer(0, _vertexBuffer);
+        
+        _commandList.UpdateBuffer(_quadsBuffer, 0, _quads);
+        _commandList.SetResourceSet(1, _quadsSet);
+        
+        _commandList.Draw(IndexCount);
 
         _quadCount = 0;
         _textureCount = 1;
@@ -160,7 +187,7 @@ public class RendererService: IRendererService
     
     public void End()
     {
-        Flush();
+        if (_quadCount > 0) Flush();
         
         _commandList.End();
         _graphicsDeviceService.SubmitCommands();
@@ -189,42 +216,56 @@ public class RendererService: IRendererService
             _textureSet.Update(0, texture, (uint)texIndex);
             _textureCount++;
         }
+
+        _quads[_quadCount] = new Quad
+        {
+            Max = new Vector2(destination.Right, destination.Bottom),
+            Min = new Vector2(destination.Left, destination.Top),
+            TexMax = new Vector2((float) source.Right / texture.Width, (float) source.Bottom / texture.Height),
+            TexMin = new Vector2((float) source.Left / texture.Width, (float) source.Top / texture.Height),
+            Color = color,
+            Depth = depth,
+            TexIndex = texIndex
+        };
         
-        AddQuad(
-            new Vertex { Position = new Vector3(destination.Left, destination.Top, depth), Color = color, TexCoords = new Vector2((float)source.Left / texture.Width, (float)source.Top / texture.Height), TexIndex = texIndex },
-            new Vertex { Position = new Vector3(destination.Right, destination.Top, depth), Color = color, TexCoords = new Vector2((float)source.Right / texture.Width, (float)source.Top / texture.Height), TexIndex = texIndex },
-            new Vertex { Position = new Vector3(destination.Left, destination.Bottom, depth), Color = color, TexCoords = new Vector2((float)source.Left / texture.Width, (float)source.Bottom / texture.Height), TexIndex = texIndex },
-            new Vertex { Position = new Vector3(destination.Right, destination.Bottom, depth), Color = color, TexCoords = new Vector2((float)source.Right / texture.Width, (float)source.Bottom / texture.Height), TexIndex = texIndex }
-        );
+        _quadCount++;
+        
+        // AddQuad(
+        //     new Vertex { Position = new Vector3(destination.Left, destination.Top, depth), Color = color, TexCoords = new Vector2((float)source.Left / texture.Width, (float)source.Top / texture.Height), TexIndex = texIndex },
+        //     new Vertex { Position = new Vector3(destination.Right, destination.Top, depth), Color = color, TexCoords = new Vector2((float)source.Right / texture.Width, (float)source.Top / texture.Height), TexIndex = texIndex },
+        //     new Vertex { Position = new Vector3(destination.Left, destination.Bottom, depth), Color = color, TexCoords = new Vector2((float)source.Left / texture.Width, (float)source.Bottom / texture.Height), TexIndex = texIndex },
+        //     new Vertex { Position = new Vector3(destination.Right, destination.Bottom, depth), Color = color, TexCoords = new Vector2((float)source.Right / texture.Width, (float)source.Bottom / texture.Height), TexIndex = texIndex }
+        // );
     }
     
-    private void AddQuad(Vertex topLeft, Vertex topRight, Vertex bottomLeft, Vertex bottomRight)
+    /*private void AddQuad(Vertex topLeft, Vertex topRight, Vertex bottomLeft, Vertex bottomRight)
     {
-        // Flush the vertex buffer if its full
+        Flush the vertex buffer if its full
         if (VertexCount >= MaxVertices) Flush();
         
         _vertices[VertexCount] = topLeft;
         _vertices[VertexCount + 1] = topRight;
         _vertices[VertexCount + 2] = bottomLeft;
         _vertices[VertexCount + 3] = bottomRight;
-
+        
         _quadCount++;
-    }
+    }*/
 
     public void Dispose()
     {
         _whiteTexture.Dispose();
         _sampler.Dispose();
         _transformBuffer.Dispose();
-        _vertexBuffer.Dispose();
-        _indexBuffer.Dispose();
+        _quadsBuffer.Dispose();
+        // _vertexBuffer.Dispose();
+        // _indexBuffer.Dispose();
         _pipeline.Dispose();
         GC.SuppressFinalize(this);
     }
 }
 
 
-[StructLayout(LayoutKind.Sequential, Pack = 1)]
+/*[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct Vertex
 {
     public required Vector3 Position;
@@ -238,4 +279,18 @@ public struct Vertex
         new VertexElementDescription(2, VertexElementFormat.Float2),
         new VertexElementDescription(3, VertexElementFormat.Int)
     );
+}*/
+
+[StructLayout(LayoutKind.Sequential, Size = 64)]
+public struct Quad
+{
+    public required Vector2 Min;
+    public required Vector2 Max;
+    public required Vector2 TexMin;
+    public required Vector2 TexMax;
+    public required RgbaFloat Color;
+    public required float Depth;
+    public required int TexIndex;
+    
+    public static readonly VertexLayoutDescription VertexLayout = new ();
 }

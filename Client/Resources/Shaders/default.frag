@@ -1,7 +1,7 @@
 #version 450
 
-layout(set = 1, binding = 0) uniform texture2D textures[8];
-layout(set = 1, binding = 1) uniform sampler samp;
+layout(set = 2, binding = 0) uniform texture2D textures[8]; // TODO: this can be increased to 32 at a maximum - using texture atlases should be sufficient to not need more than 32 4k textures (2097152 16x16 sprites)
+layout(set = 2, binding = 1) uniform sampler samp;
 
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 fragTexCoords;

@@ -123,6 +123,7 @@ public class VulkanBuffer: Buffer
             BufferUsage.Vertex => BufferUsageFlags.VertexBufferBit | BufferUsageFlags.TransferDstBit,
             BufferUsage.Index => BufferUsageFlags.IndexBufferBit | BufferUsageFlags.TransferDstBit,
             BufferUsage.Uniform => BufferUsageFlags.UniformBufferBit | BufferUsageFlags.TransferDstBit,
+            BufferUsage.StorageBuffer => BufferUsageFlags.StorageBufferBit | BufferUsageFlags.TransferDstBit,
             _ => throw new ArgumentOutOfRangeException(nameof(usage), usage, null)
         };
     }
