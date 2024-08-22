@@ -2,7 +2,6 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Client.Graphics.GHAL;
-using Client.Graphics.Input;
 using Client.Resource;
 using Common.Resource;
 using Buffer = Client.Graphics.GHAL.Buffer;
@@ -15,13 +14,8 @@ public class RendererService: IRendererService
     private const int MaxTextures = 8;
     
     private const int IndicesPerQuad = 6;
-    private const int VerticesPerQuad = 4;
-    
-    private const int MaxVertices = MaxQuads * VerticesPerQuad;
-    private const int MaxIndices = MaxQuads * IndicesPerQuad;
     
     private uint _quadCount;
-    private uint VertexCount => _quadCount * VerticesPerQuad;
     private uint IndexCount => _quadCount * IndicesPerQuad;
     
     private int _textureCount = 1;
@@ -29,11 +23,6 @@ public class RendererService: IRendererService
     private readonly IGraphicsDeviceService _graphicsDeviceService;
     private readonly Pipeline _pipeline;
     private readonly CommandList _commandList;
-
-    // private readonly Vertex[] _vertices;
-    
-    // private readonly Buffer _vertexBuffer;
-    // private readonly Buffer _indexBuffer;
 
     private readonly Quad[] _quads;
     
@@ -56,37 +45,6 @@ public class RendererService: IRendererService
     {
         _graphicsDeviceService = graphicsDeviceService;
 
-        // Vertex Buffer
-        // _vertices = new Vertex[MaxVertices];
-        // _vertexBuffer = _graphicsDeviceService.CreateBuffer(new BufferDescription(MaxVertices * Vertex.VertexLayout.Stride, BufferUsage.Vertex));
-        
-        // Index Buffer
-        /*var indicesTemplate = new ushort[]
-        {
-            // Since indices are read clock wise:
-            0, 1, 2, // tri 1
-            3, 2, 1 // tri 2
-        };
-    
-        var indices = new uint[MaxIndices];
-
-        for (var i = 0; i < MaxQuads; i++)
-        {
-            var startIndex = i * IndicesPerQuad;
-            var offset = i * VerticesPerQuad;
-    
-            indices[startIndex + 0] = (uint)(indicesTemplate[0] + offset);
-            indices[startIndex + 1] = (uint)(indicesTemplate[1] + offset);
-            indices[startIndex + 2] = (uint)(indicesTemplate[2] + offset);
-    
-            indices[startIndex + 3] = (uint)(indicesTemplate[3] + offset);
-            indices[startIndex + 4] = (uint)(indicesTemplate[4] + offset);
-            indices[startIndex + 5] = (uint)(indicesTemplate[5] + offset);
-        }*/
-        
-        // _indexBuffer = _graphicsDeviceService.CreateBuffer(new BufferDescription(MaxIndices * sizeof(uint), BufferUsage.Index));
-        // _graphicsDeviceService.UpdateBuffer(_indexBuffer, 0, indices);
-        
         _quads = new Quad[MaxQuads];
         
         var vertexShaderDesc = resourceService.Get<Shader>("Shaders/default.vert").ShaderDescription;
@@ -147,7 +105,7 @@ public class RendererService: IRendererService
             ResourceLayouts: new []{ transformLayout, quadsLayout, textureLayout },
             ShaderSet: new ShaderSetDescription(
                 ShaderProgram: shaderProgram,
-                // Make VertexLayout nullable
+                // TODO: Make VertexLayout nullable
                 VertexLayout: Quad.VertexLayout)
         );
 
@@ -171,10 +129,6 @@ public class RendererService: IRendererService
     private void Flush()
     {
         _commandList.SetResourceSet(2, _textureSet);
-        
-        // _commandList.UpdateBuffer(_vertexBuffer, 0, _vertices);
-        // _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt32);
-        // _commandList.SetVertexBuffer(0, _vertexBuffer);
         
         _commandList.UpdateBuffer(_quadsBuffer, 0, _quads);
         _commandList.SetResourceSet(1, _quadsSet);
@@ -227,29 +181,7 @@ public class RendererService: IRendererService
             Depth = depth,
             TexIndex = texIndex
         };
-        
-        _quadCount++;
-        
-        // AddQuad(
-        //     new Vertex { Position = new Vector3(destination.Left, destination.Top, depth), Color = color, TexCoords = new Vector2((float)source.Left / texture.Width, (float)source.Top / texture.Height), TexIndex = texIndex },
-        //     new Vertex { Position = new Vector3(destination.Right, destination.Top, depth), Color = color, TexCoords = new Vector2((float)source.Right / texture.Width, (float)source.Top / texture.Height), TexIndex = texIndex },
-        //     new Vertex { Position = new Vector3(destination.Left, destination.Bottom, depth), Color = color, TexCoords = new Vector2((float)source.Left / texture.Width, (float)source.Bottom / texture.Height), TexIndex = texIndex },
-        //     new Vertex { Position = new Vector3(destination.Right, destination.Bottom, depth), Color = color, TexCoords = new Vector2((float)source.Right / texture.Width, (float)source.Bottom / texture.Height), TexIndex = texIndex }
-        // );
     }
-    
-    /*private void AddQuad(Vertex topLeft, Vertex topRight, Vertex bottomLeft, Vertex bottomRight)
-    {
-        Flush the vertex buffer if its full
-        if (VertexCount >= MaxVertices) Flush();
-        
-        _vertices[VertexCount] = topLeft;
-        _vertices[VertexCount + 1] = topRight;
-        _vertices[VertexCount + 2] = bottomLeft;
-        _vertices[VertexCount + 3] = bottomRight;
-        
-        _quadCount++;
-    }*/
 
     public void Dispose()
     {
@@ -257,29 +189,10 @@ public class RendererService: IRendererService
         _sampler.Dispose();
         _transformBuffer.Dispose();
         _quadsBuffer.Dispose();
-        // _vertexBuffer.Dispose();
-        // _indexBuffer.Dispose();
         _pipeline.Dispose();
         GC.SuppressFinalize(this);
     }
 }
-
-
-/*[StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct Vertex
-{
-    public required Vector3 Position;
-    public required RgbaFloat Color;
-    public required Vector2 TexCoords;
-    public required int TexIndex;
-
-    public static readonly VertexLayoutDescription VertexLayout = new (
-        new VertexElementDescription(0, VertexElementFormat.Float3),
-        new VertexElementDescription(1, VertexElementFormat.Float4),
-        new VertexElementDescription(2, VertexElementFormat.Float2),
-        new VertexElementDescription(3, VertexElementFormat.Int)
-    );
-}*/
 
 [StructLayout(LayoutKind.Sequential, Size = 64)]
 public struct Quad
