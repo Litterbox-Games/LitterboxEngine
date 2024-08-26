@@ -1,9 +1,9 @@
 ﻿using Common.DI;
-using Common.Generation;
 using Common.Host;
 using Common.Mathematics;
 using Common.Network;
 using Common.Player;
+using Common.World.Generation;
 using Common.World.Messages;
 
 namespace Common.World;
