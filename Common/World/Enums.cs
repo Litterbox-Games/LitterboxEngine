@@ -1,5 +1,4 @@
-﻿#pragma warning disable CS1591 //TODO: Missing XML comment for publicly visible type or member
-namespace LitterboxEngine.Common.World;
+﻿namespace Common.World;
 
 public enum EChunkRequest : byte
 {
@@ -56,5 +55,5 @@ public enum EMoistureType : byte
     Wet,
     Dry,
     Dryer,
-    Dryest
+    Driest
 }

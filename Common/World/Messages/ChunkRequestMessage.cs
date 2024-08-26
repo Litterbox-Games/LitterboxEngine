@@ -1,7 +1,6 @@
 ﻿using Common.Mathematics;
 using Common.Network;
 using Lidgren.Network;
-using LitterboxEngine.Common.World;
 
 namespace Common.World.Messages;
 

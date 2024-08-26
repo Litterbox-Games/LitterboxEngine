@@ -4,7 +4,6 @@ using Common.Network;
 using Common.Player;
 using Common.World;
 using Common.World.Messages;
-using LitterboxEngine.Common.World;
 
 namespace Client.World;
 
@@ -23,8 +22,8 @@ public class ClientWorldService : IWorldService
         _network.EventOnConnect += OnConnect;
     }
 
-    private readonly List<Vector2i> _chunksToRequestLoad = new();
-    private readonly List<Vector2i> _chunksToRequestUnload = new();
+    private readonly HashSet<Vector2i> _chunksToRequestLoad = new();
+    private readonly HashSet<Vector2i> _chunksToRequestUnload = new();
 
     public void Update(float deltaTime)
     {
@@ -57,6 +56,11 @@ public class ClientWorldService : IWorldService
 
     public void RequestChunk(Vector2i position)
     {
+        var chunkData = _chunks.FirstOrDefault(x => x.Position == position);
+
+        if (chunkData != null)
+            return;
+        
         _chunksToRequestLoad.Add(position);
     }
 

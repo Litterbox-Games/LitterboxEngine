@@ -62,9 +62,7 @@ public class RendererService: IRendererService
         
         _transformSet = _graphicsDeviceService.CreateResourceSet(transformLayout);
         _transformSet.Update(0, _transformBuffer);
-        
-        Console.WriteLine(sizeof(Quad));
-        
+
         // default.vert:20-22
         // layout(std140, set = 1, binding = 0) buffer QuadBlock {
         //     Quad quads[];
@@ -181,6 +179,8 @@ public class RendererService: IRendererService
             Depth = depth,
             TexIndex = texIndex
         };
+
+        _quadCount++;
     }
 
     public void Dispose()

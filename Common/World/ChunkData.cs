@@ -1,6 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
 using Common.Mathematics;
-using LitterboxEngine.Common.World;
 
 namespace Common.World;
 

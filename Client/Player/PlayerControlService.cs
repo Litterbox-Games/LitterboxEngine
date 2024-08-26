@@ -4,7 +4,9 @@ using Client.Graphics.Input;
 using Common.DI;
 using Common.DI.Attributes;
 using Common.Entity;
+using Common.Mathematics;
 using Common.Network;
+using Common.World;
 
 namespace Client.Player;
 
@@ -12,14 +14,16 @@ namespace Client.Player;
 public class PlayerControlService : ITickableService
 {
     private readonly INetworkService _networkService;
+    private readonly IWorldService _worldService;
     private readonly IKeyboardService _keyboardService;
     private readonly CameraService _cameraService;
     
     private GameEntity? _playerEntity;
     
-    public PlayerControlService(INetworkService networkService, IEntityService entityService, IKeyboardService keyboardService, CameraService cameraService)
+    public PlayerControlService(INetworkService networkService, IEntityService entityService, IWorldService worldService, IKeyboardService keyboardService, CameraService cameraService)
     {
         _networkService = networkService;
+        _worldService = worldService;
         _keyboardService = keyboardService;
         _cameraService = cameraService;
 
@@ -30,8 +34,19 @@ public class PlayerControlService : ITickableService
     /// <inheritdoc />
     public void Update(float deltaTime)
     {
+        var newPosition = UpdatePosition(deltaTime);
+
+        if (newPosition.HasValue)
+        {
+            UpdateChunks(newPosition.Value);
+        }
+
+    }
+
+    private Vector2? UpdatePosition(float deltaTime)
+    {
         if (_playerEntity == null)
-            return;
+            return null;
 
         var playerEntityPosition = _playerEntity.Position;
         const float speed = 15f; // TODO: assign speeds to entities rather than hard coding here
@@ -48,20 +63,59 @@ public class PlayerControlService : ITickableService
         
         if (_keyboardService.IsKeyDown(Key.D))
             direction.X += 1f;
+
+        if (direction == Vector2.Zero)
+            return null;
         
-        if (direction != Vector2.Zero)
-        {
-            direction = Vector2.Normalize(direction);
-            playerEntityPosition += direction * speed * deltaTime;
-        }
-        
+        direction = Vector2.Normalize(direction);
+        playerEntityPosition += direction * speed * deltaTime;
         _playerEntity.Position = _cameraService.Target = playerEntityPosition;
+        return playerEntityPosition;
+    }
+
+    private void UpdateChunks(Vector2 playerEntityPosition)
+    {
+        const int chunkRadius = 2;
+        
+        
+        var chunkX = MathF.Floor(playerEntityPosition.X / ChunkData.ChunkSize).ModulusToInt(IWorldService.WorldSize);
+        var chunkY = MathF.Floor(playerEntityPosition.Y / ChunkData.ChunkSize).ModulusToInt(IWorldService.WorldSize);
+    
+        var chunkPosition = new Vector2i(chunkX, chunkY);
+    
+        // Load and unload chunks based on square distance
+        for (var dx = -chunkRadius - 1; dx <= chunkRadius + 1; dx++)
+        {
+            for (var dy = -chunkRadius - 1; dy <= chunkRadius + 1; dy++)
+            {
+                var chunkPos = new Vector2i(
+                    (chunkPosition.X + dx).Modulus(IWorldService.WorldSize),
+                    (chunkPosition.Y + dy).Modulus(IWorldService.WorldSize)
+                );
+            
+                var squareDistance = dx * dx + dy * dy;
+            
+                switch (squareDistance)
+                {
+                    case <= chunkRadius * chunkRadius:
+                        _worldService.RequestChunk(chunkPos);
+                        break;
+                    case <= (chunkRadius + 1) * (chunkRadius + 1):
+                        _worldService.RequestUnloadChunk(chunkPos);
+                        break;
+                }
+            }
+        }
     }
     
     private void OnEntitySpawn(GameEntity entity)
     {
         if (entity.EntityId == _networkService.PlayerId)
+        {
             _playerEntity = entity;
+            UpdateChunks(entity.Position);
+        }
+            
     }
 
     private void OnEntityDespawn(GameEntity entity)
