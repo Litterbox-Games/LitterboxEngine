@@ -20,9 +20,17 @@ public class CameraService : ITickableService
         windowService.OnResize += RecalculateCamera;
     }
 
+    private const float BaseWidth = 20f; // desired width in world units
+    private const float BaseHeight = 11.25f; // desired height in world units
+
     private void RecalculateCamera(int width, int height)
     {
-        _scaleFactor = width / 20f;
+        const float targetAspect = BaseWidth / BaseHeight;
+        var windowAspect = (float)width / height;
+
+        _scaleFactor = windowAspect > targetAspect ? height / BaseHeight : width / BaseWidth;
+        _scaleFactor = MathF.Floor(_scaleFactor);
+
         Camera.Size = new Vector2(width / _scaleFactor, height / _scaleFactor);
         Camera.Update();
     }
