@@ -9,13 +9,13 @@ using Client.World;
 using Common.DI;
 using Common.DI.Attributes;
 using Common.Entity;
-using Common.Generation;
 using Common.Host;
 using Common.Logging;
 using Common.Network;
 using Common.Player;
 using Common.Resource;
 using Common.World;
+using Common.World.Generation;
 
 namespace Client.DI.Registrars;
 

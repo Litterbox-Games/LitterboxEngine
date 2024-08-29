@@ -1,8 +1,7 @@
 ﻿using Common.DI;
 using Common.Mathematics;
-using Common.World;
 
-namespace Common.Generation;
+namespace Common.World.Generation;
 
 public interface IWorldGenerator : IService
 {

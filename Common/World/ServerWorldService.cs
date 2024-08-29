@@ -1,18 +1,17 @@
 ﻿using Common.DI;
-using Common.Generation;
 using Common.Host;
 using Common.Mathematics;
 using Common.Network;
 using Common.Player;
+using Common.World.Generation;
 using Common.World.Messages;
-using LitterboxEngine.Common.World;
 
 namespace Common.World;
 
 public class ServerWorldService : IWorldService
 {
-    internal readonly List<NetworkedChunk> _chunks = new();
-    public IEnumerable<ChunkData> Chunks => _chunks.Select(x => x.ChunkData);
+    public readonly List<NetworkedChunk> NetworkedChunks = new();
+    public IEnumerable<ChunkData> Chunks => NetworkedChunks.Select(x => x.ChunkData);
 
     private readonly IHost _host;
     private readonly ServerNetworkService _networkService;
@@ -49,7 +48,7 @@ public class ServerWorldService : IWorldService
         {
             chunk = new NetworkedChunk(_generation.GenerateChunkAtPosition(position));
 
-            _chunks.Add(chunk);
+            NetworkedChunks.Add(chunk);
         }
 
         chunk.Observers.Add(player);
@@ -63,7 +62,7 @@ public class ServerWorldService : IWorldService
                 "Invalid use of method. This may only be called when the server acts as a host.");
         }
 
-        var chunk = _chunks.FirstOrDefault(x => x.ChunkData.Position == position);
+        var chunk = NetworkedChunks.FirstOrDefault(x => x.ChunkData.Position == position);
 
         chunk?.Observers.Remove(_networkService.Players.FirstOrDefault(x => x.PlayerID == _networkService.PlayerId)!);
     }
@@ -84,7 +83,7 @@ public class ServerWorldService : IWorldService
                 {
                     chunk = new NetworkedChunk(_generation.GenerateChunkAtPosition(pos));
 
-                    _chunks.Add(chunk);
+                    NetworkedChunks.Add(chunk);
                 }
 
                 if (!chunk.Observers.Contains(serverPlayer))
@@ -115,7 +114,7 @@ public class ServerWorldService : IWorldService
     {
         var chunksToUnload = new List<NetworkedChunk>();
 
-        _chunks.ForEach(x =>
+        NetworkedChunks.ForEach(x =>
         {
             if (x.Observers.Count == 0)
             {
@@ -145,14 +144,14 @@ public class ServerWorldService : IWorldService
             x.Observers.ForEach(p => _networkService.SendToPlayer(dataMessage, p));
         });
 
-        chunksToUnload.ForEach(x => _chunks.Remove(x));
+        chunksToUnload.ForEach(x => NetworkedChunks.Remove(x));
     }
 
     private void OnPlayerDisconnect(ServerPlayer player)
     {
         var removedChunk = new List<NetworkedChunk>();
 
-        _chunks.ForEach(x =>
+        NetworkedChunks.ForEach(x =>
         {
             if (x.Observers.Contains(player))
             {
@@ -164,26 +163,26 @@ public class ServerWorldService : IWorldService
         {
             x.Observers.Remove(player);
             if (x.Observers.Count == 0)
-                _chunks.Remove(x);
+                NetworkedChunks.Remove(x);
         });
     }
 
     private NetworkedChunk? GetChunk(Vector2i position)
     {
-        return _chunks.FirstOrDefault(x => x.ChunkData.Position == position);
+        return NetworkedChunks.FirstOrDefault(x => x.ChunkData.Position == position);
     }
     
     public void Draw() { }
-    
-    internal sealed class NetworkedChunk
-    {
-        public readonly ChunkData ChunkData;
-        public readonly List<ServerPlayer> Observers;
+}
 
-        public NetworkedChunk(ChunkData data)
-        {
-            ChunkData = data;
-            Observers = new List<ServerPlayer>();
-        }
+public sealed class NetworkedChunk
+{
+    public readonly ChunkData ChunkData;
+    public readonly List<ServerPlayer> Observers;
+
+    public NetworkedChunk(ChunkData data)
+    {
+        ChunkData = data;
+        Observers = new List<ServerPlayer>();
     }
 }
