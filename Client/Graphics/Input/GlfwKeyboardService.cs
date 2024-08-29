@@ -1,4 +1,6 @@
-﻿using Silk.NET.GLFW;
+﻿using Common.DI;
+using Common.DI.Attributes;
+using Silk.NET.GLFW;
 
 namespace Client.Graphics.Input;
 

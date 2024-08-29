@@ -3,11 +3,14 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using Client.Graphics.GHAL;
 using Client.Resource;
+using Common.DI;
+using Common.DI.Attributes;
 using Common.Resource;
 using Buffer = Client.Graphics.GHAL.Buffer;
 
 namespace Client.Graphics;
 
+[TickablePriority(EPriority.Low)]
 public class RendererService: IRendererService
 {
     private const int MaxQuads = 100000;

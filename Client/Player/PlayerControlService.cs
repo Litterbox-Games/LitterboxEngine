@@ -70,6 +70,7 @@ public class PlayerControlService : ITickableService
         direction = Vector2.Normalize(direction);
         playerEntityPosition += direction * speed * deltaTime;
         _playerEntity.Position = _cameraService.Target = playerEntityPosition;
+
         return playerEntityPosition;
     }
 

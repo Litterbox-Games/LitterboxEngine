@@ -25,7 +25,8 @@ public unsafe class GlfwWindowService : IWindowService, IDisposable
         
         // TODO: Pass this stuff as params
         Glfw.WindowHint(WindowHintClientApi.ClientApi, ClientApi.NoApi);
-        Glfw.WindowHint(WindowHintBool.Maximized, false);
+        Glfw.WindowHint(WindowHintBool.Maximized, true);
+        Glfw.WindowHint(WindowHintBool.Decorated, false);
         
         // var videoMode = Glfw.GetVideoMode(Glfw.GetPrimaryMonitor());
         // 

@@ -26,7 +26,7 @@ public class WorldRenderService : ITickableService
         _rendererService = rendererService;
         _worldService = worldService;
         
-        _texture = resourceService.Get<Texture>("TileColorPalette.png");
+        _texture = resourceService.Get<Texture>("BiomePalette.png");
     }
     
     public void Update(float deltaTime)
@@ -58,19 +58,19 @@ public class WorldRenderService : ITickableService
 
                     var sourceRectangle = ((EBiomeType)id) switch
                     {
-                        EBiomeType.Ice => _texture.GetSourceRectangle(5, 1),
-                        EBiomeType.BorealForest => _texture.GetSourceRectangle(2, 4),
-                        EBiomeType.Desert => _texture.GetSourceRectangle(2, 2),
-                        EBiomeType.Grassland => _texture.GetSourceRectangle(4, 0),
-                        EBiomeType.SeasonalForest => _texture.GetSourceRectangle(1, 3),
-                        EBiomeType.Tundra => _texture.GetSourceRectangle(5, 3),
-                        EBiomeType.Savanna => _texture.GetSourceRectangle(0, 5),
-                        EBiomeType.TemperateRainforest => _texture.GetSourceRectangle(4, 4),
-                        EBiomeType.TropicalRainforest => _texture.GetSourceRectangle(5, 4),
-                        EBiomeType.Woodland => _texture.GetSourceRectangle(1, 5),
-                        EBiomeType.DeepOcean => _texture.GetSourceRectangle(1, 0),
-                        EBiomeType.Ocean => _texture.GetSourceRectangle(0, 0),
-                        _ => _texture.GetSourceRectangle(4, 2)
+                        EBiomeType.Ice => _texture.GetSourceRectangle(0, 0),
+                        EBiomeType.BorealForest => _texture.GetSourceRectangle(2, 0),
+                        EBiomeType.Desert => _texture.GetSourceRectangle(4, 0),
+                        EBiomeType.Grassland => _texture.GetSourceRectangle(0, 2),
+                        EBiomeType.SeasonalForest => _texture.GetSourceRectangle(2, 2),
+                        EBiomeType.Tundra => _texture.GetSourceRectangle(4, 2),
+                        EBiomeType.Savanna => _texture.GetSourceRectangle(0, 4),
+                        EBiomeType.TemperateRainforest => _texture.GetSourceRectangle(2, 4),
+                        EBiomeType.TropicalRainforest => _texture.GetSourceRectangle(4, 4),
+                        EBiomeType.Woodland => _texture.GetSourceRectangle(0, 6),
+                        EBiomeType.DeepOcean => _texture.GetSourceRectangle(2, 6),
+                        EBiomeType.Ocean => _texture.GetSourceRectangle(4, 6),
+                        _ => _texture.GetSourceRectangle(0, 8)
                     };
                     
                     _rendererService.DrawTexture(_texture, sourceRectangle, new RectangleF((data.Position.X * 16) + x, (data.Position.Y * 16) + y, 1,
