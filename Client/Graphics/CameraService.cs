@@ -8,7 +8,6 @@ namespace Client.Graphics;
 public class CameraService : ITickableService
 {
     public readonly Camera Camera;
-    // public float Speed = 15;
     public Vector2 Target;
 
     private float _scaleFactor;
@@ -39,9 +38,18 @@ public class CameraService : ITickableService
     public void Update(float deltaTime)
     {
         // if (Camera.Position == Target) return;
-        // Camera.Position = Vector2.Lerp(Camera.Position, Target, Speed * deltaTime);
-        Camera.Position = Target;
         
+        // var difference = Target - Camera.Position;
+        // var distance = difference.Length();
+        
+        // const float smoothFactor = 5f;
+        // const float snapThreshold = 0.1f;
+        
+        // Camera.Position = distance > snapThreshold
+        //     ? Vector2.Lerp(Camera.Position, Target, 1 - MathF.Exp(-smoothFactor * deltaTime))
+        //     : Target;
+
+        Camera.Position = Target;
         Camera.Position *= _scaleFactor;
         Camera.Position = new Vector2(MathF.Round(Camera.Position.X), MathF.Round(Camera.Position.Y));
         Camera.Position /= _scaleFactor;
