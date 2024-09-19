@@ -1,0 +1,63 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Common\Common.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="morelinq" Version="4.2.0" />
+      <PackageReference Include="Silk.NET.GLFW" Version="2.21.0" />
+      <PackageReference Include="Silk.NET.Maths" Version="2.21.0" />
+      <PackageReference Include="Silk.NET.SPIRV.Cross" Version="2.21.0" />
+      <PackageReference Include="Silk.NET.Vulkan" Version="2.21.0" />
+      <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.21.0" />
+      <PackageReference Include="SixLabors.ImageSharp" Version="3.1.4" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <VulkanBinPath>$(VULKAN_SDK)\Bin</VulkanBinPath>
+        <ShaderOutputPath>Resources\Shaders</ShaderOutputPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <VertexShader Include="Resources/Shaders/*.vert" />
+        <FragmentShader Include="Resources/Shaders/*.frag" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Resources\Objects.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Resources\Terrain.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Resources\Items.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Resources\TileColorPalette.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Resources\BiomePalette.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <Target Name="BuildVulkanShader" AfterTargets="Build">
+        <Message Text="VulkanBinPath: $(VulkanBinPath)" Importance="high" />
+        <Message Text="ShaderOutputPath: $(OutputPath)\$(ShaderOutputPath)" Importance="high" />
+        <Message Text="VertexShader: @(VertexShader)" Importance="high" />
+        <Message Text="FragmentShader: @(FragmentShader)" Importance="high" />
+        <MakeDir Directories="$(TargetDir)$(ShaderOutputPath)" Condition="!Exists('$(TargetDir)$(ShaderOutputPath)')" />
+        <Exec Command="$(VulkanBinPath)\glslc.exe &quot;%(VertexShader.FullPath)&quot; -o &quot;$(TargetDir)$(ShaderOutputPath)\%(VertexShader.FileName).vert&quot;" Condition="'@(VertexShader)'!=''" />
+        <Exec Command="$(VulkanBinPath)\glslc.exe &quot;%(FragmentShader.FullPath)&quot; -o &quot;$(TargetDir)$(ShaderOutputPath)\%(FragmentShader.FileName).frag&quot;" Condition="'@(FragmentShader)'!=''" />
+    </Target>
+
+</Project>
