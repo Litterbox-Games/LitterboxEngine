@@ -7,7 +7,6 @@ namespace Client.Graphics.Input;
 public class ImGui: IDisposable
 {
     private readonly ImGuiController _imGuiController;
-    private readonly IInputContext _inputContext;
     private readonly VulkanSwapChain _swapChain;
     
     
@@ -18,7 +17,7 @@ public class ImGui: IDisposable
         _imGuiController = new ImGuiController(
             graphicsDeviceService.Vk,
             windowService.Window,
-            _inputContext = windowService.Window.CreateInput(),
+            windowService.Window.CreateInput(),
             graphicsDeviceService.LogicalDevice.PhysicalDevice.VkPhysicalDevice,
             graphicsDeviceService.GraphicsQueue.QueueFamilyIndex,
             _swapChain.ImageCount,
@@ -45,7 +44,6 @@ public class ImGui: IDisposable
     public void Dispose()
     {
         _imGuiController.Dispose();
-        _inputContext.Dispose();
         GC.SuppressFinalize(this);
     }
 }

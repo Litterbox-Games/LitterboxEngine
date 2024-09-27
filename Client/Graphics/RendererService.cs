@@ -199,6 +199,7 @@ public class RendererService: IRendererService
 
     public void Dispose()
     {
+        _imGui.Dispose();
         _whiteTexture.Dispose();
         _sampler.Dispose();
         _transformBuffer.Dispose();
