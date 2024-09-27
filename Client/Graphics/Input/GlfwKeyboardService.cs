@@ -35,18 +35,19 @@ public class GlfwKeyboardService: IKeyboardService
     
     public unsafe GlfwKeyboardService(GlfwWindowService windowService)
     {
-        _windowService = windowService;
+        /*_windowService = windowService;
         _windowService.Glfw.SetKeyCallback(_windowService.WindowHandle, (window, key, code, action, mods) =>
         {
            // if (key == Keys.Escape && action == InputAction.Release) 
            //     windowService.SetShouldClose();
         
            OnKeyEvent?.Invoke(_toKey[key], _toKeyAction[action]);
-        });
+        });*/
     }
     
     public unsafe bool IsKeyDown(Key key)
     {
-        return _windowService.Glfw.GetKey(_windowService.WindowHandle, _toGlfwKeys[key]) == (int)InputAction.Press;
+        return false;
+        // return _windowService.Glfw.GetKey(_windowService.WindowHandle, _toGlfwKeys[key]) == (int)InputAction.Press;
     }
 }

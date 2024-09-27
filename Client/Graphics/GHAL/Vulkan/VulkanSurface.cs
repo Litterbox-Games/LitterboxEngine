@@ -15,14 +15,8 @@ public class VulkanSurface: IDisposable
     public unsafe VulkanSurface(Vk vk, VulkanInstance instance, VulkanPhysicalDevice physicalDevice, GlfwWindowService windowService)
     {
         _instance = instance;
-        
-        var vkNonDispatchableHandle = stackalloc VkNonDispatchableHandle[1];
-        
-        var isSurfaceCreated = windowService.Glfw.CreateWindowSurface(_instance.VkInstance.ToHandle(), windowService.WindowHandle, null, vkNonDispatchableHandle);
-        if (isSurfaceCreated != (int)Result.Success)
-            throw new Exception($"Failed to create window surface with error code: {isSurfaceCreated}");
 
-        VkSurface = vkNonDispatchableHandle[0].ToSurface();
+        VkSurface = windowService.Window.VkSurface!.Create<AllocationCallbacks>(_instance.VkInstance.ToHandle(), null).ToSurface();
         
         if (!vk.TryGetInstanceExtension(_instance.VkInstance, out KhrSurface))
             throw new Exception("Failed to instantiate KHR surface extension");

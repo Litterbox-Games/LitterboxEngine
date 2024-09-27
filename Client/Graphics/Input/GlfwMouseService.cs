@@ -15,7 +15,7 @@ public class GlfwMouseService: IMouseService
     
     public unsafe GlfwMouseService(GlfwWindowService windowService)
     {
-        windowService.Glfw.SetCursorPosCallback(windowService.WindowHandle, 
+        /*windowService.Glfw.SetCursorPosCallback(windowService.WindowHandle, 
             (_, x, y) =>
             {
                 PreviousPosition = CurrentPosition;
@@ -28,6 +28,6 @@ public class GlfwMouseService: IMouseService
         {
             IsLeftButtonPressed = button == MouseButton.Left && action == InputAction.Press;
             IsRightButtonPressed = button == MouseButton.Right && action == InputAction.Press;
-        });
+        });*/
     }
 }

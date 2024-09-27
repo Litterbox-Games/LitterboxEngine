@@ -45,7 +45,7 @@ public class VulkanRenderPass: IDisposable
             SrcStageMask = PipelineStageFlags.ColorAttachmentOutputBit,
             DstStageMask = PipelineStageFlags.ColorAttachmentOutputBit,
             SrcAccessMask = 0,
-            DstAccessMask = AccessFlags.ColorAttachmentWriteBit
+            DstAccessMask = AccessFlags.ColorAttachmentWriteBit | AccessFlags.ColorAttachmentReadBit
         };
 
         RenderPassCreateInfo renderPassInfo = new()

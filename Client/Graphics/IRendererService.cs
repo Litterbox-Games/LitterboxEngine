@@ -9,7 +9,7 @@ public interface IRendererService: IService, IDisposable
 {
     public Color ClearColor { get; set; }
 
-    public void Begin(Matrix4x4? view = null);
+    public void Begin(float deltaTime, Matrix4x4? view = null);
 
     public void End();
 

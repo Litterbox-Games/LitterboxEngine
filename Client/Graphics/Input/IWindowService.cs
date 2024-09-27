@@ -8,8 +8,8 @@ public interface IWindowService: IService
     public int Height { get; }
     public int Width { get; }
     public event Action<int, int>? OnResize;
-    public void PollEvents();
-    public bool ShouldClose();
+    public event Action<float>? OnFrame;
     public void SetShouldClose();
+    public void Run();
     
 }

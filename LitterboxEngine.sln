@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Server\Server.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{F8168F00-E107-4625-92DD-210A9E644FF0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImGui", "ImGui\ImGui.csproj", "{29DC7A0C-7AED-42C7-8EB5-99D1B7BEE8AF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{F8168F00-E107-4625-92DD-210A9E644FF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F8168F00-E107-4625-92DD-210A9E644FF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F8168F00-E107-4625-92DD-210A9E644FF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29DC7A0C-7AED-42C7-8EB5-99D1B7BEE8AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29DC7A0C-7AED-42C7-8EB5-99D1B7BEE8AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29DC7A0C-7AED-42C7-8EB5-99D1B7BEE8AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29DC7A0C-7AED-42C7-8EB5-99D1B7BEE8AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

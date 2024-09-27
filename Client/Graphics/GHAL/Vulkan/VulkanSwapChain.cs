@@ -14,7 +14,7 @@ public class VulkanSwapChain: IDisposable
     private readonly bool _vsyncEnabled;
     private readonly Vk _vk;
     private readonly VulkanCommandPool _commandPool;
-    private readonly uint _imageCount;
+    public readonly int ImageCount;
     private readonly VulkanQueue[]? _concurrentQueues;
     private readonly uint[]? _concurrentFamilyIndices;
     private readonly VulkanRenderPass _renderPass;
@@ -29,6 +29,7 @@ public class VulkanSwapChain: IDisposable
 
     public VulkanFrameBuffer CurrentFrameBuffer => _frameBuffers[_currentFrame];
     public VulkanCommandBuffer CurrentCommandBuffer => _commandBuffers[_currentFrame];
+    public Format Format => _surface.Format.Format;
 
     private uint _currentFrame;
 
@@ -48,7 +49,7 @@ public class VulkanSwapChain: IDisposable
         surface.KhrSurface.GetPhysicalDeviceSurfaceCapabilities(physicalDevice.VkPhysicalDevice, 
             surface.VkSurface, out var surfaceCapabilities);
 
-        _imageCount = CalculateImageCount(surfaceCapabilities, requestedImages);
+        ImageCount = CalculateImageCount(surfaceCapabilities, requestedImages);
 
         _concurrentFamilyIndices = concurrentQueues?
             .Select(queue => queue.QueueFamilyIndex)
@@ -136,8 +137,8 @@ public class VulkanSwapChain: IDisposable
         {
             SType = StructureType.SwapchainCreateInfoKhr,
             Surface = _surface.VkSurface,
-            MinImageCount = _imageCount,
-            ImageFormat = _surface.Format.Format,
+            MinImageCount = (uint)ImageCount,
+            ImageFormat = Format,
             ImageColorSpace = _surface.Format.ColorSpace,
             ImageExtent = Extent,
             ImageArrayLayers = 1,
@@ -173,7 +174,7 @@ public class VulkanSwapChain: IDisposable
         _commandBuffers = _imageViews.Select(_ => new VulkanCommandBuffer(_vk, _commandPool, true, false)).ToArray();
     }
     
-    private static uint CalculateImageCount(SurfaceCapabilitiesKHR surfaceCapabilities, int requestedImages)
+    private static int CalculateImageCount(SurfaceCapabilitiesKHR surfaceCapabilities, int requestedImages)
     {
         var maxImages = (int)surfaceCapabilities.MaxImageCount;
         var minImages = (int)surfaceCapabilities.MinImageCount;
@@ -183,7 +184,7 @@ public class VulkanSwapChain: IDisposable
         }
         result = Math.Max(result, minImages);
 
-        return (uint)result;
+        return result;
     }
 
     private static Extent2D CalculateSwapChainExtent(IWindowService windowService, SurfaceCapabilitiesKHR surfaceCapabilities)

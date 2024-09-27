@@ -2,6 +2,7 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Client.Graphics.GHAL;
+using Client.Graphics.Input;
 using Client.Resource;
 using Common.DI;
 using Common.DI.Attributes;
@@ -41,6 +42,8 @@ public class RendererService: IRendererService
     private readonly ResourceSet _textureSet;
     
     private Matrix4x4 _mvp;
+
+    private readonly ImGui _imGui;
     
     public Color ClearColor { get; set; } = Color.Black;
     
@@ -113,14 +116,18 @@ public class RendererService: IRendererService
         _pipeline = _graphicsDeviceService.CreatePipeline(pipelineDescription);
 
         _commandList = _graphicsDeviceService.CreateCommandList();
+
+        _imGui = _graphicsDeviceService.InitImGui();
     }
 
-    public void Begin(Matrix4x4? mvp = null)
+    public void Begin(float deltaTime, Matrix4x4? mvp = null)
     {
+        _imGui.Update(deltaTime);
         _mvp = mvp ?? Matrix4x4.Identity;
         
         _graphicsDeviceService.SwapBuffers();
-        _commandList.Begin(ClearColor);
+        _commandList.Begin();
+        _commandList.BeginRenderPass(ClearColor);
         _commandList.SetPipeline(_pipeline);
         
         _commandList.UpdateBuffer(_transformBuffer, 0, _mvp);
@@ -143,6 +150,10 @@ public class RendererService: IRendererService
     public void End()
     {
         if (_quadCount > 0) Flush();
+        
+        
+        _commandList.EndRenderPass();
+        _imGui.Draw();
         
         _commandList.End();
         _graphicsDeviceService.SubmitCommands();

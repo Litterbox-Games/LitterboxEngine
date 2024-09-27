@@ -1,86 +1,80 @@
 ﻿using Silk.NET.GLFW;
+using Silk.NET.Input;
+using Silk.NET.Maths;
+using Silk.NET.Windowing;
 
 namespace Client.Graphics.Input;
 
 public unsafe class GlfwWindowService : IWindowService, IDisposable
 {
-    public readonly Glfw Glfw;
-    public readonly WindowHandle* WindowHandle;
+    // public readonly Glfw Glfw;
+    // public WindowHandle* WindowHandle => Window.Handle;
     public string Title { get; }
     public int Width { get; private set; }
     public int Height { get; private set; }
     public event Action<int, int>? OnResize;
-    public event Action? OnPollEvents;
 
+    public event Action<float>? OnFrame;
+
+    public readonly IWindow Window;
+    
     public GlfwWindowService()
     {
         Title = "Litterbox Engine";
-        
-        Glfw = Glfw.GetApi();
-        if (!Glfw.Init()) 
-            throw new Exception("Failed to initialize GLFW");
-
-        if (!Glfw.VulkanSupported()) 
-            throw new Exception("Cannot find a compatible Vulkan installable client driver");
-        
-        // TODO: Pass this stuff as params
-        Glfw.WindowHint(WindowHintClientApi.ClientApi, ClientApi.NoApi);
-        Glfw.WindowHint(WindowHintBool.Maximized, false);
-        Glfw.WindowHint(WindowHintBool.Decorated, true);
-        
-        // var videoMode = Glfw.GetVideoMode(Glfw.GetPrimaryMonitor());
-        // 
-        // Width = videoMode->Width / 2;
-        // Height = videoMode->Height / 2;
-
         Width = 1920;
         Height = 1080;
         
-        WindowHandle = Glfw.CreateWindow(Width, Height, Title, null, null);
-
-        if (WindowHandle == null)
-            throw new Exception("Failed to create a GLFW window");
-
-        Glfw.SetFramebufferSizeCallback(WindowHandle, (_, w, h) => Resize(w, h));
+        var options = WindowOptions.DefaultVulkan;
+        options.Title = Title;
+        options.Size = new Vector2D<int>(Width, Height);
+        options.IsEventDriven = false;
+        options.FramesPerSecond = 144;
+        
+        Window = Silk.NET.Windowing.Window.Create(options); 
+        Window.Initialize();
+        
+        Window.FramebufferResize += Resize;
+        Window.Render += deltaTime => OnFrame?.Invoke((float)deltaTime);
     }
 
-    private void Resize(int width, int height)
+    private void Resize(Vector2D<int> size)
     {
-        Width = width;
-        Height = height;
-        OnResize?.Invoke(width, height);
+        Width = size.X;
+        Height = size.Y;
+        OnResize?.Invoke(Width, Height);
     }
 
     public bool IsKeyPressed(Keys key)
     {
-        return Glfw.GetKey(WindowHandle, key) == (int)InputAction.Press;
+        // var input = Window.CreateInput();
+        return false;
+        // return input.Keyboards[0].IsKeyPressed();
     }
 
     public void WaitEvents()
     {
-        Glfw.WaitEvents();
+        
     }
     
     public void PollEvents()
     {
-        Glfw.PollEvents();
+        
     }
 
-    public bool ShouldClose()
-    {
-        return Glfw.WindowShouldClose(WindowHandle);
-    }
 
     public void SetShouldClose()
     {
-        Glfw.SetWindowShouldClose(WindowHandle, true);
+        Window.Close();
+    }
+
+    public void Run()
+    {
+        Window.Run();
     }
 
     public void Dispose()
     {
-        Glfw.DestroyWindow(WindowHandle);
-        Glfw.Terminate();
-        Glfw.Dispose();
+        Window.Dispose();
         GC.SuppressFinalize(this);
     }
 }

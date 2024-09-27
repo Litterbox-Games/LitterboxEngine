@@ -17,29 +17,19 @@ internal static class Program
         var rendererService = host.Resolve<IRendererService>();
         var cameraService = host.Resolve<CameraService>();
         
-        var stopWatch = new Stopwatch();
 
-        float deltaTime = 0;
-        
-        while (!windowService.ShouldClose())
+        windowService.OnFrame += deltaTime =>
         {
-            stopWatch.Start();
-            
-            windowService.PollEvents();
-
             // Update
             host.Update(deltaTime);
             
             // Draw
-            rendererService.Begin(cameraService.Camera.ViewMatrix);
+            rendererService.Begin(deltaTime, cameraService.Camera.ViewMatrix);
             host.Draw();
             rendererService.End();
-
-            stopWatch.Stop();
-            deltaTime = (float)stopWatch.Elapsed.TotalSeconds;
-            stopWatch.Reset();
-        }
+        };
         
+        windowService.Run();
         graphicsDeviceService.WaitIdle();
     }
 }

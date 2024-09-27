@@ -18,7 +18,12 @@ public class VulkanCommandList: CommandList
         _renderPass = renderPass;
     }
 
-    public override unsafe void Begin(RgbaFloat clearColor)
+    public override void Begin()
+    {
+        _swapChain.CurrentCommandBuffer.BeginRecording();
+    }
+
+    public override unsafe void BeginRenderPass(RgbaFloat clearColor)
     {
         ClearValue clearValue = new()
         {
@@ -40,13 +45,16 @@ public class VulkanCommandList: CommandList
             PClearValues = &clearValue
         };
         
-        _swapChain.CurrentCommandBuffer.BeginRecording();
         _vk.CmdBeginRenderPass(_swapChain.CurrentCommandBuffer.VkCommandBuffer, &renderPassInfo, SubpassContents.Inline);
+    }
+
+    public override void EndRenderPass()
+    {
+        _vk.CmdEndRenderPass(_swapChain.CurrentCommandBuffer.VkCommandBuffer);
     }
 
     public override void End()
     {
-        _vk.CmdEndRenderPass(_swapChain.CurrentCommandBuffer.VkCommandBuffer);
         _swapChain.CurrentCommandBuffer.EndRecording();
     }
 

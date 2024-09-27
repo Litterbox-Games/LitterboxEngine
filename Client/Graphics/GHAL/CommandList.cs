@@ -2,7 +2,9 @@
 
 public abstract class CommandList
 {
-    public abstract void Begin(RgbaFloat clearColor);
+    public abstract void Begin();
+    public abstract void BeginRenderPass(RgbaFloat clearColor);
+    public abstract void EndRenderPass();
     public abstract void End();
     public abstract void SetPipeline(Pipeline pipeline);
     public abstract void SetIndexBuffer(Buffer buffer, IndexFormat format);
