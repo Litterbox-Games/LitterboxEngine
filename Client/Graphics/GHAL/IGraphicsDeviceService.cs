@@ -7,7 +7,6 @@ namespace Client.Graphics.GHAL;
 
 public interface IGraphicsDeviceService: IService
 {
-    public ImGui InitImGui();
     public Buffer CreateBuffer(BufferDescription description);
     public void UpdateBuffer(Buffer buffer, uint offset, uint[] data);
     public ShaderProgram CreateShaderProgram(params ShaderDescription[] descriptions);

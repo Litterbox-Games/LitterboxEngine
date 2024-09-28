@@ -1,15 +1,16 @@
 ﻿using Client.Graphics.GHAL.Vulkan;
+using Common.DI;
 using Silk.NET.Vulkan.Extensions.ImGui;
 
 namespace Client.Graphics.Input.ImGui;
 
-public class ImGui: IDisposable
+public class ImGuiService: IService, IDisposable
 {
     private readonly ImGuiController _imGuiController;
     private readonly VulkanSwapChain _swapChain;
     
     
-    public ImGui(WindowService windowService, VulkanGraphicsDeviceService graphicsDeviceService)
+    public ImGuiService(WindowService windowService, VulkanGraphicsDeviceService graphicsDeviceService)
     {
         _swapChain = graphicsDeviceService.SwapChain;
         
@@ -28,10 +29,6 @@ public class ImGui: IDisposable
     public void Update(float deltaTime)
     {
         _imGuiController.Update(deltaTime);
-        
-        // This is where you'll tell ImGui what to draw.
-        // For now, we'll just show their built-in demo window.
-        ImGuiNET.ImGui.ShowDemoWindow();
     }
 
     public void Draw()

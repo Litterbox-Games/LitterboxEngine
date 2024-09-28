@@ -48,11 +48,6 @@ public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService, IDispo
         SwapChain.Recreate();
     }
 
-    public ImGui InitImGui()
-    {
-        return new ImGui(_windowService, this);
-    }
-
     public Buffer CreateBuffer(BufferDescription description)
     {
         return new VulkanBuffer(Vk, LogicalDevice, description, MemoryPropertyFlags.DeviceLocalBit, _commandPool,

@@ -13,14 +13,14 @@ namespace Client.World;
 public class WorldRenderService : ITickableService
 {
  
-    private readonly IRendererService _rendererService;
+    private readonly RendererService _rendererService;
     private readonly IWorldService _worldService;
     private readonly INetworkService _networkService;
     
     private readonly Texture _texture;
 
     
-    public WorldRenderService(INetworkService networkService, IResourceService resourceService, IRendererService rendererService, IWorldService worldService)
+    public WorldRenderService(INetworkService networkService, IResourceService resourceService, RendererService rendererService, IWorldService worldService)
     {
         _networkService = networkService;
         _rendererService = rendererService;

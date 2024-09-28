@@ -12,7 +12,8 @@ public class WindowService : IService, IDisposable
     public int Height { get; private set; }
     public event Action<int, int>? OnResize;
 
-    public event Action<float>? OnFrame;
+    public event Action<float>? OnUpdate;
+    public event Action<float>? OnDraw;
 
     public readonly IWindow Window;
     public readonly IInputContext Input;
@@ -28,12 +29,14 @@ public class WindowService : IService, IDisposable
         options.Size = new Vector2D<int>(Width, Height);
         options.IsEventDriven = false;
         options.FramesPerSecond = 144;
+        options.UpdatesPerSecond = 60;
         
         Window = Silk.NET.Windowing.Window.Create(options); 
         Window.Initialize();
         
         Window.FramebufferResize += Resize;
-        Window.Render += deltaTime => OnFrame?.Invoke((float)deltaTime);
+        Window.Update += deltaTime => OnUpdate?.Invoke((float)deltaTime);
+        Window.Render += deltaTime => OnDraw?.Invoke((float)deltaTime);
 
         Input = Window.CreateInput();
     }

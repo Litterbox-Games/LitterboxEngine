@@ -2,6 +2,7 @@
 using Client.Graphics;
 using Client.Graphics.GHAL;
 using Client.Graphics.Input;
+using Client.Graphics.Input.ImGui;
 using Client.Host;
 
 namespace Client;
@@ -14,21 +15,34 @@ internal static class Program
 
         var windowService = host.Resolve<WindowService>();
         var graphicsDeviceService = host.Resolve<IGraphicsDeviceService>();
-        var rendererService = host.Resolve<IRendererService>();
+        var rendererService = host.Resolve<RendererService>();
         var cameraService = host.Resolve<CameraService>();
+        var imGuiService = host.Resolve<ImGuiService>();
         
-
-        windowService.OnFrame += deltaTime =>
+        // Update
+        windowService.OnUpdate += deltaTime =>
         {
-            // Update
             // ReSharper disable once AccessToDisposedClosure
             host.Update(deltaTime);
+        };
+
+        // Draw
+        windowService.OnDraw += deltaTime =>
+        {
+            // Needs to be called in Draw so it happens at the same rate as imGuiService.Draw()
+            imGuiService.Update(deltaTime);
             
-            // Draw
-            rendererService.Begin(deltaTime, cameraService.Camera.ViewMatrix);
+            // This is where you'll tell ImGui what to draw.
+            // For now, we'll just show their built-in demo window.
+            ImGuiNET.ImGui.ShowDemoWindow();
+            
+            rendererService.BeginFrame();
+            rendererService.BeginDrawing(cameraService.Camera.ViewMatrix);
             // ReSharper disable once AccessToDisposedClosure
             host.Draw();
-            rendererService.End();
+            rendererService.EndDrawing();
+            imGuiService.Draw();
+            rendererService.EndFrame();
         };
         
         windowService.Run();
