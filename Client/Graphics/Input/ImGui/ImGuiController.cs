@@ -107,7 +107,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
                 MaxSets = 1
             };
 
-            if (_vk.CreateDescriptorPool(_device, descriptorPool, default, out _descriptorPool) != Result.Success)
+            if (_vk.CreateDescriptorPool(_device, in descriptorPool, default, out _descriptorPool) != Result.Success)
             {
                 throw new Exception($"Unable to create descriptor pool");
             }
@@ -181,7 +181,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
                 PDependencies = (SubpassDependency*)Unsafe.AsPointer(ref dependency)
             };
 
-            if (_vk.CreateRenderPass(_device, renderPassInfo, default, out _renderPass) != Result.Success)
+            if (_vk.CreateRenderPass(_device, in renderPassInfo, default, out _renderPass) != Result.Success)
             {
                 throw new Exception($"Failed to create render pass");
             }
@@ -200,7 +200,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
                 MaxAnisotropy = 1.0f
             };
 
-            if (vk.CreateSampler(_device, info, default, out _fontSampler) != Result.Success)
+            if (vk.CreateSampler(_device, in info, default, out _fontSampler) != Result.Success)
             {
                 throw new Exception($"Unable to create sampler");
             }
@@ -222,7 +222,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
                 PBindings = (DescriptorSetLayoutBinding*)Unsafe.AsPointer(ref binding)
             };
 
-            if (vk.CreateDescriptorSetLayout(_device, descriptorInfo, default, out _descriptorSetLayout) != Result.Success)
+            if (vk.CreateDescriptorSetLayout(_device, in descriptorInfo, default, out _descriptorSetLayout) != Result.Success)
             {
                 throw new Exception($"Unable to create descriptor set layout");
             }
@@ -237,7 +237,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
                     PSetLayouts = pgDescriptorSetLayout
                 };
 
-                if (vk.AllocateDescriptorSets(_device, allocateInfo, out _descriptorSet) != Result.Success)
+                if (vk.AllocateDescriptorSets(_device, in allocateInfo, out _descriptorSet) != Result.Success)
                 {
                     throw new Exception($"Unable to create descriptor sets");
                 }
@@ -260,7 +260,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
                 PPushConstantRanges = (PushConstantRange*)Unsafe.AsPointer(ref vertPushConst)
             };
 
-            if (vk.CreatePipelineLayout(_device, layoutInfo, default, out _pipelineLayout) != Result.Success)
+            if (vk.CreatePipelineLayout(_device, in layoutInfo, default, out _pipelineLayout) != Result.Success)
             {
                 throw new Exception($"Unable to create the descriptor set layout");
             }
@@ -277,7 +277,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
                         PCode = vertShaderBytes
                     };
 
-                    if (vk.CreateShaderModule(_device, vertInfo, default, out _shaderModuleVert) != Result.Success)
+                    if (vk.CreateShaderModule(_device, in vertInfo, default, out _shaderModuleVert) != Result.Success)
                     {
                         throw new Exception($"Unable to create the vertex shader");
                     }
@@ -294,7 +294,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
                         PCode = fragShaderBytes
                     };
 
-                    if (vk.CreateShaderModule(_device, fragInfo, default, out _shaderModuleFrag) != Result.Success)
+                    if (vk.CreateShaderModule(_device, in fragInfo, default, out _shaderModuleFrag) != Result.Success)
                     {
                         throw new Exception($"Unable to create the fragment shader");
                     }
@@ -420,7 +420,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
                 Subpass = 0
             };
 
-            if (vk.CreateGraphicsPipelines(_device, default, 1, pipelineInfo, default, out _pipeline) != Result.Success)
+            if (vk.CreateGraphicsPipelines(_device, default, 1, in pipelineInfo, default, out _pipeline) != Result.Success)
             {
                 throw new Exception($"Unable to create the pipeline");
             }
@@ -440,7 +440,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
                 QueueFamilyIndex = graphicsFamilyIndex
             };
 
-            if (_vk.CreateCommandPool(_device, poolInfo, null, out var commandPool) != Result.Success)
+            if (_vk.CreateCommandPool(_device, in poolInfo, null, out var commandPool) != Result.Success)
             {
                 throw new Exception("failed to create command pool!");
             }
@@ -453,7 +453,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
                 CommandBufferCount = 1
             };
 
-            if (_vk.AllocateCommandBuffers(_device, allocInfo, out var commandBuffer) != Result.Success)
+            if (_vk.AllocateCommandBuffers(_device, in allocInfo, out var commandBuffer) != Result.Success)
             {
                 throw new Exception($"Unable to allocate command buffers");
             }
@@ -464,7 +464,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
                 Flags = CommandBufferUsageFlags.OneTimeSubmitBit
             };
 
-            if (_vk.BeginCommandBuffer(commandBuffer, beginInfo) != Result.Success)
+            if (_vk.BeginCommandBuffer(commandBuffer, in beginInfo) != Result.Success)
             {
                 throw new Exception($"Failed to begin a command buffer");
             }
@@ -485,7 +485,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
             imageInfo.Usage = ImageUsageFlags.SampledBit | ImageUsageFlags.TransferDstBit;
             imageInfo.SharingMode = SharingMode.Exclusive;
             imageInfo.InitialLayout = ImageLayout.Undefined;
-            if (_vk.CreateImage(_device, imageInfo, default, out _fontImage) != Result.Success)
+            if (_vk.CreateImage(_device, in imageInfo, default, out _fontImage) != Result.Success)
             {
                 throw new Exception($"Failed to create font image");
             }
@@ -535,7 +535,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
                 DescriptorType = DescriptorType.CombinedImageSampler,
                 PImageInfo = (DescriptorImageInfo*)Unsafe.AsPointer(ref descImageInfo)
             };
-            _vk.UpdateDescriptorSets(_device, 1, writeDescriptors, 0, default);
+            _vk.UpdateDescriptorSets(_device, 1, in writeDescriptors, 0, default);
 
             // Create the Upload Buffer:
             var bufferInfo = new BufferCreateInfo
@@ -546,7 +546,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
                 SharingMode = SharingMode.Exclusive
             };
 
-            if (_vk.CreateBuffer(_device, bufferInfo, default, out var uploadBuffer) != Result.Success)
+            if (_vk.CreateBuffer(_device, in bufferInfo, default, out var uploadBuffer) != Result.Success)
             {
                 throw new Exception($"Failed to create a device buffer");
             }
@@ -561,7 +561,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
                 MemoryTypeIndex = GetMemoryTypeIndex(vk, MemoryPropertyFlags.HostVisibleBit, uploadReq.MemoryTypeBits)
             };
 
-            if (_vk.AllocateMemory(_device, uploadAllocInfo, default, out var uploadBufferMemory) != Result.Success)
+            if (_vk.AllocateMemory(_device, in uploadAllocInfo, default, out var uploadBufferMemory) != Result.Success)
             {
                 throw new Exception($"Failed to allocate device memory");
             }
@@ -584,7 +584,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
                 Size = uploadSize
             };
 
-            if (_vk.FlushMappedMemoryRanges(_device, 1, range) != Result.Success)
+            if (_vk.FlushMappedMemoryRanges(_device, 1, in range) != Result.Success)
             {
                 throw new Exception($"Failed to flush memory to device");
             }
@@ -605,7 +605,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
             copyBarrier.SubresourceRange.AspectMask = ImageAspectFlags.ColorBit;
             copyBarrier.SubresourceRange.LevelCount = 1;
             copyBarrier.SubresourceRange.LayerCount = 1;
-            _vk.CmdPipelineBarrier(commandBuffer, PipelineStageFlags.HostBit, PipelineStageFlags.TransferBit, 0, 0, default, 0, default, 1, copyBarrier);
+            _vk.CmdPipelineBarrier(commandBuffer, PipelineStageFlags.HostBit, PipelineStageFlags.TransferBit, 0, 0, default, 0, default, 1, in copyBarrier);
 
             var region = new BufferImageCopy();
             region.ImageSubresource.AspectMask = ImageAspectFlags.ColorBit;
@@ -629,7 +629,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
             useBarrier.SubresourceRange.AspectMask = ImageAspectFlags.ColorBit;
             useBarrier.SubresourceRange.LevelCount = 1;
             useBarrier.SubresourceRange.LayerCount = 1;
-            _vk.CmdPipelineBarrier(commandBuffer, PipelineStageFlags.TransferBit, PipelineStageFlags.FragmentShaderBit, 0, 0, default, 0, default, 1, useBarrier);
+            _vk.CmdPipelineBarrier(commandBuffer, PipelineStageFlags.TransferBit, PipelineStageFlags.FragmentShaderBit, 0, 0, default, 0, default, 1, in useBarrier);
 
             // Store our identifier
             io.Fonts.SetTexID((IntPtr)_fontImage.Handle);
@@ -648,7 +648,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
                 PCommandBuffers = (CommandBuffer*)Unsafe.AsPointer(ref commandBuffer)
             };
 
-            if (_vk.QueueSubmit(graphicsQueue, 1, submitInfo, default) != Result.Success)
+            if (_vk.QueueSubmit(graphicsQueue, 1, in submitInfo, default) != Result.Success)
             {
                 throw new Exception($"Failed to begin a command buffer");
             }
@@ -920,7 +920,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
 
             // Setup desired Vulkan state
             _vk.CmdBindPipeline(commandBuffer, PipelineBindPoint.Graphics, _pipeline);
-            _vk.CmdBindDescriptorSets(commandBuffer, PipelineBindPoint.Graphics, _pipelineLayout, 0, 1, _descriptorSet, 0, null);
+            _vk.CmdBindDescriptorSets(commandBuffer, PipelineBindPoint.Graphics, _pipelineLayout, 0, 1, in _descriptorSet, 0, null);
 
             // Bind Vertex And Index Buffer:
             if (drawData.TotalVtxCount > 0)
@@ -1021,7 +1021,7 @@ namespace Silk.NET.Vulkan.Extensions.ImGui
                 SharingMode = SharingMode.Exclusive
             };
 
-            if (_vk.CreateBuffer(_device, bufferInfo, default, out buffer) != Result.Success)
+            if (_vk.CreateBuffer(_device, in bufferInfo, default, out buffer) != Result.Success)
             {
                 throw new Exception($"Unable to create a device buffer");
             }
