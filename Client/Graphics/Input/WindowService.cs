@@ -1,14 +1,12 @@
-﻿using Silk.NET.GLFW;
+﻿using Common.DI;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 
 namespace Client.Graphics.Input;
 
-public unsafe class GlfwWindowService : IWindowService, IDisposable
+public class WindowService : IService, IDisposable
 {
-    // public readonly Glfw Glfw;
-    // public WindowHandle* WindowHandle => Window.Handle;
     public string Title { get; }
     public int Width { get; private set; }
     public int Height { get; private set; }
@@ -17,8 +15,9 @@ public unsafe class GlfwWindowService : IWindowService, IDisposable
     public event Action<float>? OnFrame;
 
     public readonly IWindow Window;
+    public readonly IInputContext Input;
     
-    public GlfwWindowService()
+    public WindowService()
     {
         Title = "Litterbox Engine";
         Width = 1920;
@@ -35,6 +34,8 @@ public unsafe class GlfwWindowService : IWindowService, IDisposable
         
         Window.FramebufferResize += Resize;
         Window.Render += deltaTime => OnFrame?.Invoke((float)deltaTime);
+
+        Input = Window.CreateInput();
     }
 
     private void Resize(Vector2D<int> size)
@@ -43,24 +44,6 @@ public unsafe class GlfwWindowService : IWindowService, IDisposable
         Height = size.Y;
         OnResize?.Invoke(Width, Height);
     }
-
-    public bool IsKeyPressed(Keys key)
-    {
-        // var input = Window.CreateInput();
-        return false;
-        // return input.Keyboards[0].IsKeyPressed();
-    }
-
-    public void WaitEvents()
-    {
-        
-    }
-    
-    public void PollEvents()
-    {
-        
-    }
-
 
     public void SetShouldClose()
     {
@@ -74,6 +57,7 @@ public unsafe class GlfwWindowService : IWindowService, IDisposable
 
     public void Dispose()
     {
+        Input.Dispose();
         Window.Dispose();
         GC.SuppressFinalize(this);
     }

@@ -12,7 +12,7 @@ public class VulkanSurface: IDisposable
     public readonly SurfaceFormatKHR Format;
     private readonly VulkanInstance _instance;
     
-    public unsafe VulkanSurface(Vk vk, VulkanInstance instance, VulkanPhysicalDevice physicalDevice, GlfwWindowService windowService)
+    public unsafe VulkanSurface(Vk vk, VulkanInstance instance, VulkanPhysicalDevice physicalDevice, WindowService windowService)
     {
         _instance = instance;
 

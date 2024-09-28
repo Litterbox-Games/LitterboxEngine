@@ -30,12 +30,11 @@ public class HostServiceRegistrar : IServiceRegistrar
     {
         host.RegisterSingleton<ILoggingService, ConsoleLoggingService>("console");
         
-        host.RegisterSingleton<IWindowService, GlfwWindowService>();
+        host.RegisterSingleton<WindowService, WindowService>();
         host.RegisterSingleton<IGraphicsDeviceService, VulkanGraphicsDeviceService>();
         host.RegisterSingleton<IResourceService, ClientResourceService>();
         host.RegisterSingleton<IRendererService, RendererService>();
-        host.RegisterSingleton<IKeyboardService, GlfwKeyboardService>();
-        host.RegisterSingleton<IMouseService, GlfwMouseService>();
+        host.RegisterSingleton<InputService, InputService>();
         
         host.RegisterSingleton<CameraService, CameraService>();
         host.RegisterSingleton<PlayerControlService, PlayerControlService>();

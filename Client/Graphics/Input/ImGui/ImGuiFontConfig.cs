@@ -1,7 +1,6 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+﻿// From: https://github.com/dotnet/Silk.NET/tree/main/src/Lab/Experiments/ImGuiVulkan
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
-using System;
 
 // ReSharper disable once CheckNamespace
 namespace Silk.NET.Vulkan.Extensions.ImGui

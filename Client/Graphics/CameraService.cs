@@ -1,7 +1,6 @@
 ﻿using System.Numerics;
 using Client.Graphics.Input;
 using Common.DI;
-using Common.DI.Attributes;
 
 namespace Client.Graphics;
 
@@ -12,7 +11,7 @@ public class CameraService : ITickableService
 
     private float _scaleFactor;
 
-    public CameraService(IWindowService windowService)
+    public CameraService(WindowService windowService)
     {
         Camera = new Camera(Vector2.Zero, new Vector2(windowService.Width, windowService.Height));
         RecalculateCamera(windowService.Width, windowService.Height);

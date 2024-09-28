@@ -18,7 +18,7 @@ public class VulkanSwapChain: IDisposable
     private readonly VulkanQueue[]? _concurrentQueues;
     private readonly uint[]? _concurrentFamilyIndices;
     private readonly VulkanRenderPass _renderPass;
-    private readonly IWindowService _windowService;
+    private readonly WindowService _windowService;
     
     private KhrSwapchain _khrSwapChain = null!;
     private VulkanImageView[] _imageViews = null!;
@@ -33,7 +33,7 @@ public class VulkanSwapChain: IDisposable
 
     private uint _currentFrame;
 
-    public VulkanSwapChain(Vk vk, VulkanLogicalDevice logicalDevice, VulkanSurface surface, VulkanRenderPass renderPass, VulkanCommandPool commandPool, IWindowService windowService, int requestedImages, bool vsyncEnabled,
+    public VulkanSwapChain(Vk vk, VulkanLogicalDevice logicalDevice, VulkanSurface surface, VulkanRenderPass renderPass, VulkanCommandPool commandPool, WindowService windowService, int requestedImages, bool vsyncEnabled,
         VulkanQueue presentQueue, VulkanQueue[]? concurrentQueues)
     {
         _vk = vk;
@@ -187,7 +187,7 @@ public class VulkanSwapChain: IDisposable
         return result;
     }
 
-    private static Extent2D CalculateSwapChainExtent(IWindowService windowService, SurfaceCapabilitiesKHR surfaceCapabilities)
+    private static Extent2D CalculateSwapChainExtent(WindowService windowService, SurfaceCapabilitiesKHR surfaceCapabilities)
     {
         if (surfaceCapabilities.CurrentExtent.Width != uint.MaxValue) return surfaceCapabilities.CurrentExtent;
         

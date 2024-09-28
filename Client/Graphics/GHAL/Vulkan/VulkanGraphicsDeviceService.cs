@@ -1,4 +1,5 @@
 ﻿using Client.Graphics.Input;
+using Client.Graphics.Input.ImGui;
 using Client.Resource;
 using Silk.NET.Input;
 using Silk.NET.Vulkan;
@@ -20,9 +21,9 @@ public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService, IDispo
     public readonly VulkanSwapChain SwapChain;
     private readonly VulkanPipelineCache _pipelineCache;
     private readonly VulkanDescriptorPool _descriptorPool;
-    private readonly GlfwWindowService _windowService;
+    private readonly WindowService _windowService;
 
-    public VulkanGraphicsDeviceService(GlfwWindowService windowService)
+    public VulkanGraphicsDeviceService(WindowService windowService)
     {
         Vk = Vk.GetApi();
         _windowService = windowService;

@@ -1,8 +1,7 @@
 ﻿using Client.Graphics.GHAL.Vulkan;
-using Silk.NET.Input;
 using Silk.NET.Vulkan.Extensions.ImGui;
 
-namespace Client.Graphics.Input;
+namespace Client.Graphics.Input.ImGui;
 
 public class ImGui: IDisposable
 {
@@ -10,14 +9,14 @@ public class ImGui: IDisposable
     private readonly VulkanSwapChain _swapChain;
     
     
-    public ImGui(GlfwWindowService windowService, VulkanGraphicsDeviceService graphicsDeviceService)
+    public ImGui(WindowService windowService, VulkanGraphicsDeviceService graphicsDeviceService)
     {
         _swapChain = graphicsDeviceService.SwapChain;
         
         _imGuiController = new ImGuiController(
             graphicsDeviceService.Vk,
             windowService.Window,
-            windowService.Window.CreateInput(),
+            windowService.Input,
             graphicsDeviceService.LogicalDevice.PhysicalDevice.VkPhysicalDevice,
             graphicsDeviceService.GraphicsQueue.QueueFamilyIndex,
             _swapChain.ImageCount,

@@ -7,6 +7,7 @@ using Common.Entity;
 using Common.Mathematics;
 using Common.Network;
 using Common.World;
+using Silk.NET.Input;
 
 namespace Client.Player;
 
@@ -15,16 +16,16 @@ public class PlayerControlService : ITickableService
 {
     private readonly INetworkService _networkService;
     private readonly IWorldService _worldService;
-    private readonly IKeyboardService _keyboardService;
+    private readonly InputService _inputService;
     private readonly CameraService _cameraService;
     
     private GameEntity? _playerEntity;
     
-    public PlayerControlService(INetworkService networkService, IEntityService entityService, IWorldService worldService, IKeyboardService keyboardService, CameraService cameraService)
+    public PlayerControlService(INetworkService networkService, IEntityService entityService, IWorldService worldService, InputService inputService, CameraService cameraService)
     {
         _networkService = networkService;
         _worldService = worldService;
-        _keyboardService = keyboardService;
+        _inputService = inputService;
         _cameraService = cameraService;
 
         entityService.EventOnEntitySpawn += OnEntitySpawn;
@@ -52,16 +53,16 @@ public class PlayerControlService : ITickableService
         const float speed = 15f; // TODO: assign speeds to entities rather than hard coding here
         var direction = Vector2.Zero;
         
-        if (_keyboardService.IsKeyDown(Key.W))
+        if (_inputService.IsKeyDown(Key.W))
             direction.Y -= 1f;
         
-        if (_keyboardService.IsKeyDown(Key.A))
+        if (_inputService.IsKeyDown(Key.A))
             direction.X -= 1f;
         
-        if (_keyboardService.IsKeyDown(Key.S))
+        if (_inputService.IsKeyDown(Key.S))
             direction.Y += 1f;
         
-        if (_keyboardService.IsKeyDown(Key.D))
+        if (_inputService.IsKeyDown(Key.D))
             direction.X += 1f;
 
         if (direction == Vector2.Zero)
