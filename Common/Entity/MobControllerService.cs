@@ -5,11 +5,11 @@ namespace Common.Entity;
 
 public class MobControllerService : ITickableService
 {
-    private ServerEntityService _entityService;
+    private readonly ServerEntityService _entityService;
 
     private readonly List<MobEntity> _entities = new();
 
-    private Random _random = new();
+    private readonly Random _random = new();
 
     public MobControllerService(IEntityService entityService)
     {
@@ -29,24 +29,19 @@ public class MobControllerService : ITickableService
             Position = position,
             OwnerId = 0,
             EntityId = (ulong) _random.Next(),
-            SpawnPosition = position
+            Direction = Vector2.Normalize(new Vector2(_random.Next(), _random.Next()))
         };
         
         _entityService.SpawnEntity(entity);
     }
 
-    private float _totalTime = 0f;
-    
     public void Update(float deltaTime)
     {
-        _totalTime += deltaTime;
-        
+        const float movementSpeed = 0.5f;
+
         _entities.ForEach(x =>
         {
-            x.Position = x.Position with
-            {
-                X = x.SpawnPosition.X + MathF.Sin(_totalTime)
-            };
+            x.Position += x.Direction * deltaTime * movementSpeed;
         });
     }
 

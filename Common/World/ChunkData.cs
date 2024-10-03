@@ -57,13 +57,13 @@ public class ChunkData
 
     internal Vector2i GetLocalPositionFromWorldPosition(Vector2i position)
     {
-        if (position.X / 16 != Position.X || position.Y / 16 != Position.Y)
+        if (position.X / ChunkSize != Position.X || position.Y / ChunkSize != Position.Y)
         {
             throw new ArgumentOutOfRangeException(nameof(position), position,
                 "Request position does not exist within the bounds of this chunk.");
         }
 
-        return new Vector2i(position.X % 16, position.X % 16);
+        return new Vector2i(position.X % ChunkSize, position.X % ChunkSize);
     }
 
     internal int GetIndexFromWorldPosition(Vector2i position)
@@ -73,7 +73,7 @@ public class ChunkData
 
     public static int GetIndexFromLocalPosition(Vector2i position)
     {
-        if (position.X is >= 16 or < 0 || position.Y is >= 16 or < 0)
+        if (position.X is >= ChunkSize or < 0 || position.Y is >= ChunkSize or < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(position), position,
                 "Position was out of range for setting a block. Must be between 0 (inclusive) and 15 (inclusive).");
@@ -86,6 +86,6 @@ public class ChunkData
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int GetIndexFromLocalPositionFast(Vector2i position)
     {
-        return position.X + (position.Y * 16);
+        return position.X + position.Y * ChunkSize;
     }
 }

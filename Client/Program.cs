@@ -4,6 +4,7 @@ using Client.Graphics.GHAL;
 using Client.Graphics.Input;
 using Client.Graphics.Input.ImGui;
 using Client.Host;
+using ImGuiNET;
 
 namespace Client;
 
@@ -31,11 +32,7 @@ internal static class Program
         {
             // Needs to be called in Draw so it happens at the same rate as imGuiService.Draw()
             imGuiService.Update(deltaTime);
-            
-            // This is where you'll tell ImGui what to draw.
-            // For now, we'll just show their built-in demo window.
-            ImGuiNET.ImGui.ShowDemoWindow();
-            
+
             rendererService.BeginFrame();
             rendererService.BeginDrawing(cameraService.Camera.ViewMatrix);
             // ReSharper disable once AccessToDisposedClosure
