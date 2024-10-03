@@ -1,58 +1,63 @@
 ﻿using Client.Graphics.Input;
+using Client.Graphics.Input.ImGui;
 using Client.Resource;
+using Silk.NET.Input;
 using Silk.NET.Vulkan;
+using Silk.NET.Vulkan.Extensions.ImGui;
 
 namespace Client.Graphics.GHAL.Vulkan;
 
 // TODO: where should this be disposed and should IGraphicsDeviceService inherit from IDisposable?
-public sealed class VulkanGraphicsDeviceService: IGraphicsDeviceService, IDisposable
+public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService, IDisposable
 {
-    private readonly Vk _vk;
+    public readonly Vk Vk;
     private readonly VulkanInstance _instance;
-    private readonly VulkanLogicalDevice _logicalDevice;
+    public readonly VulkanLogicalDevice LogicalDevice;
     private readonly VulkanSurface _surface;
     private readonly VulkanRenderPass _renderPass;
-    private readonly VulkanQueue _graphicsQueue;
+    public readonly VulkanQueue GraphicsQueue;
     private readonly VulkanQueue _presentQueue;
     private readonly VulkanCommandPool _commandPool;
-    private readonly VulkanSwapChain _swapChain;
+    public readonly VulkanSwapChain SwapChain;
     private readonly VulkanPipelineCache _pipelineCache;
     private readonly VulkanDescriptorPool _descriptorPool;
-    private readonly GlfwWindowService _windowService;
-    
-    public VulkanGraphicsDeviceService(GlfwWindowService windowService)
+    private readonly WindowService _windowService;
+
+    public VulkanGraphicsDeviceService(WindowService windowService)
     {
-        _vk = Vk.GetApi();
+        Vk = Vk.GetApi();
         _windowService = windowService;
-        _instance = new VulkanInstance(_vk, _windowService.Title, true);
-        var physicalDevice = VulkanPhysicalDevice.SelectPreferredPhysicalDevice(_vk, _instance);
-        _logicalDevice = new VulkanLogicalDevice(_vk, physicalDevice);
-        _surface = new VulkanSurface(_vk, _instance, physicalDevice, _windowService);
-        _renderPass =  new VulkanRenderPass(_vk, _logicalDevice, _surface.Format.Format);
-        _graphicsQueue = new GraphicsQueue(_vk, _logicalDevice, 0);
-        _presentQueue = new PresentQueue(_vk, _logicalDevice, _surface, 0);
-        _commandPool = new VulkanCommandPool(_vk, _logicalDevice, _graphicsQueue.QueueFamilyIndex);
-        _swapChain = new VulkanSwapChain(_vk, _logicalDevice, _surface, _renderPass, _commandPool, _windowService, 3, 
-            false, _presentQueue, new []{_graphicsQueue});
-        _descriptorPool = new VulkanDescriptorPool(_vk, _logicalDevice);
-        _pipelineCache = new VulkanPipelineCache(_vk, _logicalDevice);
+        _instance = new VulkanInstance(Vk, _windowService.Title, true);
+        var physicalDevice = VulkanPhysicalDevice.SelectPreferredPhysicalDevice(Vk, _instance);
+        LogicalDevice = new VulkanLogicalDevice(Vk, physicalDevice);
+        _surface = new VulkanSurface(Vk, _instance, physicalDevice, _windowService);
+        _renderPass = new VulkanRenderPass(Vk, LogicalDevice, _surface.Format.Format);
+        GraphicsQueue = new GraphicsQueue(Vk, LogicalDevice, 0);
+        _presentQueue = new PresentQueue(Vk, LogicalDevice, _surface, 0);
+        _commandPool = new VulkanCommandPool(Vk, LogicalDevice, GraphicsQueue.QueueFamilyIndex);
+
+        SwapChain = new VulkanSwapChain(Vk, LogicalDevice, _surface, _renderPass, _commandPool, _windowService, 3,
+            false, _presentQueue, new[] {GraphicsQueue});
+        _descriptorPool = new VulkanDescriptorPool(Vk, LogicalDevice);
+        _pipelineCache = new VulkanPipelineCache(Vk, LogicalDevice);
         _windowService.OnResize += WindowResized;
     }
 
     private void WindowResized(int width, int height)
     {
-        _swapChain.Recreate();
+        SwapChain.Recreate();
     }
-    
+
     public Buffer CreateBuffer(BufferDescription description)
     {
-        return new VulkanBuffer(_vk, _logicalDevice, description, MemoryPropertyFlags.DeviceLocalBit, _commandPool, _graphicsQueue);
+        return new VulkanBuffer(Vk, LogicalDevice, description, MemoryPropertyFlags.DeviceLocalBit, _commandPool,
+            GraphicsQueue);
     }
 
     public void UpdateBuffer(Buffer buffer, uint offset, uint[] data)
     {
         buffer.Update(offset, data);
-        
+
         /*
         var vkBuffer = (buffer as Buffer)!;
         void* dataPtr;
@@ -75,85 +80,86 @@ public sealed class VulkanGraphicsDeviceService: IGraphicsDeviceService, IDispos
 
     public ShaderProgram CreateShaderProgram(params ShaderDescription[] descriptions)
     {
-        return new VulkanShaderProgram(_vk, _logicalDevice, descriptions);
+        return new VulkanShaderProgram(Vk, LogicalDevice, descriptions);
     }
 
     public Texture CreateTexture(uint width, uint height, Span<byte> data)
     {
-        return new VulkanTexture(_vk, _logicalDevice, _commandPool, _graphicsQueue, width, height, data);
+        return new VulkanTexture(Vk, LogicalDevice, _commandPool, GraphicsQueue, width, height, data);
     }
 
     public Texture CreateTexture(uint width, uint height, RgbaByte color)
     {
-        var pixelCount = (int)(width * height);
-        var singlePixelColor = new[] { color.R, color.G, color.B, color.A };
+        var pixelCount = (int) (width * height);
+        var singlePixelColor = new[] {color.R, color.G, color.B, color.A};
+
         var data = Enumerable.Range(0, pixelCount)
             .Select(_ => singlePixelColor)
             .SelectMany(x => x)
             .ToArray();
 
-        return new VulkanTexture(_vk, _logicalDevice, _commandPool, _graphicsQueue, width, height, data);
+        return new VulkanTexture(Vk, LogicalDevice, _commandPool, GraphicsQueue, width, height, data);
     }
 
     public Pipeline CreatePipeline(PipelineDescription description)
     {
-        return new VulkanPipeline(_vk, _logicalDevice, _renderPass, _pipelineCache, description);
+        return new VulkanPipeline(Vk, LogicalDevice, _renderPass, _pipelineCache, description);
     }
 
     public ResourceLayout CreateResourceLayout(ResourceLayoutDescription description)
     {
-        return new VulkanDescriptorSetLayout(_vk, _logicalDevice, description);
+        return new VulkanDescriptorSetLayout(Vk, LogicalDevice, description);
     }
 
     public ResourceSet CreateResourceSet(ResourceLayout layout)
     {
         var descriptorSetLayout = (layout as VulkanDescriptorSetLayout)!;
-        return new VulkanDescriptorSet(_vk, _logicalDevice, _descriptorPool, descriptorSetLayout);
+        return new VulkanDescriptorSet(Vk, LogicalDevice, _descriptorPool, descriptorSetLayout);
     }
 
     public Sampler CreateSampler()
     {
-        return new VulkanSampler(_vk, _logicalDevice);
+        return new VulkanSampler(Vk, LogicalDevice);
     }
 
     public CommandList CreateCommandList()
     {
-        return new VulkanCommandList(_vk, _swapChain, _renderPass);
+        return new VulkanCommandList(Vk, SwapChain, _renderPass);
     }
 
     public void SubmitCommands()
     {
-        _swapChain.Submit(_graphicsQueue);
-        _swapChain.PresentImage(_presentQueue);
+        SwapChain.Submit(GraphicsQueue);
+        SwapChain.PresentImage(_presentQueue);
     }
 
     public void SwapBuffers()
     {
-        _swapChain.WaitForFence();
-        _swapChain.AcquireNextImage();
+        SwapChain.WaitForFence();
+        SwapChain.AcquireNextImage();
     }
 
     public void WaitIdle()
     {
-        _logicalDevice.WaitIdle();
+        LogicalDevice.WaitIdle();
     }
 
     public void Dispose()
     {
         _presentQueue.WaitIdle();
-        _graphicsQueue.WaitIdle();
-        _logicalDevice.WaitIdle();
+        GraphicsQueue.WaitIdle();
+        LogicalDevice.WaitIdle();
      
         _windowService.OnResize -= WindowResized;
         
         _pipelineCache.Dispose();
         _descriptorPool.Dispose();
-        _swapChain.Dispose();
+        SwapChain.Dispose();
         _commandPool.Dispose();
         _renderPass.Dispose();
         _surface.Dispose();
-        _logicalDevice.Dispose();
+        LogicalDevice.Dispose();
         _instance.Dispose();
-        _vk.Dispose();
+        Vk.Dispose();
     }
 }

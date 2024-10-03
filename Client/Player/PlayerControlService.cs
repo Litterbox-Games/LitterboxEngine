@@ -7,6 +7,8 @@ using Common.Entity;
 using Common.Mathematics;
 using Common.Network;
 using Common.World;
+using ImGuiNET;
+using Silk.NET.Input;
 
 namespace Client.Player;
 
@@ -15,16 +17,17 @@ public class PlayerControlService : ITickableService
 {
     private readonly INetworkService _networkService;
     private readonly IWorldService _worldService;
-    private readonly IKeyboardService _keyboardService;
+    private readonly InputService _inputService;
     private readonly CameraService _cameraService;
     
     private GameEntity? _playerEntity;
+    private Vector2i _chunkPosition;
     
-    public PlayerControlService(INetworkService networkService, IEntityService entityService, IWorldService worldService, IKeyboardService keyboardService, CameraService cameraService)
+    public PlayerControlService(INetworkService networkService, IEntityService entityService, IWorldService worldService, InputService inputService, CameraService cameraService)
     {
         _networkService = networkService;
         _worldService = worldService;
-        _keyboardService = keyboardService;
+        _inputService = inputService;
         _cameraService = cameraService;
 
         entityService.EventOnEntitySpawn += OnEntitySpawn;
@@ -52,16 +55,16 @@ public class PlayerControlService : ITickableService
         const float speed = 15f; // TODO: assign speeds to entities rather than hard coding here
         var direction = Vector2.Zero;
         
-        if (_keyboardService.IsKeyDown(Key.W))
+        if (_inputService.IsKeyDown(Key.W))
             direction.Y -= 1f;
         
-        if (_keyboardService.IsKeyDown(Key.A))
+        if (_inputService.IsKeyDown(Key.A))
             direction.X -= 1f;
         
-        if (_keyboardService.IsKeyDown(Key.S))
+        if (_inputService.IsKeyDown(Key.S))
             direction.Y += 1f;
         
-        if (_keyboardService.IsKeyDown(Key.D))
+        if (_inputService.IsKeyDown(Key.D))
             direction.X += 1f;
 
         if (direction == Vector2.Zero)
@@ -82,16 +85,16 @@ public class PlayerControlService : ITickableService
         var chunkX = MathF.Floor(playerEntityPosition.X / ChunkData.ChunkSize).ModulusToInt(IWorldService.WorldSize);
         var chunkY = MathF.Floor(playerEntityPosition.Y / ChunkData.ChunkSize).ModulusToInt(IWorldService.WorldSize);
     
-        var chunkPosition = new Vector2i(chunkX, chunkY);
+        _chunkPosition = new Vector2i(chunkX, chunkY);
     
         // Load and unload chunks based on square distance
         for (var dx = -chunkRadius - 1; dx <= chunkRadius + 1; dx++)
         {
             for (var dy = -chunkRadius - 1; dy <= chunkRadius + 1; dy++)
             {
-                var chunkPos = new Vector2i(
-                    (chunkPosition.X + dx).Modulus(IWorldService.WorldSize),
-                    (chunkPosition.Y + dy).Modulus(IWorldService.WorldSize)
+                var chunk = new Vector2i(
+                    (_chunkPosition.X + dx).Modulus(IWorldService.WorldSize),
+                    (_chunkPosition.Y + dy).Modulus(IWorldService.WorldSize)
                 );
             
                 var squareDistance = dx * dx + dy * dy;
@@ -99,10 +102,10 @@ public class PlayerControlService : ITickableService
                 switch (squareDistance)
                 {
                     case <= chunkRadius * chunkRadius:
-                        _worldService.RequestChunk(chunkPos);
+                        _worldService.RequestChunk(chunk);
                         break;
                     case <= (chunkRadius + 1) * (chunkRadius + 1):
-                        _worldService.RequestUnloadChunk(chunkPos);
+                        _worldService.RequestUnloadChunk(chunk);
                         break;
                 }
             }
@@ -126,5 +129,16 @@ public class PlayerControlService : ITickableService
     }
 
     /// <inheritdoc />
-    public void Draw() { }
+    public void Draw()
+    {
+        ImGui.Begin("Debug");
+
+        if (_playerEntity != null)
+        {
+            ImGui.Text($"Player Position: ({_playerEntity.Position.X}, {_playerEntity.Position.Y})");  
+            ImGui.Text($"Chunk Position: ({_chunkPosition.X}, {_chunkPosition.Y})");  
+        }
+        
+        ImGui.End();
+    }
 }

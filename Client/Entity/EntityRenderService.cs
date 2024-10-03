@@ -11,11 +11,11 @@ namespace Client.Entity;
 public class EntityRenderService : ITickableService
 {
     private readonly IEntityService _entityService;
-    private readonly IRendererService _rendererService;
+    private readonly RendererService _rendererService;
     private readonly IResourceService _resourceService;
     private Texture? _textureAtlas;
 
-    public EntityRenderService(IEntityService entityService, IRendererService rendererService, IResourceService resourceService)
+    public EntityRenderService(IEntityService entityService, RendererService rendererService, IResourceService resourceService)
     {
         _entityService = entityService;
         _rendererService = rendererService;
@@ -30,15 +30,6 @@ public class EntityRenderService : ITickableService
 
         _entityService.Entities.ForEach(x =>
         {
-            /*for (int i = 0; i < 316; i++)
-            {
-                for (int j = 0; j < 316; j++)
-                {
-                    _rendererService.DrawTexture(_textureAtlas, _textureAtlas.GetSourceRectangle(5, 0), new RectangleF(i, j, 1, 1), Color.White);
-                    // _rendererService.DrawRectangle(new RectangleF(i, j, 1, 1), Color.Red); 
-                }   
-            }*/
-            
             _rendererService.DrawRectangle(new RectangleF(x.Position.X, x.Position.Y, 1, 1), Color.Red);
             // _rendererService.DrawTexture(_textureAtlas, _textureAtlas.GetSourceRectangle(5, 0), new RectangleF(x.Position.X, x.Position.Y, 1, 1), Color.White);
         });

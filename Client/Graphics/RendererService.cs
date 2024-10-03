@@ -2,16 +2,15 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Client.Graphics.GHAL;
+using Client.Graphics.Input.ImGui;
 using Client.Resource;
 using Common.DI;
-using Common.DI.Attributes;
 using Common.Resource;
 using Buffer = Client.Graphics.GHAL.Buffer;
 
 namespace Client.Graphics;
 
-[TickablePriority(EPriority.Low)]
-public class RendererService: IRendererService
+public class RendererService: IService, IDisposable
 {
     private const int MaxQuads = 100000;
     private const int MaxTextures = 8;
@@ -115,16 +114,21 @@ public class RendererService: IRendererService
         _commandList = _graphicsDeviceService.CreateCommandList();
     }
 
-    public void Begin(Matrix4x4? mvp = null)
+    public void BeginDrawing(Matrix4x4? mvp = null)
     {
         _mvp = mvp ?? Matrix4x4.Identity;
         
-        _graphicsDeviceService.SwapBuffers();
-        _commandList.Begin(ClearColor);
+        _commandList.BeginRenderPass(ClearColor);
         _commandList.SetPipeline(_pipeline);
         
         _commandList.UpdateBuffer(_transformBuffer, 0, _mvp);
         _commandList.SetResourceSet(0, _transformSet);
+    }
+
+    public void BeginFrame()
+    {
+        _graphicsDeviceService.SwapBuffers();
+        _commandList.Begin();
     }
 
     private void Flush()
@@ -140,10 +144,14 @@ public class RendererService: IRendererService
         _textureCount = 1;
     }
     
-    public void End()
+    public void EndDrawing()
     {
         if (_quadCount > 0) Flush();
-        
+        _commandList.EndRenderPass();
+    }
+    
+    public void EndFrame()
+    {
         _commandList.End();
         _graphicsDeviceService.SubmitCommands();
     }

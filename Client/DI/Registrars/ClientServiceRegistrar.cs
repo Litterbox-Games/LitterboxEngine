@@ -3,6 +3,7 @@ using Client.Graphics;
 using Client.Graphics.GHAL;
 using Client.Graphics.GHAL.Vulkan;
 using Client.Graphics.Input;
+using Client.Graphics.Input.ImGui;
 using Client.Network;
 using Client.Player;
 using Client.Resource;
@@ -30,12 +31,12 @@ public class ClientServiceRegistrar : IServiceRegistrar
     {
         host.RegisterSingleton<ILoggingService, ConsoleLoggingService>("console");
         
-        host.RegisterSingleton<IWindowService, GlfwWindowService>();
+        host.RegisterSingleton<WindowService, WindowService>();
         host.RegisterSingleton<IGraphicsDeviceService, VulkanGraphicsDeviceService>();
+        host.RegisterSingleton<ImGuiService, ImGuiService>();
         host.RegisterSingleton<IResourceService, ClientResourceService>();
-        host.RegisterSingleton<IRendererService, RendererService>();
-        host.RegisterSingleton<IKeyboardService, GlfwKeyboardService>();
-        host.RegisterSingleton<IMouseService, GlfwMouseService>();
+        host.RegisterSingleton<RendererService, RendererService>();
+        host.RegisterSingleton<InputService, InputService>();
         
         host.RegisterSingleton<CameraService, CameraService>();
         host.RegisterSingleton<PlayerControlService, PlayerControlService>();

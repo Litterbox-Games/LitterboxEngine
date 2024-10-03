@@ -2,7 +2,9 @@
 using Client.Graphics;
 using Client.Graphics.GHAL;
 using Client.Graphics.Input;
+using Client.Graphics.Input.ImGui;
 using Client.Host;
+using ImGuiNET;
 
 namespace Client;
 
@@ -12,34 +14,35 @@ internal static class Program
     {
         using var host = new ClientHost();
 
-        var windowService = host.Resolve<IWindowService>();
+        var windowService = host.Resolve<WindowService>();
         var graphicsDeviceService = host.Resolve<IGraphicsDeviceService>();
-        var rendererService = host.Resolve<IRendererService>();
+        var rendererService = host.Resolve<RendererService>();
         var cameraService = host.Resolve<CameraService>();
+        var imGuiService = host.Resolve<ImGuiService>();
         
-        var stopWatch = new Stopwatch();
-
-        float deltaTime = 0;
-        
-        while (!windowService.ShouldClose())
+        // Update
+        windowService.OnUpdate += deltaTime =>
         {
-            stopWatch.Start();
-            
-            windowService.PollEvents();
-
-            // Update
+            // ReSharper disable once AccessToDisposedClosure
             host.Update(deltaTime);
-            
-            // Draw
-            rendererService.Begin(cameraService.Camera.ViewMatrix);
-            host.Draw();
-            rendererService.End();
+        };
 
-            stopWatch.Stop();
-            deltaTime = (float)stopWatch.Elapsed.TotalSeconds;
-            stopWatch.Reset();
-        }
+        // Draw
+        windowService.OnDraw += deltaTime =>
+        {
+            // Needs to be called in Draw so it happens at the same rate as imGuiService.Draw()
+            imGuiService.Update(deltaTime);
+
+            rendererService.BeginFrame();
+            rendererService.BeginDrawing(cameraService.Camera.ViewMatrix);
+            // ReSharper disable once AccessToDisposedClosure
+            host.Draw();
+            rendererService.EndDrawing();
+            imGuiService.Draw();
+            rendererService.EndFrame();
+        };
         
+        windowService.Run();
         graphicsDeviceService.WaitIdle();
     }
 }
