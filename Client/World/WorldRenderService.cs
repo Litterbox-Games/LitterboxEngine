@@ -81,8 +81,8 @@ public class WorldRenderService : ITickableService
         
         foreach (var chunk in chunks)
         {
-            var chunkX = (chunk.Position.X - playerChunkX + IWorldService.WorldSize / 2) % IWorldService.WorldSize - IWorldService.WorldSize / 2 + playerChunkX;
-            var chunkY = (chunk.Position.Y - playerChunkY + IWorldService.WorldSize / 2) % IWorldService.WorldSize - IWorldService.WorldSize / 2 + playerChunkY;
+            var chunkX = (chunk.Position.X - playerChunkX + IWorldService.WorldSize / 2).Modulus(IWorldService.WorldSize) - IWorldService.WorldSize / 2 + playerChunkX;
+            var chunkY = (chunk.Position.Y - playerChunkY + IWorldService.WorldSize / 2).Modulus(IWorldService.WorldSize) - IWorldService.WorldSize / 2 + playerChunkY;
             
             ImGui.Text($"({chunk.Position.X}, {chunk.Position.Y})\t\t({chunkX}, {chunkY})");            
             

@@ -5,12 +5,7 @@ public static class MathFExtensions
     public static float Modulus(this float x, int divisor)
     {
         var output = x % divisor;
-
-        if (x < 0 && output != 0)
-        {
-            output = divisor + output;
-        }
-
+        output += x < 0 ? Math.Abs(divisor) : 0;
         return output;
     }
 
@@ -23,7 +18,7 @@ public static class MathFExtensions
 
     public static int ModulusToInt(this float x, int divisor)
     {
-        var output = (int) MathF.Floor(x) % divisor;
+        var output = (int)(x % divisor);
         output += x < 0 ? Math.Abs(divisor) : 0;
         return output;
     }
