@@ -1,10 +1,8 @@
-﻿using System.Diagnostics;
-using Client.Graphics;
+﻿using Client.Graphics;
 using Client.Graphics.GHAL;
 using Client.Graphics.Input;
 using Client.Graphics.Input.ImGui;
 using Client.Host;
-using ImGuiNET;
 
 namespace Client;
 

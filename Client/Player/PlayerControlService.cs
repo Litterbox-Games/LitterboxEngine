@@ -19,6 +19,7 @@ public class PlayerControlService : ITickableService
     private readonly IWorldService _worldService;
     private readonly InputService _inputService;
     private readonly CameraService _cameraService;
+    private readonly IEntityService _entityService;
     
     private GameEntity? _playerEntity;
     private Vector2i _chunkPosition;
@@ -29,6 +30,7 @@ public class PlayerControlService : ITickableService
         _worldService = worldService;
         _inputService = inputService;
         _cameraService = cameraService;
+        _entityService = entityService;
 
         entityService.EventOnEntitySpawn += OnEntitySpawn;
         entityService.EventOnEntityDespawn += OnEntityDespawn;
@@ -136,7 +138,8 @@ public class PlayerControlService : ITickableService
         if (_playerEntity != null)
         {
             ImGui.Text($"Player Position: ({_playerEntity.Position.X}, {_playerEntity.Position.Y})");  
-            ImGui.Text($"Chunk Position: ({_chunkPosition.X}, {_chunkPosition.Y})");  
+            ImGui.Text($"Chunk Position: ({_chunkPosition.X}, {_chunkPosition.Y})");
+            ImGui.Text($"Entity Count: {_entityService.Entities.Count()}");
         }
         
         ImGui.End();

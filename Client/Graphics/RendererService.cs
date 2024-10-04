@@ -6,6 +6,7 @@ using Client.Graphics.Input.ImGui;
 using Client.Resource;
 using Common.DI;
 using Common.Resource;
+using ImGuiNET;
 using Buffer = Client.Graphics.GHAL.Buffer;
 
 namespace Client.Graphics;
@@ -133,6 +134,9 @@ public class RendererService: IService, IDisposable
 
     private void Flush()
     {
+        ImGui.Begin("RendererService");
+        ImGui.Text($"Quads Per Frame: {_quadCount}");
+        ImGui.End();
         _commandList.SetResourceSet(2, _textureSet);
         
         _commandList.UpdateBuffer(_quadsBuffer, 0, _quads);

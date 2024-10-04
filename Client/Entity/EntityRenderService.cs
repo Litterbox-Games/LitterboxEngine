@@ -20,7 +20,7 @@ public class EntityRenderService : ITickableService
     private readonly INetworkService _networkService;
     
     private GameEntity? _playerEntity;
-    private Texture? _textureAtlas;
+    private Texture? _texture;
     
     
     public EntityRenderService(IEntityService entityService, RendererService rendererService, INetworkService networkService, IResourceService resourceService)
@@ -57,12 +57,8 @@ public class EntityRenderService : ITickableService
     {
         if (_playerEntity == null) return;
         
-        _textureAtlas ??= _resourceService.Get<Texture>("Objects.png");
+        _texture ??= _resourceService.Get<Texture>("Items.png");
 
-        
-
-        ImGui.Begin("EntityRenderService");
-        
         foreach (var entity in _entityService.Entities)
         {
             const int worldSize = IWorldService.WorldSize * ChunkData.ChunkSize;
@@ -70,13 +66,8 @@ public class EntityRenderService : ITickableService
             var position = entity.Position.Modulus(worldSize);
             var entityX = (position.X - _playerEntity.Position.X + worldSize / 2f).Modulus(worldSize) - worldSize / 2f + _playerEntity.Position.X;
             var entityY = (position.Y - _playerEntity.Position.Y + worldSize / 2f).Modulus(worldSize) - worldSize / 2f + _playerEntity.Position.Y;
-            ImGui.Text($"({position.X}, {position.Y})");
-            ImGui.Text($"({entity.Position.X}, {entity.Position.Y})\t\t({entityX}, {entityY})");
-            
-            _rendererService.DrawRectangle(new RectangleF(entityX, entityY, 1, 1), entity.EntityType == 0 ? Color.Purple : Color.Red);
-            // _rendererService.DrawTexture(_textureAtlas, _textureAtlas.GetSourceRectangle(5, 0), new RectangleF(x.Position.X, x.Position.Y, 1, 1), Color.White);
+
+            _rendererService.DrawTexture(_texture, new Rectangle(48, 137, 22, 15), new RectangleF(entityX, entityY, 22f / 15f, 1), Color.White);
         }
-        
-        ImGui.End();
     }
 }
