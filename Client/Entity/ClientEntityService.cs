@@ -4,24 +4,26 @@ using Common.Entity;
 using Common.Entity.Messages;
 using Common.Network;
 using Common.Player;
+using ImGuiNET;
 
 namespace Client.Entity;
 
 public class ClientEntityService : AbstractEntityService
 {
-    public override IEnumerable<GameEntity> Entities => _entities;
-    private readonly List<GameEntity> _entities = new();
-    
+    public override List<GameEntity> Entities { get; }
+
     public override event Action<GameEntity>? EventOnEntitySpawn;
     public override event Action<GameEntity>? EventOnEntityDespawn;
     public override event Action<GameEntity>? EventOnEntityMove;
 
     private readonly ClientNetworkService _network;
 
-    public ClientEntityService(INetworkService network)
+    public ClientEntityService(ClientNetworkService network)
     {
-        _network = (ClientNetworkService) network;
+        Entities = new List<GameEntity>();
         
+        _network = network;
+
         _network.RegisterMessageHandle<EntitySpawnMessage>(OnEntitySpawnMessage);
         _network.RegisterMessageHandle<EntityDespawnMessage>(OnEntityDespawnMessage);
         _network.RegisterMessageHandle<EntityMoveMessage>(OnEntityMoveMessage);
@@ -30,51 +32,61 @@ public class ClientEntityService : AbstractEntityService
     public override void Update(float deltaTime)
     {
         var moveMessage = new EntityMoveMessage();
-        
         var now = DateTime.Now;
         var renderTime = now - new TimeSpan(0, 0, 0, 0, 100);
-        _entities.ForEach(x =>
+        
+        foreach (var entity in Entities.Where(x => x.Position != x.LastSentPosition && (now - x.LastUpdateTime).TotalMilliseconds > 50))
         {
-            if (x.OwnerId == _network.PlayerId &&
-                x.Position != x.LastSentPosition &&
-                (now - x.LastUpdateTime).TotalMilliseconds > 50)
+            if (entity.OwnerId == _network.PlayerId)
             {
                 moveMessage.Entities.Add(new EntityMovement
                 {
-                    EntityId = x.EntityId,
-                    NewPosition = x.Position
+                    EntityId = entity.EntityId,
+                    NewPosition = entity.Position
                 });
 
-                x.LastSentPosition = x.Position;
-                x.LastUpdateTime = now;
+                entity.LastSentPosition = entity.Position;
+                entity.LastUpdateTime = now;
             }
-            else
+            else if (entity.OwnerId != _network.PlayerId)
             {
-                if (x.QueuedMovements.Count <= 1)
+                if (entity.QueuedMovements.Count <= 1)
                     return;
-                    
                 
-                while (x.QueuedMovements.Count > 2 && renderTime > x.QueuedMovements.ElementAt(1).TimeStamp)
+                while (entity.QueuedMovements.Count > 2 && renderTime > entity.QueuedMovements.ElementAt(1).TimeStamp)
                 {
-                    x.QueuedMovements.Dequeue();
+                    entity.QueuedMovements.Dequeue();
                 }
 
-                var firstMovement = x.QueuedMovements.ElementAt(0);
-                var secondMovement = x.QueuedMovements.ElementAt(1);
-                
+                var firstMovement = entity.QueuedMovements.ElementAt(0);
+                var secondMovement = entity.QueuedMovements.ElementAt(1);
+
                 var interpolationFactor = (renderTime - firstMovement.TimeStamp).TotalMilliseconds /
-                                          (secondMovement.TimeStamp - firstMovement.TimeStamp).TotalMilliseconds;
+                                          (secondMovement.TimeStamp -
+                                           firstMovement.TimeStamp).TotalMilliseconds;
                 
-                interpolationFactor = interpolationFactor <= 1 ? interpolationFactor : 1;
-                x.Position = Vector2.Lerp(firstMovement.Position, secondMovement.Position, (float) interpolationFactor);
+                interpolationFactor = interpolationFactor > 1 ? 1 : interpolationFactor;
+                entity.Position = Vector2.Lerp(firstMovement.Position, secondMovement.Position, (float) interpolationFactor);
             }
-        });
-        
+        }
+
         if (moveMessage.Entities.Count > 0)
             _network.SendToServer(moveMessage);
+        
     }
 
-    public override void Draw() { }
+    public override void Draw()
+    {
+        ImGui.Begin("EntityService");
+        
+        foreach (var entity in Entities)
+        {
+            ImGui.Text($"{entity.EntityId} {entity.OwnerId} ({entity.Position.X}, {entity.Position.Y})");    
+        }
+        
+        ImGui.End();
+        
+    }
 
     private void OnEntitySpawnMessage(INetworkMessage message, NetworkPlayer? _)
     {
@@ -93,7 +105,7 @@ public class ClientEntityService : AbstractEntityService
 
         entity.DeserializeEntityData(castedMessage.EntityData);
 
-        _entities.Add(entity);
+        Entities.Add(entity);
 
         EventOnEntitySpawn?.Invoke(entity);
     }
@@ -105,7 +117,7 @@ public class ClientEntityService : AbstractEntityService
 
         castedMessage.Entities.ForEach(entityMovement =>
         {
-            var entity = _entities.FirstOrDefault(x => x.EntityId == entityMovement.EntityId);
+            var entity = Entities.FirstOrDefault(x => x.EntityId == entityMovement.EntityId);
 
             if (entity == null)
                 return;
@@ -123,9 +135,9 @@ public class ClientEntityService : AbstractEntityService
     {
         var castedMessage = (EntityDespawnMessage) message;
 
-        var entity = _entities.First(x => x.EntityId == castedMessage.EntityId);
+        var entity = Entities.First(x => x.EntityId == castedMessage.EntityId);
 
-        _entities.Remove(entity);
+        Entities.Remove(entity);
 
         EventOnEntityDespawn?.Invoke(entity);
     }

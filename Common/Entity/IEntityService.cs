@@ -6,7 +6,7 @@ namespace Common.Entity;
 
 public interface IEntityService : ITickableService
 {
-    IEnumerable<GameEntity> Entities { get; }
+    List<GameEntity> Entities { get; }
 
     event Action<GameEntity>? EventOnEntitySpawn;
     event Action<GameEntity>? EventOnEntityDespawn;

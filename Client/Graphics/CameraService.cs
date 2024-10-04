@@ -6,49 +6,35 @@ namespace Client.Graphics;
 
 public class CameraService : ITickableService
 {
+    private readonly WindowService _windowService;
+    
     public readonly Camera Camera;
     public Vector2 Target;
 
-    private float _scaleFactor;
+    private int _scaleFactor;
 
     public CameraService(WindowService windowService)
     {
+        _windowService = windowService;
+        
         Camera = new Camera(Vector2.Zero, new Vector2(windowService.Width, windowService.Height));
         RecalculateCamera(windowService.Width, windowService.Height);
         windowService.OnResize += RecalculateCamera;
     }
 
-    private const float BaseWidth = 20f; // desired width in world units
-    private const float BaseHeight = 11.25f; // desired height in world units
-
     private void RecalculateCamera(int width, int height)
     {
-        const float targetAspect = BaseWidth / BaseHeight;
-        var windowAspect = (float)width / height;
-
-        _scaleFactor = windowAspect > targetAspect ? height / BaseHeight : width / BaseWidth;
-        _scaleFactor = MathF.Floor(_scaleFactor);
-
-        Camera.Size = new Vector2(width / _scaleFactor, height / _scaleFactor);
+        _scaleFactor = width / 20;
+        Camera.Size = new Vector2(width, height) / _scaleFactor; 
         Camera.Update();
     }
     
     /// <inheritdoc />
     public void Update(float deltaTime)
     {
-        // if (Camera.Position == Target) return;
-        
-        // var difference = Target - Camera.Position;
-        // var distance = difference.Length();
-        
-        // const float smoothFactor = 5f;
-        // const float snapThreshold = 0.1f;
-        
-        // Camera.Position = distance > snapThreshold
-        //     ? Vector2.Lerp(Camera.Position, Target, 1 - MathF.Exp(-smoothFactor * deltaTime))
-        //     : Target;
 
-        Camera.Position = Target;
+        Camera.Position.X = Target.X + 0.0f + (float)_windowService.Width / _scaleFactor / 2;
+        Camera.Position.Y = Target.Y + 0.0f + (float)_windowService.Height / _scaleFactor / 2;
         Camera.Position *= _scaleFactor;
         Camera.Position = new Vector2(MathF.Round(Camera.Position.X), MathF.Round(Camera.Position.Y));
         Camera.Position /= _scaleFactor;

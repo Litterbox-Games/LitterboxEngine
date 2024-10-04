@@ -29,7 +29,7 @@ public class MobControllerService : ITickableService
             Position = position,
             OwnerId = 0,
             EntityId = (ulong) _random.Next(),
-            Direction = Vector2.Normalize(new Vector2(_random.Next(), _random.Next()))
+            Direction = Vector2.Normalize(new Vector2(1, 0))
         };
         
         _entityService.SpawnEntity(entity);
@@ -37,7 +37,7 @@ public class MobControllerService : ITickableService
 
     public void Update(float deltaTime)
     {
-        const float movementSpeed = 0.5f;
+        const float movementSpeed = 1f;
 
         _entities.ForEach(x =>
         {

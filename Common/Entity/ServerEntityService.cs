@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using Common.Entity;
 using Common.Entity.Messages;
 using Common.Network;
 using Common.Player;
@@ -9,18 +8,18 @@ namespace Common.Entity;
 
 public class ServerEntityService : AbstractEntityService
 {
-    public override IEnumerable<GameEntity> Entities => _entities;
-    private readonly List<GameEntity> _entities = new();
+    public override List<GameEntity> Entities { get; }
     
     public override event Action<GameEntity>? EventOnEntitySpawn;
     public override event Action<GameEntity>? EventOnEntityDespawn;
     public override event Action<GameEntity>? EventOnEntityMove;
 
-    private ServerNetworkService _network;
+    private readonly ServerNetworkService _network;
     
-    public ServerEntityService(INetworkService network)
+    public ServerEntityService(ServerNetworkService network)
     {
-        _network = (ServerNetworkService)network;
+        Entities = new List<GameEntity>();
+        _network = network;
         
         _network.EventOnPlayerConnect += OnPlayerConnect;
         _network.EventOnPlayerDisconnect += OnPlayerDisconnect;
@@ -33,44 +32,43 @@ public class ServerEntityService : AbstractEntityService
     public override void Update(float deltaTime)
     {
         var moveMessage = new EntityMoveMessage();
-        
         var now = DateTime.Now;
         var renderTime = now - new TimeSpan(0, 0, 0, 0, 100);
-        _entities.ForEach(x =>
+
+        foreach (var entity in Entities.Where(x => x.Position != x.LastSentPosition && (now - x.LastUpdateTime).TotalMilliseconds > 50))
         {
-            if ((x.OwnerId == _network.PlayerId || x.OwnerId == 0)
-                && x.Position != x.LastSentPosition
-                && (now - x.LastUpdateTime).TotalMilliseconds > 50)
+            if (entity.OwnerId == _network.PlayerId || entity.OwnerId == 0)
             {
                 moveMessage.Entities.Add(new EntityMovement
                 {
-                    EntityId = x.EntityId,
-                    NewPosition = x.Position
+                    EntityId = entity.EntityId,
+                    NewPosition = entity.Position
                 });
 
-                x.LastSentPosition = x.Position;
-                x.LastUpdateTime = now;
+                entity.LastSentPosition = entity.Position;
+                entity.LastUpdateTime = now;
             }
-            else
+            else if (entity.OwnerId != _network.PlayerId)
             {
-                if (x.QueuedMovements.Count <= 1)   
+                if (entity.QueuedMovements.Count <= 1)
                     return;
-
-                while (x.QueuedMovements.Count > 2 && renderTime > x.QueuedMovements.ElementAt(1).TimeStamp)
+                
+                while (entity.QueuedMovements.Count > 2 && renderTime > entity.QueuedMovements.ToArray()[1].TimeStamp)
                 {
-                    x.QueuedMovements.Dequeue();
+                    entity.QueuedMovements.Dequeue();
                 }
 
-                var firstMovement = x.QueuedMovements.ElementAt(0);
-                var secondMovement = x.QueuedMovements.ElementAt(1);
-                
-                var interpolationFactor = (renderTime - firstMovement.TimeStamp).TotalMilliseconds /
-                                          (secondMovement.TimeStamp - firstMovement.TimeStamp).TotalMilliseconds;
+                var firstMovement = entity.QueuedMovements.ElementAt(0);
+                var secondMovement = entity.QueuedMovements.ElementAt(1);
 
-                interpolationFactor = interpolationFactor <= 1 ? interpolationFactor : 1;
-                x.Position = Vector2.Lerp(firstMovement.Position, secondMovement.Position, (float) interpolationFactor);
+                var interpolationFactor = (renderTime - firstMovement.TimeStamp).TotalMilliseconds /
+                                          (secondMovement.TimeStamp -
+                                           firstMovement.TimeStamp).TotalMilliseconds;
+
+                interpolationFactor = interpolationFactor > 1 ? 1 : interpolationFactor;
+                entity.Position = Vector2.Lerp(firstMovement.Position, secondMovement.Position, (float) interpolationFactor);
             }
-        });
+        }
         
         if (moveMessage.Entities.Count > 0)
             _network.SendToAllPlayers(moveMessage);
@@ -86,7 +84,7 @@ public class ServerEntityService : AbstractEntityService
 
         castedMessage.Entities.ForEach(entityMovement =>
         {
-            var entity = _entities.FirstOrDefault(x => x.EntityId == entityMovement.EntityId);
+            var entity = Entities.FirstOrDefault(x => x.EntityId == entityMovement.EntityId);
 
             if (entity == null)
                 return;
@@ -111,7 +109,7 @@ public class ServerEntityService : AbstractEntityService
 
     public void SpawnEntity(GameEntity entity)
     {
-        _entities.Add(entity);
+        Entities.Add(entity);
 
         var entitySpawnMessage = new EntitySpawnMessage()
         {
@@ -127,7 +125,7 @@ public class ServerEntityService : AbstractEntityService
 
     public void DespawnEntity(GameEntity entity)
     {
-        _entities.Remove(entity);
+        Entities.Remove(entity);
 
         var entityDeleteMessage = new EntityDespawnMessage()
         {
@@ -151,7 +149,7 @@ public class ServerEntityService : AbstractEntityService
 
         SpawnEntity(entity);
         
-        foreach (var entityToSend in _entities.Where(entityToSend => entityToSend.EntityId != player.PlayerID))
+        foreach (var entityToSend in Entities.Where(entityToSend => entityToSend.EntityId != player.PlayerID))
         {
            var entitySpawnMessage = new EntitySpawnMessage
             {
@@ -168,9 +166,9 @@ public class ServerEntityService : AbstractEntityService
 
     private void OnPlayerDisconnect(ServerPlayer player)
     {
-        var entity = _entities.First(x => x.EntityId == player.PlayerID);
+        var entity = Entities.First(x => x.EntityId == player.PlayerID);
 
-        _entities.Remove(entity);
+        Entities.Remove(entity);
 
         // TODO: Allow this to use DespawnEntity Method
         var entityDespawnMessage = new EntityDespawnMessage

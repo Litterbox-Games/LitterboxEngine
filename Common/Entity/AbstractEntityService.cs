@@ -4,7 +4,7 @@ namespace Common.Entity;
 
 public abstract class AbstractEntityService : IEntityService
 {
-    public abstract IEnumerable<GameEntity> Entities { get; }
+    public abstract List<GameEntity> Entities { get; }
     
     public abstract event Action<GameEntity>? EventOnEntitySpawn;
     public abstract event Action<GameEntity>? EventOnEntityDespawn;

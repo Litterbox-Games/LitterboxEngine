@@ -83,7 +83,6 @@ public class PlayerControlService : ITickableService
     {
         const int chunkRadius = 2;
         
-        
         var chunkX = (int)(playerEntityPosition.X / ChunkData.ChunkSize).Modulus(IWorldService.WorldSize);
         var chunkY = (int)(playerEntityPosition.Y / ChunkData.ChunkSize).Modulus(IWorldService.WorldSize);
     

@@ -16,23 +16,23 @@ public class EntityRenderService : ITickableService
 {
     private readonly IEntityService _entityService;
     private readonly RendererService _rendererService;
-    private readonly IResourceService _resourceService;
     private readonly INetworkService _networkService;
     
     private GameEntity? _playerEntity;
-    private Texture? _texture;
+    private readonly Texture _texture;
+    private readonly Rectangle _textureSource = new(32, 112, 20, 16);
     
     
     public EntityRenderService(IEntityService entityService, RendererService rendererService, INetworkService networkService, IResourceService resourceService)
     {
         _entityService = entityService;
         _rendererService = rendererService;
-        _resourceService = resourceService;
         _networkService = networkService;
+        
+        _texture = resourceService.Get<Texture>("Items.png");
         
         entityService.EventOnEntitySpawn += OnEntitySpawn;
         entityService.EventOnEntityDespawn += OnEntityDespawn;
-        
         
     }
     
@@ -56,8 +56,6 @@ public class EntityRenderService : ITickableService
     public void Draw()
     {
         if (_playerEntity == null) return;
-        
-        _texture ??= _resourceService.Get<Texture>("Items.png");
 
         foreach (var entity in _entityService.Entities)
         {
@@ -67,7 +65,7 @@ public class EntityRenderService : ITickableService
             var entityX = (position.X - _playerEntity.Position.X + worldSize / 2f).Modulus(worldSize) - worldSize / 2f + _playerEntity.Position.X;
             var entityY = (position.Y - _playerEntity.Position.Y + worldSize / 2f).Modulus(worldSize) - worldSize / 2f + _playerEntity.Position.Y;
 
-            _rendererService.DrawTexture(_texture, new Rectangle(48, 137, 22, 15), new RectangleF(entityX, entityY, 22f / 15f, 1), Color.White);
+            _rendererService.DrawTexture(_texture, _textureSource, new RectangleF(entityX, entityY, 1.25f, 1), Color.White);
         }
     }
 }
