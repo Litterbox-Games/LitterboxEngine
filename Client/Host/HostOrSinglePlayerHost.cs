@@ -15,9 +15,6 @@ public class HostOrSinglePlayerHost : AbstractHost
     {
         RegisterServices();
 
-        if (GameMode != EGameMode.Host)
-            return;
-        
         var networkService = Resolve<ServerNetworkService>();
         networkService.Listen(7777);
         

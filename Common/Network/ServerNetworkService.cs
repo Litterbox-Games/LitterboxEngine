@@ -171,6 +171,9 @@ public class ServerNetworkService : AbstractNetworkService
     
     private bool OnConnectionRequest(NetIncomingMessage message)
     {
+        if (Host.GameMode == EGameMode.SinglePlayer)
+            return false;
+        
         try
         {
             var player = new ServerPlayer(message.ReadUInt64(), message.ReadString(), message.SenderConnection);
