@@ -35,9 +35,10 @@ public class ServerEntityService : AbstractEntityService
         var now = DateTime.Now;
         var renderTime = now - new TimeSpan(0, 0, 0, 0, 100);
 
-        foreach (var entity in Entities.Where(x => x.Position != x.LastSentPosition && (now - x.LastUpdateTime).TotalMilliseconds > 50))
+        foreach (var entity in Entities.Where(x => x.Position != x.LastSentPosition))
         {
-            if (entity.OwnerId == _network.PlayerId || entity.OwnerId == 0)
+            if ((entity.OwnerId == _network.PlayerId || entity.OwnerId == 0) && 
+                (now - entity.LastUpdateTime).TotalMilliseconds > 50)
             {
                 moveMessage.Entities.Add(new EntityMovement
                 {
@@ -48,10 +49,10 @@ public class ServerEntityService : AbstractEntityService
                 entity.LastSentPosition = entity.Position;
                 entity.LastUpdateTime = now;
             }
-            else if (entity.OwnerId != _network.PlayerId)
+            else
             {
                 if (entity.QueuedMovements.Count <= 1)
-                    return;
+                    continue;
                 
                 while (entity.QueuedMovements.Count > 2 && renderTime > entity.QueuedMovements.ToArray()[1].TimeStamp)
                 {
@@ -82,21 +83,21 @@ public class ServerEntityService : AbstractEntityService
         var now = DateTime.Now;
         var castedMessage = (EntityMoveMessage) message;
 
-        castedMessage.Entities.ForEach(entityMovement =>
+        foreach (var entityMovement in castedMessage.Entities)
         {
             var entity = Entities.FirstOrDefault(x => x.EntityId == entityMovement.EntityId);
 
             if (entity == null)
-                return;
+                continue;
 
             entity.QueuedMovements.Enqueue(new QueuedMovement(entityMovement.NewPosition, now));
 
             // TODO: Shouldn't need to do this unless Entity changes owners (car maybe?)
             entity.LastSentPosition = entityMovement.NewPosition;
 
-            EventOnEntityMove?.Invoke(entity);    
-        });
-        
+            EventOnEntityMove?.Invoke(entity);
+        }
+
         // Forward this packet to all players
         foreach (var networkPlayer in _network.Players)
         {
