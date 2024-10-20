@@ -86,7 +86,7 @@ public class VulkanInstance: IDisposable
             instanceCreateInfo.PNext = &debugCreateInfo;
         }
         
-        var result = _vk.CreateInstance(instanceCreateInfo, null, out VkInstance);
+        var result = _vk.CreateInstance(in instanceCreateInfo, null, out VkInstance);
         
         // Native strings are mem-copied by Vulkan and can be freed after instance creation.
         Marshal.FreeHGlobal((nint)applicationCreateInfo.PApplicationName);

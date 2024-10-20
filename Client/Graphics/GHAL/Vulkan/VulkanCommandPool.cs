@@ -22,7 +22,7 @@ public class VulkanCommandPool: IDisposable
             QueueFamilyIndex = queueFamilyIndex,
         };
 
-        var result = _vk.CreateCommandPool(LogicalDevice.VkLogicalDevice, poolInfo, null, out VkCommandPool); 
+        var result = _vk.CreateCommandPool(LogicalDevice.VkLogicalDevice, in poolInfo, null, out VkCommandPool); 
         if (result != Result.Success)
             throw new Exception($"Failed to create command pool with error: {result.ToString()}");
     }

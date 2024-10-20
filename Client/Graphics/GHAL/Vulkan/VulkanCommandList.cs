@@ -128,7 +128,7 @@ public class VulkanCommandList: CommandList
             throw new Exception("A pipeline must be set on the command list before setting a resource set");
 
         _vk.CmdBindDescriptorSets(_swapChain.CurrentCommandBuffer.VkCommandBuffer, PipelineBindPoint.Graphics,
-            _pipeline.VkPipelineLayout, set, 1, descriptorSet.VkDescriptorSet, 0, null);
+            _pipeline.VkPipelineLayout, set, 1, in descriptorSet.VkDescriptorSet, 0, null);
     }
 
     public override void DrawIndexed(uint indexCount)

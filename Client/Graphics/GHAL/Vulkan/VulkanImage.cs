@@ -42,7 +42,7 @@ public class VulkanImage: IDisposable
             SharingMode = SharingMode.Exclusive,
         };
 
-        var result = _vk.CreateImage(_logicalDevice.VkLogicalDevice, imageInfo, null, out VkImage);
+        var result = _vk.CreateImage(_logicalDevice.VkLogicalDevice, in imageInfo, null, out VkImage);
 
         if (result != Result.Success)
             throw new Exception($"Failed to create image with error {result.ToString()}");
@@ -56,7 +56,7 @@ public class VulkanImage: IDisposable
             MemoryTypeIndex = MemoryTypeFromProperties(memRequirements.MemoryTypeBits, 0),
         };
 
-        result = _vk.AllocateMemory(_logicalDevice.VkLogicalDevice, allocInfo, null, out _vkMemory);
+        result = _vk.AllocateMemory(_logicalDevice.VkLogicalDevice, in allocInfo, null, out _vkMemory);
 
         if (result != Result.Success)
             throw new Exception($"Failed to allocate image memory with error: {result.ToString()}");
@@ -111,7 +111,7 @@ public class VulkanImage: IDisposable
             throw new Exception($"Unsupported layout transition: old: ${oldLayout} new: ${newLayout}");
         }
 
-        _vk.CmdPipelineBarrier(commandBuffer.VkCommandBuffer, sourceStage, destinationStage, 0, 0, null, 0, null, 1, barrier);
+        _vk.CmdPipelineBarrier(commandBuffer.VkCommandBuffer, sourceStage, destinationStage, 0, 0, null, 0, null, 1, in barrier);
 
         commandBuffer.EndRecording();
         using var fence = new VulkanFence(_vk, _logicalDevice, true);

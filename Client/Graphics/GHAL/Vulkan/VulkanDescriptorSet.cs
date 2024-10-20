@@ -25,7 +25,7 @@ public class VulkanDescriptorSet : ResourceSet
                 PSetLayouts = layoutsPtr
             };         
             
-            var result = _vk.AllocateDescriptorSets(_logicalDevice.VkLogicalDevice, allocateInfo, out VkDescriptorSet);
+            var result = _vk.AllocateDescriptorSets(_logicalDevice.VkLogicalDevice, in allocateInfo, out VkDescriptorSet);
             if (result != Result.Success)
                 throw new Exception($"Failed to allocate descriptor sets with error: {result.ToString()}");
         }

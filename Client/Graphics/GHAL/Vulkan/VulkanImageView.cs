@@ -30,7 +30,7 @@ public class VulkanImageView: IDisposable
 
         };
         
-        var result = _vk.CreateImageView(_logicalDevice.VkLogicalDevice, createInfo, null, out VkImageView);
+        var result = _vk.CreateImageView(_logicalDevice.VkLogicalDevice, in createInfo, null, out VkImageView);
         if (result != Result.Success)
             throw new Exception($"Failed to create image view with error: {result.ToString()}");
     }

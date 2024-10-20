@@ -52,7 +52,7 @@ public class VulkanLogicalDevice: IDisposable
             PpEnabledExtensionNames = (byte**)SilkMarshal.StringArrayToPtr(RequestedExtensions)
         };
         
-        var result = _vk.CreateDevice(PhysicalDevice.VkPhysicalDevice, deviceCreateInfo, null, out VkLogicalDevice);
+        var result = _vk.CreateDevice(PhysicalDevice.VkPhysicalDevice, in deviceCreateInfo, null, out VkLogicalDevice);
         
         SilkMarshal.Free((nint) deviceCreateInfo.PpEnabledExtensionNames);
             

@@ -30,7 +30,7 @@ public class VulkanStagingBuffer: IDisposable
             SharingMode = SharingMode.Exclusive
         };
         
-        var result = _vk.CreateBuffer(_logicalDevice.VkLogicalDevice, stagingBufferInfo, null, out VkBuffer);
+        var result = _vk.CreateBuffer(_logicalDevice.VkLogicalDevice, in stagingBufferInfo, null, out VkBuffer);
         if (result != Result.Success)
             throw new Exception($"Failed to create vertex buffer with error: {result.ToString()}");
 
@@ -44,7 +44,7 @@ public class VulkanStagingBuffer: IDisposable
                 MemoryPropertyFlags.HostVisibleBit | MemoryPropertyFlags.HostCoherentBit)
         };
         
-        result = _vk.AllocateMemory(_logicalDevice.VkLogicalDevice, stagingAllocateInfo, null, out VkBufferMemory); 
+        result = _vk.AllocateMemory(_logicalDevice.VkLogicalDevice, in stagingAllocateInfo, null, out VkBufferMemory); 
         if (result != Result.Success)
             throw new Exception($"Failed to allocate vertex buffer memory with error: {result.ToString()}");
 
@@ -75,7 +75,7 @@ public class VulkanStagingBuffer: IDisposable
 
         };
 
-        _vk.CmdCopyBufferToImage(commandBuffer.VkCommandBuffer, VkBuffer, image.VkImage, ImageLayout.TransferDstOptimal, 1, region);
+        _vk.CmdCopyBufferToImage(commandBuffer.VkCommandBuffer, VkBuffer, image.VkImage, ImageLayout.TransferDstOptimal, 1, in region);
         commandBuffer.EndRecording();
         
         using var fence = new VulkanFence(_vk, _logicalDevice, true);

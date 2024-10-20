@@ -20,7 +20,7 @@ public class VulkanFence: IDisposable
             Flags = isSignaled ? FenceCreateFlags.SignaledBit: 0
         };
 
-        var result = _vk.CreateFence(_logicalDevice.VkLogicalDevice, fenceInfo, null, out VkFence);
+        var result = _vk.CreateFence(_logicalDevice.VkLogicalDevice, in fenceInfo, null, out VkFence);
         if (result != Result.Success)
             throw new Exception($"Failed to create fence with error: {result.ToString()}");
     }

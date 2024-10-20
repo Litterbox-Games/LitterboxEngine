@@ -95,7 +95,7 @@ public class VulkanSwapChain: IDisposable
             PImageIndices = &imageIndex
         };
 
-        var result = _khrSwapChain.QueuePresent(queue.VkQueue, presentInfo);
+        var result = _khrSwapChain.QueuePresent(queue.VkQueue, in presentInfo);
         
         _currentFrame = (_currentFrame + 1) % (uint)_imageViews.Length;
 
@@ -163,7 +163,7 @@ public class VulkanSwapChain: IDisposable
             }
         }
         
-        var result = _khrSwapChain.CreateSwapchain(_logicalDevice.VkLogicalDevice, swapChainCreateInfo, null, out _vkSwapChain);
+        var result = _khrSwapChain.CreateSwapchain(_logicalDevice.VkLogicalDevice, in swapChainCreateInfo, null, out _vkSwapChain);
         if (result != Result.Success)
             throw new Exception($"Failed to create swap chain with error: {result.ToString()}.");
         

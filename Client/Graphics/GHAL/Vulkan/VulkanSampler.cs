@@ -33,7 +33,7 @@ public class VulkanSampler: Sampler
             MipmapMode = SamplerMipmapMode.Nearest
         };
 
-        var result = _vk.CreateSampler(_logicalDevice.VkLogicalDevice, samplerInfo, null, out VkSampler);
+        var result = _vk.CreateSampler(_logicalDevice.VkLogicalDevice, in samplerInfo, null, out VkSampler);
         
         if (result != Result.Success)
             throw new Exception($"Failed to create texture sampler with error: {result.ToString()}");

@@ -31,7 +31,7 @@ public class VulkanBuffer: Buffer
             SharingMode = SharingMode.Exclusive
         };
         
-        var result = _vk.CreateBuffer(_logicalDevice.VkLogicalDevice, bufferInfo, null, out VkBuffer);
+        var result = _vk.CreateBuffer(_logicalDevice.VkLogicalDevice, in bufferInfo, null, out VkBuffer);
         if (result != Result.Success)
             throw new Exception($"Failed to create vertex buffer with error: {result.ToString()}");
 
@@ -44,7 +44,7 @@ public class VulkanBuffer: Buffer
             MemoryTypeIndex = MemoryTypeFromProperties(memRequirements.MemoryTypeBits, properties)
         };
         
-        result = _vk.AllocateMemory(_logicalDevice.VkLogicalDevice, allocateInfo, null, out VkBufferMemory); 
+        result = _vk.AllocateMemory(_logicalDevice.VkLogicalDevice, in allocateInfo, null, out VkBufferMemory); 
         if (result != Result.Success)
             throw new Exception($"Failed to allocate vertex buffer memory with error: {result.ToString()}");
 
@@ -67,7 +67,7 @@ public class VulkanBuffer: Buffer
         using var commandBuffer = new VulkanCommandBuffer(_vk, _commandPool, true, true);
         commandBuffer.BeginRecording();
         BufferCopy copyRegion = new() { DstOffset = offset, Size = dataSize };
-        _vk.CmdCopyBuffer(commandBuffer.VkCommandBuffer, _stagingBuffer.VkBuffer, VkBuffer, 1, copyRegion);
+        _vk.CmdCopyBuffer(commandBuffer.VkCommandBuffer, _stagingBuffer.VkBuffer, VkBuffer, 1, in copyRegion);
         commandBuffer.EndRecording();
         
         using var fence = new VulkanFence(_vk, _logicalDevice, true);
@@ -89,7 +89,7 @@ public class VulkanBuffer: Buffer
         using var commandBuffer = new VulkanCommandBuffer(_vk, _commandPool, true, true);
         commandBuffer.BeginRecording();
         BufferCopy copyRegion = new() { DstOffset = offset, Size = dataSize };
-        _vk.CmdCopyBuffer(commandBuffer.VkCommandBuffer, _stagingBuffer.VkBuffer, VkBuffer, 1, copyRegion);
+        _vk.CmdCopyBuffer(commandBuffer.VkCommandBuffer, _stagingBuffer.VkBuffer, VkBuffer, 1, in copyRegion);
         commandBuffer.EndRecording();
 
         using var fence = new VulkanFence(_vk, _logicalDevice, true);

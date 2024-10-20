@@ -59,7 +59,7 @@ public class VulkanRenderPass: IDisposable
             PDependencies = &subpassDependency
         };
 
-        var result = _vk.CreateRenderPass(_logicalDevice.VkLogicalDevice, renderPassInfo, null, out VkRenderPass);
+        var result = _vk.CreateRenderPass(_logicalDevice.VkLogicalDevice, in renderPassInfo, null, out VkRenderPass);
         if (result != Result.Success)
             throw new Exception($"Failed to create render pass with error: {result.ToString()}");
     }

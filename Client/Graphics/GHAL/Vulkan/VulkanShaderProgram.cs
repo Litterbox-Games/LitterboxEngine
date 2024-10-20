@@ -32,7 +32,7 @@ public sealed class VulkanShaderProgram: ShaderProgram
                 PCode = (uint*)codePtr
             };
             
-            var result = _vk.CreateShaderModule(_logicalDevice.VkLogicalDevice, createInfo, null, out var shaderModule); 
+            var result = _vk.CreateShaderModule(_logicalDevice.VkLogicalDevice, in createInfo, null, out var shaderModule); 
             
             if (result != Result.Success)
                 throw new Exception($"Failed to create shader module for shader {description.Path} with error: {result.ToString()}");

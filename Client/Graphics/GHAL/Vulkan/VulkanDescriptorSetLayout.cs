@@ -32,7 +32,7 @@ public class VulkanDescriptorSetLayout : ResourceLayout, IDisposable
                 PBindings = bindingsPtr,
             };
 
-            var result = _vk.CreateDescriptorSetLayout(_logicalDevice.VkLogicalDevice, layoutInfo, null, out VkDescriptorSetLayout);
+            var result = _vk.CreateDescriptorSetLayout(_logicalDevice.VkLogicalDevice, in layoutInfo, null, out VkDescriptorSetLayout);
             if (result != Result.Success)
                 throw new Exception($"Failed to create descriptor set layout with error: {result.ToString()}");
         }

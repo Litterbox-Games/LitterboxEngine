@@ -40,7 +40,7 @@ public class VulkanQueue
             submitInfo.PWaitSemaphores = waitSemaphores;
         }
         
-        var result = _vk.QueueSubmit(VkQueue, 1, submitInfo, fence.VkFence);
+        var result = _vk.QueueSubmit(VkQueue, 1, in submitInfo, fence.VkFence);
         if (result != Result.Success)
             throw new Exception($"Failed to submit command to queue with error: {result.ToString()}");
 

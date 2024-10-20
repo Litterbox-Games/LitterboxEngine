@@ -114,7 +114,7 @@ public class VulkanPipeline: Pipeline
                 PSetLayouts = descriptorSetLayoutsPtr
             };
             
-            var result = _vk.CreatePipelineLayout(_logicalDevice.VkLogicalDevice, pipelineLayoutInfo, null, out VkPipelineLayout);
+            var result = _vk.CreatePipelineLayout(_logicalDevice.VkLogicalDevice, in pipelineLayoutInfo, null, out VkPipelineLayout);
             if (result != Result.Success)
                 throw new Exception($"Failed to create graphics pipeline layout with error: {result.ToString()}");
             
@@ -141,7 +141,7 @@ public class VulkanPipeline: Pipeline
                 BasePipelineHandle = default
             };
             
-            result = _vk.CreateGraphicsPipelines(_logicalDevice.VkLogicalDevice, cache.VkPipelineCache, 1, pipelineInfo, null, out VkPipeline);
+            result = _vk.CreateGraphicsPipelines(_logicalDevice.VkLogicalDevice, cache.VkPipelineCache, 1, in pipelineInfo, null, out VkPipeline);
             if (result != Result.Success)
                 throw new Exception($"Failed to create graphics pipeline with error: {result.ToString()}");
             

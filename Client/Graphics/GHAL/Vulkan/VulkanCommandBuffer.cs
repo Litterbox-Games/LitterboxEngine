@@ -30,7 +30,7 @@ public class VulkanCommandBuffer: IDisposable
             CommandBufferCount = 1
         };
         
-        var result = _vk.AllocateCommandBuffers(_logicalDevice.VkLogicalDevice, allocInfo, out VkCommandBuffer);
+        var result = _vk.AllocateCommandBuffers(_logicalDevice.VkLogicalDevice, in allocInfo, out VkCommandBuffer);
         if (result != Result.Success)
             throw new Exception($"Failed to allocate command buffers with error: {result.ToString()}");
     }
@@ -54,7 +54,7 @@ public class VulkanCommandBuffer: IDisposable
             beginInfo.Flags |= CommandBufferUsageFlags.RenderPassContinueBit;
         }
         
-        var result = _vk.BeginCommandBuffer(VkCommandBuffer, beginInfo);
+        var result = _vk.BeginCommandBuffer(VkCommandBuffer, in beginInfo);
         if (result != Result.Success)
             throw new Exception($"Failed to begin recording command buffer with error: {result.ToString()}");
     }

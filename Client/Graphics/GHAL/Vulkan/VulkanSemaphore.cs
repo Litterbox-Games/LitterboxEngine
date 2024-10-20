@@ -20,7 +20,7 @@ public class VulkanSemaphore:  IDisposable
             SType = StructureType.SemaphoreCreateInfo,
         };
         
-        var result = _vk.CreateSemaphore(_logicalDevice.VkLogicalDevice, semaphoreInfo, null, out VkSemaphore);
+        var result = _vk.CreateSemaphore(_logicalDevice.VkLogicalDevice, in semaphoreInfo, null, out VkSemaphore);
         if (result != Result.Success)
             throw new Exception($"Failed to create semaphore with error: {result.ToString()}");
     }

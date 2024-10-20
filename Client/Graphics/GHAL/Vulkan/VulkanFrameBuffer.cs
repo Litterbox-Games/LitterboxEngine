@@ -27,7 +27,7 @@ public class VulkanFrameBuffer: IDisposable
             Layers = 1,
         };
         
-        var result = _vk.CreateFramebuffer(_logicalDevice.VkLogicalDevice, framebufferInfo, null, out VkFrameBuffer);
+        var result = _vk.CreateFramebuffer(_logicalDevice.VkLogicalDevice, in framebufferInfo, null, out VkFrameBuffer);
         if (result != Result.Success)
             throw new Exception($"Failed to create frame buffer with error {result.ToString()}");
     }

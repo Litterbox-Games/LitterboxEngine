@@ -48,7 +48,7 @@ public class VulkanDescriptorPool : IDisposable
                 MaxSets = descriptorCount,
             };
 
-            var result = _vk.CreateDescriptorPool(_logicalDevice.VkLogicalDevice, poolInfo, null, out VkDescriptorPool);
+            var result = _vk.CreateDescriptorPool(_logicalDevice.VkLogicalDevice, in poolInfo, null, out VkDescriptorPool);
             if (result != Result.Success)
                 throw new Exception($"Failed to create descriptor pool with error: {result.ToString()}");
         }
