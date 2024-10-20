@@ -1,4 +1,5 @@
 ﻿using Common.DI;
+using Common.Mathematics;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
@@ -10,6 +11,8 @@ public class WindowService : IService, IDisposable
     public string Title { get; }
     public int Width { get; private set; }
     public int Height { get; private set; }
+    public Vector2i Size => new Vector2i(Width, Height);
+    
     public event Action<int, int>? OnResize;
 
     public event Action<float>? OnUpdate;

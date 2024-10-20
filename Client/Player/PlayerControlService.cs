@@ -32,10 +32,12 @@ public class PlayerControlService : ITickableService
         _cameraService = cameraService;
         _entityService = entityService;
 
-        entityService.EventOnEntitySpawn += OnEntitySpawn;
-        entityService.EventOnEntityDespawn += OnEntityDespawn;
+        _entityService.EventOnEntitySpawn += OnEntitySpawn;
+        _entityService.EventOnEntityDespawn += OnEntityDespawn;
+        
+        _inputService.EventOnMouseClick += OnMouseClick;
     }
-    
+
     /// <inheritdoc />
     public void Update(float deltaTime)
     {
@@ -45,7 +47,6 @@ public class PlayerControlService : ITickableService
         {
             UpdateChunks(newPosition.Value);
         }
-
     }
 
     private Vector2? UpdatePosition(float deltaTime)
@@ -83,11 +84,8 @@ public class PlayerControlService : ITickableService
     {
         const int chunkRadius = 2;
         
-        var chunkX = (int)(playerEntityPosition.X / ChunkData.ChunkSize).Modulus(IWorldService.WorldSize);
-        var chunkY = (int)(playerEntityPosition.Y / ChunkData.ChunkSize).Modulus(IWorldService.WorldSize);
-    
-        _chunkPosition = new Vector2i(chunkX, chunkY);
-    
+        _chunkPosition = (playerEntityPosition / ChunkData.ChunkSize).Modulus(IWorldService.WorldSize).ToVector2i();
+
         // Load and unload chunks based on square distance
         for (var dx = -chunkRadius - 1; dx <= chunkRadius + 1; dx++)
         {
@@ -129,6 +127,18 @@ public class PlayerControlService : ITickableService
             _playerEntity = null;
     }
 
+    private void OnMouseClick(MouseButton button, Vector2 position)
+    {
+        if (button == MouseButton.Left)
+        {
+            // we need the ChunkPosition and BlockPosition of the place we clicked
+            var worldPosition = _cameraService.ScreenToWorldPosition(position); 
+            Console.WriteLine(worldPosition);
+            Console.WriteLine(worldPosition.Modulus(IWorldService.WorldSize).ToVector2i());  // position in the chunk
+            Console.WriteLine((worldPosition / ChunkData.ChunkSize).Modulus(IWorldService.WorldSize).ToVector2i()); // what chunk we are clicking in
+        }
+    }
+    
     /// <inheritdoc />
     public void Draw()
     {

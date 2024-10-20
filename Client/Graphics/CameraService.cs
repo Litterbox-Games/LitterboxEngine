@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using Client.Graphics.Input;
 using Common.DI;
+using Common.Mathematics;
 
 namespace Client.Graphics;
 
@@ -32,11 +33,9 @@ public class CameraService : ITickableService
     /// <inheritdoc />
     public void Update(float deltaTime)
     {
-
-        Camera.Position.X = Target.X + (float)_windowService.Width / _scaleFactor / 2;
-        Camera.Position.Y = Target.Y + (float)_windowService.Height / _scaleFactor / 2;
+        Camera.Position = Target + _windowService.Size.ToVector2() / _scaleFactor / 2;
         Camera.Position *= _scaleFactor;
-        Camera.Position = new Vector2(MathF.Round(Camera.Position.X), MathF.Round(Camera.Position.Y));
+        Camera.Position = Camera.Position.Round();
         Camera.Position /= _scaleFactor;
 
         Camera.Update();
@@ -46,5 +45,14 @@ public class CameraService : ITickableService
     public void Draw()
     {
         
+    }
+
+    public Vector2 ScreenToWorldPosition(Vector2 position)
+    {
+        var screenSpace = position / _windowService.Size.ToVector2() * 2 - Vector2.One;
+        var clipSpace = new Vector4(screenSpace, Camera.NearPlane, 1);
+        Matrix4x4.Invert(Camera.ViewMatrix, out var inverseViewMatrix);
+        var worldSpace = Vector4.Transform(clipSpace, inverseViewMatrix);
+        return new Vector2(worldSpace.X, worldSpace.Y);
     }
 }
