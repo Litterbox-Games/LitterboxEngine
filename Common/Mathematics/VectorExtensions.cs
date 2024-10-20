@@ -14,8 +14,13 @@ public static class VectorExtensions
         return new Vector2(MathF.Floor(x.X), MathF.Floor(x.Y));
     }
 
-    public static Vector2i FloorToVector2i(this Vector2 x)
+    public static Vector2 Round(this Vector2 x)
     {
-        return new Vector2i((int) MathF.Floor(x.X), (int) MathF.Floor(x.Y));
+        return new Vector2(MathF.Round(x.X), MathF.Round(x.Y));
+    }
+    
+    public static Vector2i ToVector2i(this Vector2 x)
+    {
+        return new Vector2i((int) x.X, (int) x.Y);
     }
 }

@@ -1,4 +1,7 @@
-﻿namespace Common.Mathematics;
+﻿using System.Numerics;
+using System.Runtime.CompilerServices;
+
+namespace Common.Mathematics;
 
 public struct Vector2i: IEquatable<Vector2i>
 {
@@ -9,6 +12,16 @@ public struct Vector2i: IEquatable<Vector2i>
     {
         X = x;
         Y = y;
+    }
+    
+    public Vector2i(int value)
+    {
+        X = Y = value;
+    }
+
+    public Vector2 ToVector2()
+    {
+        return new Vector2(X, Y);
     }
     
     public static bool operator == (Vector2i a, Vector2i b)
@@ -36,5 +49,27 @@ public struct Vector2i: IEquatable<Vector2i>
         return HashCode.Combine(X, Y);
     }
 
+    public override string ToString()
+    {
+        return $"<{X}, {Y}>";
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Vector2i operator /(Vector2i value1, int value2)
+    {
+        return value1 / new Vector2i(value2);
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Vector2i operator /(Vector2i value1, Vector2i value2)
+    {
+        return new Vector2i(value1.X / value2.X, value2.Y / value2.Y);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Vector2 operator +(Vector2 value1, Vector2i value2)
+    {
+        return new Vector2(value1.X + value2.X, value2.Y + value2.Y);
+    }
     //TODO: Add methods as needed.
 }
