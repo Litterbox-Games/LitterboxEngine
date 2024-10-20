@@ -14,6 +14,7 @@ public class InputService: IService
     public InputService(WindowService windowService)
     {
         _input = windowService.Input;
+        _input.Mice[0].DoubleClickTime = 100;
         _input.Mice[0].Click += OnClick;
     }
 

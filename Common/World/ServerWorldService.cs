@@ -17,16 +17,31 @@ public class ServerWorldService : IWorldService
     private readonly ServerNetworkService _networkService;
     private readonly IWorldGenerator _generation;
 
-    public ServerWorldService(IHost host, INetworkService networkService)
+    public ServerWorldService(IHost host, ServerNetworkService networkService)
     {
         _host = host;
-        _networkService = (ServerNetworkService)networkService;
+        _networkService = networkService;
         _generation = host.Resolve<IWorldGenerator>("earth");
         
         _networkService.EventOnPlayerDisconnect += OnPlayerDisconnect;
         _networkService.RegisterMessageHandle<ChunkRequestMessage>(OnChunkRequest);
+        _networkService.RegisterMessageHandle<BlockUpdateMessage>(OnBlockUpdate);
     }
-    
+
+    private void OnBlockUpdate(INetworkMessage message, NetworkPlayer? player)
+    { 
+        var blockUpdate = message as BlockUpdateMessage;
+        var chunk = GetChunk(blockUpdate!.Chunk);
+
+        if (chunk == null)
+        {
+            // TODO: this should be a warning
+            throw new InvalidOperationException("Player tried to update a block in an unloaded chunk");
+        }
+        
+        chunk.ChunkData.SetBlockAtLocalPosition(blockUpdate.Id, blockUpdate.Position, blockUpdate.BlockType);
+    }
+
     public void RequestChunk(Vector2i position)
     {
         if (_host.GameMode == EGameMode.Dedicated)
@@ -170,6 +185,11 @@ public class ServerWorldService : IWorldService
     private NetworkedChunk? GetChunk(Vector2i position)
     {
         return NetworkedChunks.FirstOrDefault(x => x.ChunkData.Position == position);
+    }
+    
+    public ChunkData? GetChunkData(Vector2i position)
+    {
+        return Chunks.FirstOrDefault(x => x.Position == position);
     }
     
     public void Draw() { }

@@ -14,9 +14,9 @@ public class ClientWorldService : IWorldService
 
     public IEnumerable<ChunkData> Chunks => _chunks;
 
-    public ClientWorldService(INetworkService network)
+    public ClientWorldService(ClientNetworkService network)
     {
-        _network = (ClientNetworkService) network;
+        _network = network;
         _network.RegisterMessageHandle<ChunkDataMessage>(OnChunkDataMessage);
 
         _network.EventOnConnect += OnConnect;
@@ -94,6 +94,11 @@ public class ClientWorldService : IWorldService
         chunkData.BiomeArray = dataMessage!.BiomeMap!.Cast<EBiomeType>().ToArray();
         chunkData.HeatArray = dataMessage!.HeatMap!.Cast<EHeatType>().ToArray();
         chunkData.MoistureArray = dataMessage!.MoistureMap!.Cast<EMoistureType>().ToArray();
+    }
+    
+    public ChunkData? GetChunkData(Vector2i position)
+    {
+        return Chunks.FirstOrDefault(x => x.Position == position);
     }
 
     // TODO: Update on entity system implementation

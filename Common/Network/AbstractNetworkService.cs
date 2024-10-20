@@ -34,6 +34,7 @@ public abstract class AbstractNetworkService : INetworkService
         
         RegisterMessageType<ChunkDataMessage>();
         RegisterMessageType<ChunkRequestMessage>();
+        RegisterMessageType<BlockUpdateMessage>();
     }
 
     public virtual void Update(float deltaTime) { }

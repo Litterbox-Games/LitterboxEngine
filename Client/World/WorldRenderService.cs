@@ -90,9 +90,10 @@ public class WorldRenderService : ITickableService
             {
                 for (var y = 0; y < 16; y++)
                 {
-                    var id = chunk.GroundArray[ChunkData.GetIndexFromLocalPositionFast(new Vector2i(x, y))];
+                    // Ground Layer
+                    var groundId = chunk.GroundArray[ChunkData.GetIndexFromLocalPositionFast(new Vector2i(x, y))];
 
-                    var sourceRectangle = ((EBiomeType)id) switch
+                    var sourceRectangle = ((EBiomeType)groundId) switch
                     {
                         EBiomeType.Ice => _texture.GetSourceRectangle(0, 0),
                         EBiomeType.BorealForest => _texture.GetSourceRectangle(2, 0),
@@ -111,6 +112,15 @@ public class WorldRenderService : ITickableService
                     
                     _rendererService.DrawTexture(_texture, sourceRectangle, new RectangleF(chunkX * 16 + x, chunkY * 16 + y, 1,
                         1), Color.White);
+                    
+                    // Object Layer
+                    var objectId = chunk.ObjectArray[ChunkData.GetIndexFromLocalPositionFast(new Vector2i(x, y))];
+
+                    if (objectId != 0)
+                    {
+                        _rendererService.DrawTexture(_texture, _texture.GetSourceRectangle(0, 8), new RectangleF(chunkX * 16 + x, chunkY * 16 + y, 1,
+                            1), Color.White);
+                    }
                 }
             }
         }

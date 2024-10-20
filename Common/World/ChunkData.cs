@@ -51,7 +51,7 @@ public class ChunkData
                 throw new ArgumentOutOfRangeException(nameof(layer), layer,
                     "Attempting to set a block at an invalid layer.");
         }
-
+        
         IsDirty = true;
     }
 

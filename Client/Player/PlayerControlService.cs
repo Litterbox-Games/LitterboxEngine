@@ -1,12 +1,13 @@
 ﻿using System.Numerics;
 using Client.Graphics;
 using Client.Graphics.Input;
+using Client.Network;
 using Common.DI;
 using Common.DI.Attributes;
 using Common.Entity;
 using Common.Mathematics;
-using Common.Network;
 using Common.World;
+using Common.World.Messages;
 using ImGuiNET;
 using Silk.NET.Input;
 
@@ -15,7 +16,7 @@ namespace Client.Player;
 [TickablePriority(EPriority.High)]
 public class PlayerControlService : ITickableService
 {
-    private readonly INetworkService _networkService;
+    private readonly ClientNetworkService _networkService;
     private readonly IWorldService _worldService;
     private readonly InputService _inputService;
     private readonly CameraService _cameraService;
@@ -24,7 +25,7 @@ public class PlayerControlService : ITickableService
     private GameEntity? _playerEntity;
     private Vector2i _chunkPosition;
     
-    public PlayerControlService(INetworkService networkService, IEntityService entityService, IWorldService worldService, InputService inputService, CameraService cameraService)
+    public PlayerControlService(ClientNetworkService networkService, IEntityService entityService, IWorldService worldService, InputService inputService, CameraService cameraService)
     {
         _networkService = networkService;
         _worldService = worldService;
@@ -131,11 +132,27 @@ public class PlayerControlService : ITickableService
     {
         if (button == MouseButton.Left)
         {
-            // we need the ChunkPosition and BlockPosition of the place we clicked
             var worldPosition = _cameraService.ScreenToWorldPosition(position); 
-            Console.WriteLine(worldPosition);
-            Console.WriteLine(worldPosition.Modulus(IWorldService.WorldSize).ToVector2i());  // position in the chunk
-            Console.WriteLine((worldPosition / ChunkData.ChunkSize).Modulus(IWorldService.WorldSize).ToVector2i()); // what chunk we are clicking in
+
+            var message = new BlockUpdateMessage
+            {
+              Chunk = (worldPosition / ChunkData.ChunkSize).Modulus(IWorldService.WorldSize).ToVector2i(), 
+              Position = worldPosition.Modulus(IWorldService.WorldSize).ToVector2i(),
+              BlockType = EBlockType.Object,
+              Id = 1 // TODO: need a real block to put here (reserve 0 for Air or Nothing)
+            };
+
+            var chunk = _worldService.GetChunkData(message.Chunk);
+
+            if (chunk == null)
+            {
+                return;
+            }
+            
+            // Were going to predict that the server will listen to our request
+            chunk.SetBlockAtLocalPosition(message.Id, message.Position, message.BlockType);
+            
+            _networkService.SendToServer(message);
         }
     }
     
