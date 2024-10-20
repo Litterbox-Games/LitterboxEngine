@@ -7,8 +7,6 @@ using Common.Mathematics;
 using Common.Network;
 using Common.Resource;
 using Common.World;
-using ImGuiNET;
-using MoreLinq;
 
 namespace Client.Entity;
 
@@ -64,7 +62,17 @@ public class EntityRenderService : ITickableService
             var position = entity.Position.Modulus(worldSize);
             var entityX = (position.X - _playerEntity.Position.X + worldSize / 2f).Modulus(worldSize) - worldSize / 2f + _playerEntity.Position.X;
             var entityY = (position.Y - _playerEntity.Position.Y + worldSize / 2f).Modulus(worldSize) - worldSize / 2f + _playerEntity.Position.Y;
-
+            
+            // Debug draw for showing network positions vs render position (not world wrapping atm)
+            // if (entity.EntityType == 0 && entity.QueuedMovements.Count > 1)
+            // { // this is a player
+            //     var firstMovement = entity.QueuedMovements.ToArray()[0];
+            //     _rendererService.DrawTexture(_texture, _textureSource, new RectangleF(firstMovement.Position.X, firstMovement.Position.Y, 1.25f, 1), Color.Green);
+            //     
+            //     var secondMovement = entity.QueuedMovements.ToArray()[1];
+            //     _rendererService.DrawTexture(_texture, _textureSource, new RectangleF(secondMovement.Position.X, secondMovement.Position.Y, 1.25f, 1), Color.Red);
+            // }
+            
             _rendererService.DrawTexture(_texture, _textureSource, new RectangleF(entityX, entityY, 1.25f, 1), Color.White);
         }
     }

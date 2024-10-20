@@ -33,8 +33,8 @@ public class CameraService : ITickableService
     public void Update(float deltaTime)
     {
 
-        Camera.Position.X = Target.X + 0.0f + (float)_windowService.Width / _scaleFactor / 2;
-        Camera.Position.Y = Target.Y + 0.0f + (float)_windowService.Height / _scaleFactor / 2;
+        Camera.Position.X = Target.X + (float)_windowService.Width / _scaleFactor / 2;
+        Camera.Position.Y = Target.Y + (float)_windowService.Height / _scaleFactor / 2;
         Camera.Position *= _scaleFactor;
         Camera.Position = new Vector2(MathF.Round(Camera.Position.X), MathF.Round(Camera.Position.Y));
         Camera.Position /= _scaleFactor;

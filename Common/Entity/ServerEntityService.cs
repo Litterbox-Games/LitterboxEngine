@@ -58,10 +58,10 @@ public class ServerEntityService : AbstractEntityService
                 {
                     entity.QueuedMovements.Dequeue();
                 }
-
-                var firstMovement = entity.QueuedMovements.ElementAt(0);
-                var secondMovement = entity.QueuedMovements.ElementAt(1);
-
+                
+                var firstMovement = entity.QueuedMovements.ToArray()[0];
+                var secondMovement = entity.QueuedMovements.ToArray()[1];
+                
                 var interpolationFactor = (renderTime - firstMovement.TimeStamp).TotalMilliseconds /
                                           (secondMovement.TimeStamp -
                                            firstMovement.TimeStamp).TotalMilliseconds;
