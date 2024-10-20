@@ -10,12 +10,12 @@ public class ChunkData
     public Vector2i Position { get; }
     public bool IsDirty { get; internal set; }
 
-    public ushort[] ObjectArray = new ushort[256];
-    public ushort[] GroundArray = new ushort[256];
+    public ushort[] ObjectArray = new ushort[ChunkSize * ChunkSize];
+    public ushort[] GroundArray = new ushort[ChunkSize * ChunkSize];
 
-    public EMoistureType[] MoistureArray = new EMoistureType[256];
-    public EBiomeType[] BiomeArray = new EBiomeType[256];
-    public EHeatType[] HeatArray = new EHeatType[256];
+    public EMoistureType[] MoistureArray = new EMoistureType[ChunkSize * ChunkSize];
+    public EBiomeType[] BiomeArray = new EBiomeType[ChunkSize * ChunkSize];
+    public EHeatType[] HeatArray = new EHeatType[ChunkSize * ChunkSize];
 
     public ChunkData(Vector2i position)
     {
