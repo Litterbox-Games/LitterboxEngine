@@ -24,6 +24,8 @@ public class PlayerControlService : ITickableService
     
     private GameEntity? _playerEntity;
     private Vector2i _chunkPosition;
+
+    private Queue<float> _fpsRecordings = new();
     
     public PlayerControlService(ClientNetworkService networkService, IEntityService entityService, IWorldService worldService, InputService inputService, CameraService cameraService)
     {
@@ -48,6 +50,9 @@ public class PlayerControlService : ITickableService
         {
             UpdateChunks(newPosition.Value);
         }
+        
+        _fpsRecordings.Enqueue(MathF.Round(1f / deltaTime));
+        if (_fpsRecordings.Count > 60) _fpsRecordings.Dequeue();
     }
 
     private Vector2? UpdatePosition(float deltaTime)
@@ -163,6 +168,7 @@ public class PlayerControlService : ITickableService
 
         if (_playerEntity != null)
         {
+            ImGui.PlotLines("FPS", ref _fpsRecordings.ToArray()[0], _fpsRecordings.Count, 0, "", 0, 60, new Vector2(450, 150));
             ImGui.Text($"Player Position: ({_playerEntity.Position.X}, {_playerEntity.Position.Y})");  
             ImGui.Text($"Chunk Position: ({_chunkPosition.X}, {_chunkPosition.Y})");
             ImGui.Text($"Entity Count: {_entityService.Entities.Count()}");

@@ -79,7 +79,7 @@ public class ClientEntityService : AbstractEntityService
     public override void Draw()
     {
         ImGui.Begin("EntityService");
-        
+
         foreach (var entity in Entities)
         {
             ImGui.Text($"{entity.EntityId} {entity.OwnerId} ({entity.Position.X}, {entity.Position.Y})");    
