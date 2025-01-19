@@ -10,7 +10,7 @@ internal static class Program
 {
     private static void Main()
     {
-        using var host = new HostOrSinglePlayerHost(true);
+        using var host = new ClientHost();
 
         var windowService = host.Resolve<WindowService>();
         var graphicsDeviceService = host.Resolve<IGraphicsDeviceService>();

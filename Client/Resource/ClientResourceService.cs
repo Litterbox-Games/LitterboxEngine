@@ -85,23 +85,23 @@ public class ClientResourceService: IResourceService, ITickableService, IDisposa
             // Don't reload a resource that isn't reloadable
             if (oldResource is not IReloadable reloadableResource) return;
             
+            _logger.Information($"Reloading resource '{path}'...");
+            
             File.Copy(resourceToReload, path, true);
 
             var resource = reloadableResource.Reload(path);
-
+            
+            if (oldResource is IDisposable disposableResource) {
+                _graphicsDeviceService.WaitIdle();
+                disposableResource.Dispose();
+            }
+            
             if (resource is IGraphicsResource graphicsResource) {
                 _graphicsDeviceService.WaitIdle();
                 resource = graphicsResource.UploadToGraphicsDevice(_graphicsDeviceService);
             }
             
             _resources[path] = resource;
-
-            if (oldResource is IDisposable disposableResource) {
-                _graphicsDeviceService.WaitIdle();
-                disposableResource.Dispose();
-            } 
-            
-            _logger.Information($"Reloaded resource '{path}'");
         }
         
         _resourcesToReload.Clear();
