@@ -11,12 +11,10 @@ public class WindowService : IService, IDisposable
     public string Title { get; }
     public int Width { get; private set; }
     public int Height { get; private set; }
-    public Vector2i Size => new Vector2i(Width, Height);
+    public Vector2i Size => new(Width, Height);
     
     public event Action<int, int>? OnResize;
-
     public event Action<float>? OnUpdate;
-    public event Action<float>? OnDraw;
 
     public readonly IWindow Window;
     public readonly IInputContext Input;
@@ -27,19 +25,20 @@ public class WindowService : IService, IDisposable
         Width = 1920;
         Height = 1080;
         
-        var options = WindowOptions.DefaultVulkan;
-        options.Title = Title;
-        options.Size = new Vector2D<int>(Width, Height);
-        options.IsEventDriven = false;
-        options.FramesPerSecond = 144;
-        options.UpdatesPerSecond = 60;
+        var options = WindowOptions.DefaultVulkan with
+        {
+            Title = Title,
+            Size = new Vector2D<int>(Width, Height),
+            IsEventDriven = false,
+            FramesPerSecond    = 144,
+            UpdatesPerSecond = 60
+        };
         
         Window = Silk.NET.Windowing.Window.Create(options); 
         Window.Initialize();
         
         Window.FramebufferResize += Resize;
         Window.Update += deltaTime => OnUpdate?.Invoke((float)deltaTime);
-        Window.Render += deltaTime => OnDraw?.Invoke((float)deltaTime);
 
         Input = Window.CreateInput();
     }

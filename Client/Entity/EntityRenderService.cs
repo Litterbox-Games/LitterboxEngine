@@ -15,9 +15,10 @@ public class EntityRenderService : ITickableService
     private readonly IEntityService _entityService;
     private readonly RendererService _rendererService;
     private readonly INetworkService _networkService;
+    private readonly IResourceService _resourceService;
     
     private GameEntity? _playerEntity;
-    private readonly Texture _texture;
+    // private readonly Texture _texture;
     private readonly Rectangle _textureSource = new(32, 112, 20, 16);
     
     
@@ -26,8 +27,9 @@ public class EntityRenderService : ITickableService
         _entityService = entityService;
         _rendererService = rendererService;
         _networkService = networkService;
+        _resourceService = resourceService;
         
-        _texture = resourceService.Get<Texture>("Items.png");
+        // _texture = resourceService.Get<Texture>("Items.png");
         
         entityService.EventOnEntitySpawn += OnEntitySpawn;
         entityService.EventOnEntityDespawn += OnEntityDespawn;
@@ -55,6 +57,8 @@ public class EntityRenderService : ITickableService
     {
         if (_playerEntity == null) return;
 
+        var texture = _resourceService.Get<Aseprite>("Aseprites/Sprite-0001.aseprite").Texture;
+        
         foreach (var entity in _entityService.Entities)
         {
             const int worldSize = IWorldService.WorldSize * ChunkData.ChunkSize;
@@ -73,7 +77,7 @@ public class EntityRenderService : ITickableService
             //     _rendererService.DrawTexture(_texture, _textureSource, new RectangleF(secondMovement.Position.X, secondMovement.Position.Y, 1.25f, 1), Color.Red);
             // }
             
-            _rendererService.DrawTexture(_texture, _textureSource, new RectangleF(entityX, entityY, 1.25f, 1), Color.White);
+            _rendererService.DrawTexture(texture, texture.GetSourceRectangle(0, 0), new RectangleF(entityX, entityY, 1, 1), Color.White);
         }
     }
 }

@@ -5,17 +5,17 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace Client.Resource;
 
-public class Texture : IResource, IGraphicsResource, IDisposable
+public class Texture : IResource, IGraphicsResource, IReloadable, IDisposable
 {
     public readonly uint Width;
     public readonly uint Height;
-    private readonly byte[] _data;
+    public readonly byte[] Data;
 
     private protected Texture(uint width, uint height, byte[] data)
     {
         Width = width;
         Height = height;
-        _data = data;
+        Data = data;
     }
     
     public Rectangle GetSourceRectangle(int x, int y)
@@ -28,10 +28,27 @@ public class Texture : IResource, IGraphicsResource, IDisposable
 
     public IResource UploadToGraphicsDevice(IGraphicsDeviceService graphicsDeviceService)
     {
-        return graphicsDeviceService.CreateTexture(Width, Height, _data);
+        return graphicsDeviceService.CreateTexture(Width, Height, Data);
     }
     
     public static IResource LoadFromFile(string path)
+    {
+        using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(path);
+
+        var sizeInBytes = image.Width * image.Height * image.PixelType.BitsPerPixel / 8;
+        
+        var data = new byte[sizeInBytes];
+        image.CopyPixelDataTo(data);
+
+        return new Texture((uint) image.Width, (uint) image.Height, data);
+    }
+
+    public static Texture FromData(uint width, uint height, byte[] data)
+    {
+        return new Texture(width, height, data);
+    }
+
+    public IResource Reload(string path)
     {
         using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(path);
 

@@ -10,7 +10,7 @@ internal static class Program
 {
     private static void Main()
     {
-        using var host = new ClientHost();
+        using var host = new HostOrSinglePlayerHost(true);
 
         var windowService = host.Resolve<WindowService>();
         var graphicsDeviceService = host.Resolve<IGraphicsDeviceService>();
@@ -23,23 +23,20 @@ internal static class Program
         {
             // ReSharper disable once AccessToDisposedClosure
             host.Update(deltaTime);
-        };
-
-        // Draw
-        windowService.OnDraw += deltaTime =>
-        {
+            
             // Needs to be called in Draw so it happens at the same rate as imGuiService.Draw()
             imGuiService.Update(deltaTime);
 
             rendererService.BeginFrame();
             rendererService.BeginDrawing(cameraService.Camera.ViewMatrix);
+            
             // ReSharper disable once AccessToDisposedClosure
             host.Draw();
             rendererService.EndDrawing();
             imGuiService.Draw();
-            rendererService.EndFrame();
+            rendererService.EndFrame();   
         };
-        
+
         windowService.Run();
         graphicsDeviceService.WaitIdle();
     }

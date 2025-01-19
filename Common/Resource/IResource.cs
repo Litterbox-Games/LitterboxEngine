@@ -15,3 +15,8 @@ public interface IResource
         throw new NotImplementedException();
     }
 }
+
+public interface IReloadable
+{
+    public IResource Reload(string path);
+}

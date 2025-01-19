@@ -13,6 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="AsepriteDotNet" Version="1.9.0" />
       <PackageReference Include="ImGui.NET" Version="1.89.9.4" />
       <PackageReference Include="morelinq" Version="4.2.0" />
       <PackageReference Include="Silk.NET.Core" Version="2.21.0" />
@@ -48,8 +49,11 @@
       <None Update="Resources\TileColorPalette.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
-      <None Update="Resources\BiomePalette.png">
+        <None Update="Resources\BiomePalette.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Resources\Aseprites\Sprite-0001.aseprite">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>
 
