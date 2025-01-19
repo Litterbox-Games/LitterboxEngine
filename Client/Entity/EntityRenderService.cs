@@ -57,7 +57,7 @@ public class EntityRenderService : ITickableService
     {
         if (_playerEntity == null) return;
 
-        var texture = _resourceService.Get<Aseprite>("Aseprites/Sprite-0001.aseprite").Texture;
+        var texture = _resourceService.Get<Aseprite>("Aseprites/Player.aseprite").Texture;
         
         foreach (var entity in _entityService.Entities)
         {
@@ -77,7 +77,7 @@ public class EntityRenderService : ITickableService
             //     _rendererService.DrawTexture(_texture, _textureSource, new RectangleF(secondMovement.Position.X, secondMovement.Position.Y, 1.25f, 1), Color.Red);
             // }
             
-            _rendererService.DrawTexture(texture, texture.GetSourceRectangle(0, 0), new RectangleF(entityX, entityY, 1, 1), Color.White);
+            _rendererService.DrawTexture(texture, _textureSource, new RectangleF(entityX, entityY, 1.25f, 1), Color.White);
         }
     }
 }

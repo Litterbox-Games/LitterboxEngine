@@ -17,9 +17,9 @@ public class WorldRenderService : ITickableService
     private readonly RendererService _rendererService;
     private readonly IWorldService _worldService;
     private readonly INetworkService _networkService;
+    private readonly IResourceService _resourceService;
     
     private GameEntity? _playerEntity;
-    private readonly Texture _texture;
 
     
     public WorldRenderService(INetworkService networkService, IResourceService resourceService, RendererService rendererService, IWorldService worldService, IEntityService entityService)
@@ -27,11 +27,10 @@ public class WorldRenderService : ITickableService
         _networkService = networkService;
         _rendererService = rendererService;
         _worldService = worldService;
+        _resourceService = resourceService;
 
         entityService.EventOnEntitySpawn += OnEntitySpawn;
         entityService.EventOnEntityDespawn += OnEntityDespawn;
-        
-        _texture = resourceService.Get<Texture>("BiomePalette.png");
     }
     
     private void OnEntitySpawn(GameEntity entity)
@@ -84,7 +83,9 @@ public class WorldRenderService : ITickableService
             var chunkX = (chunk.Position.X - playerChunkX + IWorldService.WorldSize / 2).Modulus(IWorldService.WorldSize) - IWorldService.WorldSize / 2 + playerChunkX;
             var chunkY = (chunk.Position.Y - playerChunkY + IWorldService.WorldSize / 2).Modulus(IWorldService.WorldSize) - IWorldService.WorldSize / 2 + playerChunkY;
             
-            ImGui.Text($"({chunk.Position.X}, {chunk.Position.Y})\t\t({chunkX}, {chunkY})");            
+            ImGui.Text($"({chunk.Position.X}, {chunk.Position.Y})\t\t({chunkX}, {chunkY})");
+
+            var texture = _resourceService.Get<Aseprite>("Aseprites/BiomePalette.aseprite").Texture;
             
             for (var x = 0; x < 16; x++)
             {
@@ -95,22 +96,22 @@ public class WorldRenderService : ITickableService
 
                     var sourceRectangle = ((EBiomeType)groundId) switch
                     {
-                        EBiomeType.Ice => _texture.GetSourceRectangle(0, 0),
-                        EBiomeType.BorealForest => _texture.GetSourceRectangle(2, 0),
-                        EBiomeType.Desert => _texture.GetSourceRectangle(4, 0),
-                        EBiomeType.Grassland => _texture.GetSourceRectangle(0, 2),
-                        EBiomeType.SeasonalForest => _texture.GetSourceRectangle(2, 2),
-                        EBiomeType.Tundra => _texture.GetSourceRectangle(4, 2),
-                        EBiomeType.Savanna => _texture.GetSourceRectangle(0, 4),
-                        EBiomeType.TemperateRainforest => _texture.GetSourceRectangle(2, 4),
-                        EBiomeType.TropicalRainforest => _texture.GetSourceRectangle(4, 4),
-                        EBiomeType.Woodland => _texture.GetSourceRectangle(0, 6),
-                        EBiomeType.DeepOcean => _texture.GetSourceRectangle(2, 6),
-                        EBiomeType.Ocean => _texture.GetSourceRectangle(4, 6),
-                        _ => _texture.GetSourceRectangle(0, 8)
+                        EBiomeType.Ice => texture.GetSourceRectangle(0, 0),
+                        EBiomeType.BorealForest => texture.GetSourceRectangle(1, 0),
+                        EBiomeType.Desert => texture.GetSourceRectangle(2, 0),
+                        EBiomeType.Grassland => texture.GetSourceRectangle(0, 1),
+                        EBiomeType.SeasonalForest => texture.GetSourceRectangle(1, 1),
+                        EBiomeType.Tundra => texture.GetSourceRectangle(2, 1),
+                        EBiomeType.Savanna => texture.GetSourceRectangle(0, 2),
+                        EBiomeType.TemperateRainforest => texture.GetSourceRectangle(1, 2),
+                        EBiomeType.TropicalRainforest => texture.GetSourceRectangle(2, 2),
+                        EBiomeType.Woodland => texture.GetSourceRectangle(0, 3),
+                        EBiomeType.DeepOcean => texture.GetSourceRectangle(1, 3),
+                        EBiomeType.Ocean => texture.GetSourceRectangle(2, 3),
+                        _ => texture.GetSourceRectangle(0, 4)
                     };
                     
-                    _rendererService.DrawTexture(_texture, sourceRectangle, new RectangleF(chunkX * 16 + x, chunkY * 16 + y, 1,
+                    _rendererService.DrawTexture(texture, sourceRectangle, new RectangleF(chunkX * 16 + x, chunkY * 16 + y, 1,
                         1), Color.White);
                     
                     // Object Layer
@@ -118,7 +119,7 @@ public class WorldRenderService : ITickableService
 
                     if (objectId != 0)
                     {
-                        _rendererService.DrawTexture(_texture, _texture.GetSourceRectangle(0, 8), new RectangleF(chunkX * 16 + x, chunkY * 16 + y, 1,
+                        _rendererService.DrawTexture(texture, texture.GetSourceRectangle(0, 4), new RectangleF(chunkX * 16 + x, chunkY * 16 + y, 1,
                             1), Color.White);
                     }
                 }

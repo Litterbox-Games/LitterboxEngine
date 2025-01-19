@@ -37,24 +37,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="Resources\Objects.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Resources\Terrain.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Resources\Items.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Resources\TileColorPalette.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-        <None Update="Resources\BiomePalette.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Resources\Aseprites\Sprite-0001.aseprite">
+        <None Update="Resources\Aseprites\Player.aseprite">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
+        </None>
+        <None Update="Resources\Aseprites\BiomePalette.aseprite">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
     <Target Name="BuildVulkanShader" AfterTargets="Build">
