@@ -1,9 +1,10 @@
 ﻿using Common.DI;
 using Common.DI.Attributes;
 using Common.DI.Exceptions;
-using Common.Host;
 using MoreLinq.Extensions;
 using Unity;
+
+namespace Common.Host;
 
 public sealed class Container(EGameMode gameMode) : IContainer
 {
