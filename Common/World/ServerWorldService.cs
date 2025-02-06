@@ -13,15 +13,15 @@ public class ServerWorldService : IWorldService
     public readonly List<NetworkedChunk> NetworkedChunks = new();
     public IEnumerable<ChunkData> Chunks => NetworkedChunks.Select(x => x.ChunkData);
 
-    private readonly IHost _host;
+    private readonly IContainer _container;
     private readonly ServerNetworkService _networkService;
     private readonly IWorldGenerator _generation;
 
-    public ServerWorldService(IHost host, ServerNetworkService networkService)
+    public ServerWorldService(IContainer container, ServerNetworkService networkService)
     {
-        _host = host;
+        _container = container;
         _networkService = networkService;
-        _generation = host.Resolve<IWorldGenerator>("earth");
+        _generation = container.Resolve<IWorldGenerator>("earth");
         
         _networkService.EventOnPlayerDisconnect += OnPlayerDisconnect;
         _networkService.RegisterMessageHandle<ChunkRequestMessage>(OnChunkRequest);
@@ -44,7 +44,7 @@ public class ServerWorldService : IWorldService
 
     public void RequestChunk(Vector2i position)
     {
-        if (_host.GameMode == EGameMode.Dedicated)
+        if (_container.GameMode == EGameMode.Dedicated)
         {
             throw new InvalidOperationException(
                 "Invalid use of method. This may only be called when the server acts as a host.");
@@ -71,7 +71,7 @@ public class ServerWorldService : IWorldService
 
     public void RequestUnloadChunk(Vector2i position)
     {
-        if (_host.GameMode == EGameMode.Dedicated)
+        if (_container.GameMode == EGameMode.Dedicated)
         {
             throw new InvalidOperationException(
                 "Invalid use of method. This may only be called when the server acts as a host.");

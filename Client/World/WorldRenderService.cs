@@ -2,6 +2,7 @@
 using Client.Graphics;
 using Client.Resource;
 using Common.DI;
+using Common.DI.Attributes;
 using Common.Entity;
 using Common.Mathematics;
 using Common.Network;
@@ -11,6 +12,8 @@ using ImGuiNET;
 
 namespace Client.World;
 
+
+[TickablePriority(EPriority.High)]
 public class WorldRenderService : ITickableService
 {
  

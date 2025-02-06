@@ -10,15 +10,15 @@ namespace Common.Logging;
 public class RootLoggingService : ILoggingService
 {
     private readonly List<ILoggingService> _loggers = new();
-    private readonly IHost _host;
+    private readonly IContainer _container;
     
     /// <summary>
     ///     Creates an instance of the root logger.
     /// </summary>
     /// <remarks>This is designed to be called by the container during resolution, not by manual invocation.</remarks>
-    public RootLoggingService(IHost host)
+    public RootLoggingService(IContainer container)
     {
-        _host = host;
+        _container = container;
         RefreshLoggers();
     }
     
@@ -59,6 +59,6 @@ public class RootLoggingService : ILoggingService
     public void RefreshLoggers()
     {
         _loggers.Clear();
-        _loggers.AddRange(_host.ResolveAll<ILoggingService>().Where(x => x != this));
+        _loggers.AddRange(_container.ResolveAll<ILoggingService>().Where(x => x != this));
     }
 }

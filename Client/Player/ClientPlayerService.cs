@@ -9,14 +9,14 @@ public class ClientPlayerService : IPlayerService
 {
     private readonly List<NetworkPlayer> _players = new();
 
-    private IHost _host;
+    private IContainer _container;
     private INetworkService _network;
 
     public IEnumerable<NetworkPlayer> Players => _players;
 
-    public ClientPlayerService(IHost host, INetworkService networkService)
+    public ClientPlayerService(IContainer container, INetworkService networkService)
     {
-        _host = host;
+        _container = container;
         _network = networkService;
 
         _network.RegisterMessageHandle<PlayerConnectMessage>(OnPlayerConnectMessage);

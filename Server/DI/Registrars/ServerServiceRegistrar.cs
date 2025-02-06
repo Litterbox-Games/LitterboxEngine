@@ -18,17 +18,17 @@ namespace Server.DI.Registrars;
 public class ServerServiceRegistrar : IServiceRegistrar
 {
     /// <inheritdoc />
-    public void RegisterServices(AbstractHost host)
+    public void RegisterServices(IContainer container)
     {
-        host.RegisterSingleton<ILoggingService, ConsoleLoggingService>("console");
+        container.RegisterSingleton<ILoggingService, ConsoleLoggingService>("console");
         
-        host.RegisterSingleton<IResourceService, ServerResourceService>();
+        container.RegisterSingleton<IResourceService, ServerResourceService>();
         
-        host.RegisterSingleton<INetworkService, ServerNetworkService>();
-        host.RegisterSingleton<IPlayerService, ServerPlayerService>();
-        host.RegisterSingleton<IEntityService, ServerEntityService>();
-        host.RegisterSingleton<MobControllerService, MobControllerService>();
-        host.RegisterSingleton<IWorldGenerator, EarthGenerator>("earth");
-        host.RegisterSingleton<IWorldService, ServerWorldService>();
+        container.RegisterSingleton<INetworkService, ServerNetworkService>();
+        container.RegisterSingleton<IPlayerService, ServerPlayerService>();
+        container.RegisterSingleton<IEntityService, ServerEntityService>();
+        container.RegisterSingleton<MobControllerService, MobControllerService>();
+        container.RegisterSingleton<IWorldGenerator, EarthGenerator>("earth");
+        container.RegisterSingleton<IWorldService, ServerWorldService>();
     }
 }

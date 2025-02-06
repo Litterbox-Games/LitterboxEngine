@@ -17,7 +17,7 @@ public class ClientNetworkService : AbstractNetworkService
     
     private float _connectionAttemptTime;
     
-    public ClientNetworkService(IHost host, ILoggingService logger) : base(host, logger)
+    public ClientNetworkService(IContainer container, ILoggingService logger) : base(container, logger)
     {
         var config = new NetPeerConfiguration("Ages of Automation") { 
             PingInterval = 1f,

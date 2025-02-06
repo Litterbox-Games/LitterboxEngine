@@ -11,12 +11,12 @@ internal static class Program
     private static void Main()
     {
         using var host = new ClientHost();
-
-        var windowService = host.Resolve<WindowService>();
-        var graphicsDeviceService = host.Resolve<IGraphicsDeviceService>();
-        var rendererService = host.Resolve<RendererService>();
-        var cameraService = host.Resolve<CameraService>();
-        var imGuiService = host.Resolve<ImGuiService>();
+        
+        var windowService = host.Container.Resolve<WindowService>();
+        var graphicsDeviceService = host.Container.Resolve<IGraphicsDeviceService>();
+        var rendererService = host.Container.Resolve<RendererService>();
+        var cameraService = host.Container.Resolve<CameraService>();
+        var imGuiService = host.Container.Resolve<ImGuiService>();
         
         // Update
         windowService.OnUpdate += deltaTime =>

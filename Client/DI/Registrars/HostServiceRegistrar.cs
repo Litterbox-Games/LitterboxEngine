@@ -27,28 +27,28 @@ namespace Client.DI.Registrars;
 public class HostServiceRegistrar : IServiceRegistrar
 {
     /// <inheritdoc />
-    public void RegisterServices(AbstractHost host)
+    public void RegisterServices(IContainer container)
     {
-        host.RegisterSingleton<ILoggingService, ConsoleLoggingService>("console");
+        container.RegisterSingleton<ILoggingService, ConsoleLoggingService>("console");
         
-        host.RegisterSingleton<WindowService, WindowService>();
-        host.RegisterSingleton<IGraphicsDeviceService, VulkanGraphicsDeviceService>();
-        host.RegisterSingleton<ImGuiService, ImGuiService>();
-        host.RegisterSingleton<IResourceService, ClientResourceService>();
-        host.RegisterSingleton<RendererService, RendererService>();
-        host.RegisterSingleton<InputService, InputService>();
+        container.RegisterSingleton<WindowService, WindowService>();
+        container.RegisterSingleton<IGraphicsDeviceService, VulkanGraphicsDeviceService>();
+        container.RegisterSingleton<ImGuiService, ImGuiService>();
+        container.RegisterSingleton<IResourceService, ClientResourceService>();
+        container.RegisterSingleton<RendererService, RendererService>();
+        container.RegisterSingleton<InputService, InputService>();
         
-        host.RegisterSingleton<CameraService, CameraService>();
-        host.RegisterSingleton<PlayerControlService, PlayerControlService>();
-        host.RegisterSingleton<MobControllerService, MobControllerService>();
+        container.RegisterSingleton<CameraService, CameraService>();
+        container.RegisterSingleton<PlayerControlService, PlayerControlService>();
+        container.RegisterSingleton<MobControllerService, MobControllerService>();
         
-        host.RegisterSingleton<INetworkService, ServerNetworkService>();
-        host.RegisterSingleton<IPlayerService, ServerPlayerService>();
-        host.RegisterSingleton<IEntityService, ServerEntityService>();
-        host.RegisterSingleton<IWorldGenerator, EarthGenerator>("earth");
-        host.RegisterSingleton<IWorldService, ServerWorldService>();
+        container.RegisterSingleton<INetworkService, ServerNetworkService>();
+        container.RegisterSingleton<IPlayerService, ServerPlayerService>();
+        container.RegisterSingleton<IEntityService, ServerEntityService>();
+        container.RegisterSingleton<IWorldGenerator, EarthGenerator>("earth");
+        container.RegisterSingleton<IWorldService, ServerWorldService>();
         
-        host.RegisterSingleton<EntityRenderService, EntityRenderService>();
-        host.RegisterSingleton<WorldRenderService, WorldRenderService>();
+        container.RegisterSingleton<EntityRenderService, EntityRenderService>();
+        container.RegisterSingleton<WorldRenderService, WorldRenderService>();
     }
 }

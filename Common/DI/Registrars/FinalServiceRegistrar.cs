@@ -11,12 +11,12 @@ namespace Common.DI.Registrars;
 public class FinalServiceRegistrar : IServiceRegistrar
 {
     /// <inheritdoc />
-    public void RegisterServices(AbstractHost host)
+    public void RegisterServices(IContainer container)
     {
-        host.RegisterSingleton<ILoggingService, RootLoggingService>();
+        container.RegisterSingleton<ILoggingService, RootLoggingService>();
 
-        var logger = host.Resolve<ILoggingService>() as RootLoggingService;
+        var logger = container.Resolve<ILoggingService>() as RootLoggingService;
         
-        host.RegisterSingleton<ILoggingService, RootLoggingService>(logger!, false, "root");
+        container.RegisterSingleton<ILoggingService, RootLoggingService>(logger!, false, "root");
     }
 }

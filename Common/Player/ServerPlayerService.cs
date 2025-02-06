@@ -12,11 +12,11 @@ public sealed class ServerPlayerService : IPlayerService
 
     private ServerNetworkService _network;
 
-    private readonly IHost _host;
+    private readonly IContainer _container;
 
-    public ServerPlayerService(IHost host, INetworkService networkService)
+    public ServerPlayerService(IContainer container, INetworkService networkService)
     {
-        _host = host;
+        _container = container;
         _network = (ServerNetworkService) networkService;
         
         _network.EventOnPlayerConnect += OnPlayerConnect;
@@ -55,7 +55,7 @@ public sealed class ServerPlayerService : IPlayerService
 
     private void OnPlayerDisconnect(ServerPlayer player)
     {
-        if (!Players.Any() || Players.Count() == 2 && _host.GameMode == EGameMode.Host)
+        if (!Players.Any() || Players.Count() == 2 && _container.GameMode == EGameMode.Host)
             return;
 
         var disconnectMessage = new PlayerDisconnectMessage

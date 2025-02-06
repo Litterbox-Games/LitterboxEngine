@@ -27,26 +27,27 @@ namespace Client.DI.Registrars;
 public class ClientServiceRegistrar : IServiceRegistrar
 {
     /// <inheritdoc />
-    public void RegisterServices(AbstractHost host)
+    public void RegisterServices(IContainer container)
     {
-        host.RegisterSingleton<ILoggingService, ConsoleLoggingService>("console");
+        container.RegisterSingleton<ILoggingService, ConsoleLoggingService>("console");
         
-        host.RegisterSingleton<WindowService, WindowService>();
-        host.RegisterSingleton<IGraphicsDeviceService, VulkanGraphicsDeviceService>();
-        host.RegisterSingleton<ImGuiService, ImGuiService>();
-        host.RegisterSingleton<IResourceService, ClientResourceService>();
-        host.RegisterSingleton<RendererService, RendererService>();
-        host.RegisterSingleton<InputService, InputService>();
         
-        host.RegisterSingleton<CameraService, CameraService>();
-        host.RegisterSingleton<PlayerControlService, PlayerControlService>();
+        container.RegisterSingleton<WindowService, WindowService>();
+        container.RegisterSingleton<IGraphicsDeviceService, VulkanGraphicsDeviceService>();
+        container.RegisterSingleton<ImGuiService, ImGuiService>();
+        container.RegisterSingleton<IResourceService, ClientResourceService>();
+        container.RegisterSingleton<RendererService, RendererService>();
+        container.RegisterSingleton<InputService, InputService>();
+        // 
+        container.RegisterSingleton<CameraService, CameraService>();
+        container.RegisterSingleton<PlayerControlService, PlayerControlService>();
 
-        host.RegisterSingleton<INetworkService, ClientNetworkService>();
-        host.RegisterSingleton<IPlayerService, ClientPlayerService>();
-        host.RegisterSingleton<IEntityService, ClientEntityService>();
-        host.RegisterSingleton<IWorldService, ClientWorldService>();
+        container.RegisterSingleton<INetworkService, ClientNetworkService>();
+        container.RegisterSingleton<IPlayerService, ClientPlayerService>();
+        container.RegisterSingleton<IEntityService, ClientEntityService>();
+        container.RegisterSingleton<IWorldService, ClientWorldService>();
         
-        host.RegisterSingleton<EntityRenderService, EntityRenderService>();
-        host.RegisterSingleton<WorldRenderService, WorldRenderService>();
+        container.RegisterSingleton<EntityRenderService, EntityRenderService>();
+        container.RegisterSingleton<WorldRenderService, WorldRenderService>();
     }
 }

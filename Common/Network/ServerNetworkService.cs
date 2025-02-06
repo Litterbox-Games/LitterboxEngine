@@ -23,7 +23,7 @@ public class ServerNetworkService : AbstractNetworkService
     
     private readonly List<ServerPlayer> _players = new();
 
-    public ServerNetworkService(IHost host, ILoggingService logger) : base(host, logger) { }
+    public ServerNetworkService(IContainer container, ILoggingService logger) : base(container, logger) { }
 
     public override void Update(float deltaTime)
     {
@@ -87,11 +87,11 @@ public class ServerNetworkService : AbstractNetworkService
         _server = new NetServer(config);
         _server.Start();
 
-        _playerService = Host.Resolve<IPlayerService>();
+        _playerService = Container.Resolve<IPlayerService>();
         
         Logger.Information("Server is now listening on port 7777.");
         
-        if (Host.GameMode == EGameMode.Host || Host.GameMode == EGameMode.SinglePlayer)
+        if (Container.GameMode == EGameMode.Host || Container.GameMode == EGameMode.SinglePlayer)
         {
             PlayerId = (ulong) new Random(DateTime.Now.Millisecond).Next();
             _players.Add(new ServerPlayer(PlayerId, $"Player {PlayerId}", null));
@@ -171,7 +171,7 @@ public class ServerNetworkService : AbstractNetworkService
     
     private bool OnConnectionRequest(NetIncomingMessage message)
     {
-        if (Host.GameMode == EGameMode.SinglePlayer)
+        if (Container.GameMode == EGameMode.SinglePlayer)
             return false;
         
         try

@@ -10,5 +10,5 @@ public interface IServiceRegistrar
     /// <summary>
     ///     Registers all services for this registrar.
     /// </summary>
-    void RegisterServices(AbstractHost host);
+    void RegisterServices(IContainer container);
 }

@@ -14,14 +14,14 @@ public abstract class AbstractNetworkService : INetworkService
     protected readonly Dictionary<Type, List<OnMessage>> MessageHandles = new();
     protected abstract NetPeer? NetPeer { get; }
 
-    protected IHost Host;
+    protected IContainer Container;
     protected ILoggingService Logger;
 
     public ulong PlayerId { get; protected set; } = 0;
     
-    public AbstractNetworkService(IHost host, ILoggingService logger)
+    public AbstractNetworkService(IContainer container, ILoggingService logger)
     {
-        Host = host;
+        Container = container;
         Logger = logger;
         
         RegisterMessageType<PlayerConnectMessage>();

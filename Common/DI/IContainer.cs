@@ -6,18 +6,12 @@ namespace Common.DI;
 /// <summary>
 ///     The contract representing the host container of an application/game state.
 /// </summary>
-public interface IHost : IService
+public interface IContainer : IService, IDisposable
 {
     /// <summary>
     ///     The current game mode of the host.
     /// </summary>
     EGameMode GameMode { get; }
-    
-    
-    /// <summary>
-    ///     The UnityContainer instance managed by the host.
-    /// </summary>
-    UnityContainer Container { get; }
 
     /// <summary>
     ///     Creates a singleton registration in the container.
@@ -70,15 +64,4 @@ public interface IHost : IService
     /// <returns>All services implementing the given contract.</returns>
     /// <remarks>This does not resolve the default service, only mapped services.</remarks>>
     IEnumerable<T> ResolveAll<T>() where T : IService;
-    
-    /// <summary>
-    ///     Executes a game tick.
-    /// </summary>
-    /// <param name="deltaTime">The amount of time in seconds from the last frame.</param>
-    void Update(float deltaTime);
-    
-    /// <summary>
-    ///     Executes a game draw tick.
-    /// </summary>
-    void Draw();
 }
