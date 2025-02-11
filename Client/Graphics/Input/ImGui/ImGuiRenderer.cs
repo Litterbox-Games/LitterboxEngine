@@ -1,25 +1,23 @@
 ﻿using Client.Graphics.GHAL.Vulkan;
-using Common.DI;
 using Silk.NET.Vulkan.Extensions.ImGui;
 
 namespace Client.Graphics.Input.ImGui;
 
-public class ImGuiService: IService, IDisposable
+public class ImGuiRenderer: IDisposable
 {
     private readonly ImGuiController _imGuiController;
     private readonly VulkanSwapChain _swapChain;
     
-    
-    public ImGuiService(WindowService windowService, VulkanGraphicsDeviceService graphicsDeviceService)
+    public ImGuiRenderer(Window window, VulkanGraphicsDevice graphicsDevice)
     {
-        _swapChain = graphicsDeviceService.SwapChain;
+        _swapChain = graphicsDevice.SwapChain;
         
         _imGuiController = new ImGuiController(
-            graphicsDeviceService.Vk,
-            windowService.Window,
-            windowService.Input,
-            graphicsDeviceService.LogicalDevice.PhysicalDevice.VkPhysicalDevice,
-            graphicsDeviceService.GraphicsQueue.QueueFamilyIndex,
+            graphicsDevice.Vk,
+            window.InternalWindow,
+            window.Input,
+            graphicsDevice.LogicalDevice.PhysicalDevice.VkPhysicalDevice,
+            graphicsDevice.GraphicsQueue.QueueFamilyIndex,
             _swapChain.ImageCount,
             _swapChain.Format,
             null,

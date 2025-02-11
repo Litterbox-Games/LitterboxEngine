@@ -12,11 +12,11 @@ public class VulkanSurface: IDisposable
     public readonly SurfaceFormatKHR Format;
     private readonly VulkanInstance _instance;
     
-    public unsafe VulkanSurface(Vk vk, VulkanInstance instance, VulkanPhysicalDevice physicalDevice, WindowService windowService)
+    public unsafe VulkanSurface(Vk vk, VulkanInstance instance, VulkanPhysicalDevice physicalDevice, Window window)
     {
         _instance = instance;
 
-        VkSurface = windowService.Window.VkSurface!.Create<AllocationCallbacks>(_instance.VkInstance.ToHandle(), null).ToSurface();
+        VkSurface = window.InternalWindow.VkSurface!.Create<AllocationCallbacks>(_instance.VkInstance.ToHandle(), null).ToSurface();
         
         if (!vk.TryGetInstanceExtension(_instance.VkInstance, out KhrSurface))
             throw new Exception("Failed to instantiate KHR surface extension");

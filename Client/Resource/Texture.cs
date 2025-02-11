@@ -26,9 +26,9 @@ public class Texture : IResource, IGraphicsResource, IReloadable, IDisposable
         return new Rectangle(xTexCoord, yTexCoord, 16, 16);
     }
 
-    public IResource UploadToGraphicsDevice(IGraphicsDeviceService graphicsDeviceService)
+    public IResource UploadToGraphicsDevice(IGraphicsDevice graphicsDevice)
     {
-        return graphicsDeviceService.CreateTexture(Width, Height, Data);
+        return graphicsDevice.CreateTexture(Width, Height, Data);
     }
     
     public static IResource LoadFromFile(string path)

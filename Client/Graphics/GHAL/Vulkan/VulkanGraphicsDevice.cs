@@ -8,7 +8,7 @@ using Silk.NET.Vulkan.Extensions.ImGui;
 namespace Client.Graphics.GHAL.Vulkan;
 
 // TODO: where should this be disposed and should IGraphicsDeviceService inherit from IDisposable?
-public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService, IDisposable
+public sealed class VulkanGraphicsDevice : IGraphicsDevice, IDisposable
 {
     public readonly Vk Vk;
     private readonly VulkanInstance _instance;
@@ -21,26 +21,26 @@ public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService, IDispo
     public readonly VulkanSwapChain SwapChain;
     private readonly VulkanPipelineCache _pipelineCache;
     private readonly VulkanDescriptorPool _descriptorPool;
-    private readonly WindowService _windowService;
+    private readonly Window _window;
 
-    public VulkanGraphicsDeviceService(WindowService windowService)
+    public VulkanGraphicsDevice(Window window)
     {
         Vk = Vk.GetApi();
-        _windowService = windowService;
-        _instance = new VulkanInstance(Vk, _windowService.Title, true);
+        _window = window;
+        _instance = new VulkanInstance(Vk, _window.Title, true);
         var physicalDevice = VulkanPhysicalDevice.SelectPreferredPhysicalDevice(Vk, _instance);
         LogicalDevice = new VulkanLogicalDevice(Vk, physicalDevice);
-        _surface = new VulkanSurface(Vk, _instance, physicalDevice, _windowService);
+        _surface = new VulkanSurface(Vk, _instance, physicalDevice, _window);
         _renderPass = new VulkanRenderPass(Vk, LogicalDevice, _surface.Format.Format);
         GraphicsQueue = new GraphicsQueue(Vk, LogicalDevice, 0);
         _presentQueue = new PresentQueue(Vk, LogicalDevice, _surface, 0);
         _commandPool = new VulkanCommandPool(Vk, LogicalDevice, GraphicsQueue.QueueFamilyIndex);
 
-        SwapChain = new VulkanSwapChain(Vk, LogicalDevice, _surface, _renderPass, _commandPool, _windowService, 3,
+        SwapChain = new VulkanSwapChain(Vk, LogicalDevice, _surface, _renderPass, _commandPool, _window, 3,
             false, _presentQueue, new[] {GraphicsQueue});
         _descriptorPool = new VulkanDescriptorPool(Vk, LogicalDevice);
         _pipelineCache = new VulkanPipelineCache(Vk, LogicalDevice);
-        _windowService.OnResize += WindowResized;
+        _window.OnResize += WindowResized;
     }
 
     private void WindowResized(int width, int height)
@@ -150,7 +150,7 @@ public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService, IDispo
         GraphicsQueue.WaitIdle();
         LogicalDevice.WaitIdle();
      
-        _windowService.OnResize -= WindowResized;
+        _window.OnResize -= WindowResized;
         
         _pipelineCache.Dispose();
         _descriptorPool.Dispose();

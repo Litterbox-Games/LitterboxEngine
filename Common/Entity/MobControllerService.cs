@@ -3,11 +3,11 @@ using Common.DI;
 
 namespace Common.Entity;
 
-public class MobControllerService : ITickableService
+public class MobControllerService : IService, IUpdatable
 {
     private readonly ServerEntityService _entityService;
 
-    private readonly List<MobEntity> _entities = new();
+    private readonly List<MobEntity> _entities = [];
 
     private readonly Random _random = new();
 
@@ -56,8 +56,6 @@ public class MobControllerService : ITickableService
             x.Position += x.Direction * deltaTime * movementSpeed;
         });
     }
-
-    public void Draw() { }
 
     private void OnEntitySpawn(GameEntity entity)
     {

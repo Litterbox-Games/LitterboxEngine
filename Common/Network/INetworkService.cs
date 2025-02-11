@@ -4,7 +4,7 @@ using Lidgren.Network;
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 namespace Common.Network;
 
-public interface INetworkService : ITickableService
+public interface INetworkService : IService, IUpdatable
 {
     ulong PlayerId { get; }
     

@@ -1,11 +1,8 @@
-﻿using Client.Graphics.Input;
-using Client.Graphics.Input.ImGui;
-using Client.Resource;
-using Common.DI;
+﻿using Client.Resource;
 
 namespace Client.Graphics.GHAL;
 
-public interface IGraphicsDeviceService: IService
+public interface IGraphicsDevice
 {
     public Buffer CreateBuffer(BufferDescription description);
     public void UpdateBuffer(Buffer buffer, uint offset, uint[] data);

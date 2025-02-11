@@ -4,7 +4,7 @@ using Common.DI;
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 namespace Common.Entity;
 
-public interface IEntityService : ITickableService
+public interface IEntityService : IService, IUpdatable
 {
     List<GameEntity> Entities { get; }
 

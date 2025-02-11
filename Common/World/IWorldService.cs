@@ -3,7 +3,7 @@ using Common.Mathematics;
 
 namespace Common.World;
 
-public interface IWorldService : ITickableService
+public interface IWorldService : IService, IUpdatable
 {
     public const int WorldSize = 16;
     

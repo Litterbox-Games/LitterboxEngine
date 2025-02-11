@@ -14,7 +14,7 @@ using Silk.NET.Input;
 namespace Client.Player;
 
 [TickablePriority(EPriority.High)]
-public class PlayerControlService : ITickableService
+public class PlayerControlService : IService, IUpdatable, IDrawable
 {
     private readonly ClientNetworkService _networkService;
     private readonly IWorldService _worldService;
@@ -162,7 +162,7 @@ public class PlayerControlService : ITickableService
     }
     
     /// <inheritdoc />
-    public void Draw()
+    public void Draw(Renderer renderer)
     {
         ImGui.Begin("Debug");
 

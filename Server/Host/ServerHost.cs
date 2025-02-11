@@ -13,14 +13,14 @@ namespace Server.Host;
 public class ServerHost : IServerHost
 {
     public Container Container { get; }
-    private readonly List<(EPriority, ITickableService)> _tickables = [];
+    private readonly List<(EPriority, IUpdatable)> _updatables = [];
     
     public ServerHost()
     {
         Container = new Container(EGameMode.Dedicated);
         Container.RegisterServices();
         
-        Container.FilterRegistries<ITickableService>((tickable, type) =>
+        Container.FilterRegistries<IUpdatable>((updatable, type) =>
         {
             var tickableAttribute =
                 type.CustomAttributes.FirstOrDefault(y => y.AttributeType == typeof(TickablePriorityAttribute));
@@ -32,18 +32,18 @@ public class ServerHost : IServerHost
 
             var inserted = false;
 
-            for (var i = 0; i < _tickables.Count && !inserted; i++)
+            for (var i = 0; i < _updatables.Count && !inserted; i++)
             {
-                if (priority <= _tickables[i].Item1)
+                if (priority <= _updatables[i].Item1)
                     continue;
 
-                _tickables.Insert(i, (priority, tickable));
+                _updatables.Insert(i, (priority, updatable));
                 inserted = true;
             }
 
             if (!inserted)
             {
-                _tickables.Add((priority, tickable));
+                _updatables.Add((priority, updatable));
             }
         });
         
@@ -53,18 +53,19 @@ public class ServerHost : IServerHost
         
         networking.Listen(port);
 
+        var mobController = Container.Resolve<MobControllerService>();
         for (var x = 0; x < 30; x++)
         {
             for (var y = 0; y < 30; y++)
             {
-                Container.Resolve<MobControllerService>().SpawnMobEntity(new Vector2(x * 2, y * 2));
+                mobController.SpawnMobEntity(new Vector2(x * 2, y * 2));
             }    
         }
     }
 
     public void Update(float deltaTime)
     {
-        _tickables.ForEach(x => x.Item2.Update(deltaTime));
+        _updatables.ForEach(x => x.Item2.Update(deltaTime));
     }
     
     public void Dispose()

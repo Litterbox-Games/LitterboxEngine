@@ -11,5 +11,4 @@ public abstract class AbstractEntityService : IEntityService
     public abstract event Action<GameEntity>? EventOnEntityMove;
     
     public abstract void Update(float deltaTime);
-    public abstract void Draw();
 }

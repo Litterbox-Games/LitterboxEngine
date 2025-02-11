@@ -75,9 +75,6 @@ public class ServerEntityService : AbstractEntityService
             _network.SendToAllPlayers(moveMessage);
     }
 
-    /// <inheritdoc />
-    public override void Draw() { }
-
     private void OnEntityMoveMessage(INetworkMessage message, NetworkPlayer? player)
     {
         var now = DateTime.Now;

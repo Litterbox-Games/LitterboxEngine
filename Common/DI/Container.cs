@@ -1,10 +1,10 @@
-﻿using Common.DI;
-using Common.DI.Attributes;
+﻿using Common.DI.Attributes;
 using Common.DI.Exceptions;
+using Common.Host;
 using MoreLinq.Extensions;
 using Unity;
 
-namespace Common.Host;
+namespace Common.DI;
 
 public sealed class Container(EGameMode gameMode) : IContainer
 {
@@ -12,7 +12,7 @@ public sealed class Container(EGameMode gameMode) : IContainer
     
     public EGameMode GameMode { get; } = gameMode;
 
-    public void FilterRegistries<T>(Action<T, Type> action) where T: IService
+    public void FilterRegistries<T>(Action<T, Type> action)
     {
         _container.Registrations
             .Where(x => x.MappedToType.IsAssignableTo(typeof(T)))
@@ -92,8 +92,9 @@ public sealed class Container(EGameMode gameMode) : IContainer
     /// <inheritdoc />
     public void RegisterTransient<TContract, TInstance>(string? mapping = null) where TInstance : TContract where TContract : IService
     {
-        if (typeof(TInstance).IsAssignableTo(typeof(ITickableService)))
-            throw new NotImplementedException("Anything implementing ITickableService does not currently support transient lifetimes.");
+        // TODO: how should we handle this now that the Container is unaware of ITickableService?
+        // if (typeof(TInstance).IsAssignableTo(typeof(ITickableService)))
+        //     throw new NotImplementedException("Anything implementing ITickableService does not currently support transient lifetimes.");
         
         _container.RegisterType<TContract, TInstance>(mapping, TypeLifetime.Transient);
     }
@@ -101,8 +102,9 @@ public sealed class Container(EGameMode gameMode) : IContainer
     /// <inheritdoc />
     public void RegisterThreadedSingleton<TContract, TInstance>(string? mapping = null) where TInstance : TContract where TContract : IService
     {
-        if (typeof(TInstance).IsAssignableTo(typeof(ITickableService)))
-            throw new NotImplementedException("Anything implementing ITickableService does not currently support threaded lifetimes.");
+        // TODO: how should we handle this now that the Container is unaware of ITickableService?
+        // if (typeof(TInstance).IsAssignableTo(typeof(ITickableService)))
+        //     throw new NotImplementedException("Anything implementing ITickableService does not currently support threaded lifetimes.");
         
         _container.RegisterType<TContract, TInstance>(mapping, TypeLifetime.PerThread);
     }

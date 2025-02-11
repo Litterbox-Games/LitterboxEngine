@@ -5,5 +5,5 @@ namespace Client.Resource;
 
 public interface IGraphicsResource
 {
-    public IResource UploadToGraphicsDevice(IGraphicsDeviceService graphicsDeviceService);
+    public IResource UploadToGraphicsDevice(IGraphicsDevice graphicsDevice);
 }

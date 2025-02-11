@@ -191,8 +191,6 @@ public class ServerWorldService : IWorldService
     {
         return Chunks.FirstOrDefault(x => x.Position == position);
     }
-    
-    public void Draw() { }
 }
 
 public sealed class NetworkedChunk

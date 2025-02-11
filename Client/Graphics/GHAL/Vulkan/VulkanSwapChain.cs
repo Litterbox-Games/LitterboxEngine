@@ -18,7 +18,7 @@ public class VulkanSwapChain: IDisposable
     private readonly VulkanQueue[]? _concurrentQueues;
     private readonly uint[]? _concurrentFamilyIndices;
     private readonly VulkanRenderPass _renderPass;
-    private readonly WindowService _windowService;
+    private readonly Window _window;
     
     private KhrSwapchain _khrSwapChain = null!;
     private VulkanImageView[] _imageViews = null!;
@@ -33,7 +33,7 @@ public class VulkanSwapChain: IDisposable
 
     private uint _currentFrame;
 
-    public VulkanSwapChain(Vk vk, VulkanLogicalDevice logicalDevice, VulkanSurface surface, VulkanRenderPass renderPass, VulkanCommandPool commandPool, WindowService windowService, int requestedImages, bool vsyncEnabled,
+    public VulkanSwapChain(Vk vk, VulkanLogicalDevice logicalDevice, VulkanSurface surface, VulkanRenderPass renderPass, VulkanCommandPool commandPool, Window window, int requestedImages, bool vsyncEnabled,
         VulkanQueue presentQueue, VulkanQueue[]? concurrentQueues)
     {
         _vk = vk;
@@ -41,7 +41,7 @@ public class VulkanSwapChain: IDisposable
         _surface = surface;
         _commandPool = commandPool;
         _vsyncEnabled = vsyncEnabled;
-        _windowService = windowService;
+        _window = window;
         _renderPass = renderPass;
         _concurrentQueues = concurrentQueues;
         
@@ -131,7 +131,7 @@ public class VulkanSwapChain: IDisposable
         _surface.KhrSurface.GetPhysicalDeviceSurfaceCapabilities(physicalDevice.VkPhysicalDevice, _surface.VkSurface,
             out var surfaceCapabilities);
 
-        Extent = CalculateSwapChainExtent(_windowService, surfaceCapabilities);
+        Extent = CalculateSwapChainExtent(_window, surfaceCapabilities);
         
         var swapChainCreateInfo = new SwapchainCreateInfoKHR
         {
@@ -187,15 +187,15 @@ public class VulkanSwapChain: IDisposable
         return result;
     }
 
-    private static Extent2D CalculateSwapChainExtent(WindowService windowService, SurfaceCapabilitiesKHR surfaceCapabilities)
+    private static Extent2D CalculateSwapChainExtent(Window window, SurfaceCapabilitiesKHR surfaceCapabilities)
     {
         if (surfaceCapabilities.CurrentExtent.Width != uint.MaxValue) return surfaceCapabilities.CurrentExtent;
         
         // Surface size undefined. Set to the window size if within bounds
-        var width = Math.Min(windowService.Width, (int)surfaceCapabilities.MaxImageExtent.Width);
+        var width = Math.Min(window.Width, (int)surfaceCapabilities.MaxImageExtent.Width);
         width = Math.Max(width, (int)surfaceCapabilities.MinImageExtent.Width);
 
-        var height = Math.Min(windowService.Height, (int)surfaceCapabilities.MaxImageExtent.Height);
+        var height = Math.Min(window.Height, (int)surfaceCapabilities.MaxImageExtent.Height);
         height = Math.Max(height, (int)surfaceCapabilities.MinImageExtent.Height);
             
         

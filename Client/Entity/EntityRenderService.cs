@@ -10,26 +10,21 @@ using Common.World;
 
 namespace Client.Entity;
 
-public class EntityRenderService : ITickableService
+public class EntityRenderService : IService, IDrawable
 {
     private readonly IEntityService _entityService;
-    private readonly RendererService _rendererService;
     private readonly INetworkService _networkService;
     private readonly IResourceService _resourceService;
     
     private GameEntity? _playerEntity;
-    // private readonly Texture _texture;
     private readonly Rectangle _textureSource = new(32, 112, 20, 16);
     
     
-    public EntityRenderService(IEntityService entityService, RendererService rendererService, INetworkService networkService, IResourceService resourceService)
+    public EntityRenderService(IEntityService entityService, INetworkService networkService, IResourceService resourceService)
     {
         _entityService = entityService;
-        _rendererService = rendererService;
         _networkService = networkService;
         _resourceService = resourceService;
-        
-        // _texture = resourceService.Get<Texture>("Items.png");
         
         entityService.EventOnEntitySpawn += OnEntitySpawn;
         entityService.EventOnEntityDespawn += OnEntityDespawn;
@@ -50,10 +45,8 @@ public class EntityRenderService : ITickableService
         if (entity.EntityId == _networkService.PlayerId)
             _playerEntity = null;
     }
-    
-    public void Update(float deltaTime) { }
 
-    public void Draw()
+    public void Draw(Renderer renderer)
     {
         if (_playerEntity == null) return;
 
@@ -77,7 +70,7 @@ public class EntityRenderService : ITickableService
             //     _rendererService.DrawTexture(_texture, _textureSource, new RectangleF(secondMovement.Position.X, secondMovement.Position.Y, 1.25f, 1), Color.Red);
             // }
             
-            _rendererService.DrawTexture(texture, _textureSource, new RectangleF(entityX, entityY, 1.25f, 1), Color.White);
+            renderer.DrawTexture(texture, _textureSource, new RectangleF(entityX, entityY, 1.25f, 1), Color.White);
         }
     }
 }

@@ -14,9 +14,9 @@ public class Aseprite : IResource, IGraphicsResource, IReloadable, IDisposable
         Texture = texture;
     }
     
-    public IResource UploadToGraphicsDevice(IGraphicsDeviceService graphicsDeviceService)
+    public IResource UploadToGraphicsDevice(IGraphicsDevice graphicsDevice)
     {
-        var texture = graphicsDeviceService.CreateTexture(Texture.Width, Texture.Height, Texture.Data);
+        var texture = graphicsDevice.CreateTexture(Texture.Width, Texture.Height, Texture.Data);
         return new Aseprite(texture);
     }
 

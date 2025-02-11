@@ -14,12 +14,12 @@ public abstract class AbstractNetworkService : INetworkService
     protected readonly Dictionary<Type, List<OnMessage>> MessageHandles = new();
     protected abstract NetPeer? NetPeer { get; }
 
-    protected IContainer Container;
-    protected ILoggingService Logger;
+    protected readonly IContainer Container;
+    protected readonly ILoggingService Logger;
 
-    public ulong PlayerId { get; protected set; } = 0;
-    
-    public AbstractNetworkService(IContainer container, ILoggingService logger)
+    public ulong PlayerId { get; protected set; }
+
+    protected AbstractNetworkService(IContainer container, ILoggingService logger)
     {
         Container = container;
         Logger = logger;
@@ -38,7 +38,6 @@ public abstract class AbstractNetworkService : INetworkService
     }
 
     public virtual void Update(float deltaTime) { }
-    public virtual void Draw() { }
 
     public void SendMessage(NetConnection connection, INetworkMessage message)
     {
@@ -93,7 +92,7 @@ public abstract class AbstractNetworkService : INetworkService
         if (MessageHandles.ContainsKey(typeof(T)))
             MessageHandles[typeof(T)].Add(handle);
         else
-            MessageHandles[typeof(T)] = new List<OnMessage> {handle};
+            MessageHandles[typeof(T)] = [handle];
     }
 
     private static int GetDeterministicHashCode(string str)

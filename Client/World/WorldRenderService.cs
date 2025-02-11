@@ -14,21 +14,17 @@ namespace Client.World;
 
 
 [TickablePriority(EPriority.High)]
-public class WorldRenderService : ITickableService
+public class WorldRenderService : IService, IDrawable
 {
- 
-    private readonly RendererService _rendererService;
     private readonly IWorldService _worldService;
     private readonly INetworkService _networkService;
     private readonly IResourceService _resourceService;
     
     private GameEntity? _playerEntity;
-
     
-    public WorldRenderService(INetworkService networkService, IResourceService resourceService, RendererService rendererService, IWorldService worldService, IEntityService entityService)
+    public WorldRenderService(INetworkService networkService, IResourceService resourceService, IWorldService worldService, IEntityService entityService)
     {
         _networkService = networkService;
-        _rendererService = rendererService;
         _worldService = worldService;
         _resourceService = resourceService;
 
@@ -50,13 +46,8 @@ public class WorldRenderService : ITickableService
         if (entity.EntityId == _networkService.PlayerId)
             _playerEntity = null;
     }
-    
-    public void Update(float deltaTime)
-    {
-        
-    }
 
-    public void Draw()
+    public void Draw(Renderer renderer)
     {
         if (_playerEntity == null) return;
 
@@ -114,7 +105,7 @@ public class WorldRenderService : ITickableService
                         _ => texture.GetSourceRectangle(0, 4)
                     };
                     
-                    _rendererService.DrawTexture(texture, sourceRectangle, new RectangleF(chunkX * 16 + x, chunkY * 16 + y, 1,
+                    renderer.DrawTexture(texture, sourceRectangle, new RectangleF(chunkX * 16 + x, chunkY * 16 + y, 1,
                         1), Color.White);
                     
                     // Object Layer
@@ -122,7 +113,7 @@ public class WorldRenderService : ITickableService
 
                     if (objectId != 0)
                     {
-                        _rendererService.DrawTexture(texture, texture.GetSourceRectangle(0, 4), new RectangleF(chunkX * 16 + x, chunkY * 16 + y, 1,
+                        renderer.DrawTexture(texture, texture.GetSourceRectangle(0, 4), new RectangleF(chunkX * 16 + x, chunkY * 16 + y, 1,
                             1), Color.White);
                     }
                 }

@@ -31,14 +31,9 @@ public class ClientServiceRegistrar : IServiceRegistrar
     {
         container.RegisterSingleton<ILoggingService, ConsoleLoggingService>("console");
         
-        
-        container.RegisterSingleton<WindowService, WindowService>();
-        container.RegisterSingleton<IGraphicsDeviceService, VulkanGraphicsDeviceService>();
-        container.RegisterSingleton<ImGuiService, ImGuiService>();
         container.RegisterSingleton<IResourceService, ClientResourceService>();
-        container.RegisterSingleton<RendererService, RendererService>();
         container.RegisterSingleton<InputService, InputService>();
-        // 
+        
         container.RegisterSingleton<CameraService, CameraService>();
         container.RegisterSingleton<PlayerControlService, PlayerControlService>();
 

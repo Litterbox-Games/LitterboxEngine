@@ -6,7 +6,7 @@ using Silk.NET.Windowing;
 
 namespace Client.Graphics.Input;
 
-public class WindowService : IService, IDisposable
+public class Window: IDisposable
 {
     public string Title { get; }
     public int Width { get; private set; }
@@ -16,10 +16,10 @@ public class WindowService : IService, IDisposable
     public event Action<int, int>? OnResize;
     public event Action<float>? OnUpdate;
 
-    public readonly IWindow Window;
+    public readonly IWindow InternalWindow;
     public readonly IInputContext Input;
     
-    public WindowService()
+    public Window()
     {
         Title = "Litterbox Engine";
         Width = 1920;
@@ -34,13 +34,13 @@ public class WindowService : IService, IDisposable
             UpdatesPerSecond = 60
         };
         
-        Window = Silk.NET.Windowing.Window.Create(options); 
-        Window.Initialize();
+        InternalWindow = Silk.NET.Windowing.Window.Create(options); 
+        InternalWindow.Initialize();
         
-        Window.FramebufferResize += Resize;
-        Window.Update += deltaTime => OnUpdate?.Invoke((float)deltaTime);
+        InternalWindow.FramebufferResize += Resize;
+        InternalWindow.Update += deltaTime => OnUpdate?.Invoke((float)deltaTime);
 
-        Input = Window.CreateInput();
+        Input = InternalWindow.CreateInput();
     }
 
     private void Resize(Vector2D<int> size)
@@ -52,18 +52,18 @@ public class WindowService : IService, IDisposable
 
     public void SetShouldClose()
     {
-        Window.Close();
+        InternalWindow.Close();
     }
 
     public void Run()
     {
-        Window.Run();
+        InternalWindow.Run();
     }
 
     public void Dispose()
     {
         Input.Dispose();
-        Window.Dispose();
+        InternalWindow.Dispose();
         GC.SuppressFinalize(this);
     }
 }

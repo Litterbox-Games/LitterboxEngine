@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Client.Graphics;
 using Client.Network;
 using Common.Entity;
 using Common.Entity.Messages;
@@ -8,7 +9,7 @@ using ImGuiNET;
 
 namespace Client.Entity;
 
-public class ClientEntityService : AbstractEntityService
+public class ClientEntityService : AbstractEntityService, IDrawable
 {
     public override List<GameEntity> Entities { get; }
 
@@ -76,7 +77,7 @@ public class ClientEntityService : AbstractEntityService
         
     }
 
-    public override void Draw()
+    public void Draw(Renderer renderer)
     {
         ImGui.Begin("EntityService");
 

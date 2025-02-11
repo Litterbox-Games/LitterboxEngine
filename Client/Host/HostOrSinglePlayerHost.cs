@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Client.Graphics;
 using Common.DI;
 using Common.DI.Attributes;
 using Common.Entity;
@@ -14,14 +15,15 @@ namespace Client.Host;
 public class HostOrSinglePlayerHost : IClientHost
 {
     public Container Container { get; }
-    private readonly List<(EPriority, ITickableService)> _tickables = [];
+    private readonly List<(EPriority, IUpdatable)> _updatables = [];
+    private readonly List<IDrawable> _drawables = [];
     
     public HostOrSinglePlayerHost(bool singlePlayer)
     {
         Container = new Container(singlePlayer ? EGameMode.SinglePlayer : EGameMode.Host);
         Container.RegisterServices();
         
-        Container.FilterRegistries<ITickableService>((tickable, type) =>
+        Container.FilterRegistries<IUpdatable>((updatable, type) =>
         {
             var tickableAttribute =
                 type.CustomAttributes.FirstOrDefault(y => y.AttributeType == typeof(TickablePriorityAttribute));
@@ -33,19 +35,24 @@ public class HostOrSinglePlayerHost : IClientHost
 
             var inserted = false;
 
-            for (var i = 0; i < _tickables.Count && !inserted; i++)
+            for (var i = 0; i < _updatables.Count && !inserted; i++)
             {
-                if (priority <= _tickables[i].Item1)
+                if (priority <= _updatables[i].Item1)
                     continue;
 
-                _tickables.Insert(i, (priority, tickable));
+                _updatables.Insert(i, (priority, updatable));
                 inserted = true;
             }
 
             if (!inserted)
             {
-                _tickables.Add((priority, tickable));
+                _updatables.Add((priority, updatable));
             }
+        });
+        
+        Container.FilterRegistries<IDrawable>((drawable, _) =>
+        {
+            _drawables.Add(drawable);
         });
         
         // Warm Service Singletons
@@ -65,12 +72,12 @@ public class HostOrSinglePlayerHost : IClientHost
 
     public void Update(float deltaTime)
     {
-        _tickables.ForEach(x => x.Item2.Update(deltaTime));
+        _updatables.ForEach(x => x.Item2.Update(deltaTime));
     }
     
-    public void Draw()
+    public void Draw(Renderer renderer)
     {
-        _tickables.ForEach(x => x.Item2.Draw());
+        _drawables.ForEach(drawable => drawable.Draw(renderer));
     }
     
     public void Dispose()

@@ -7,19 +7,19 @@ using MoreLinq;
 
 namespace Client.Resource;
 
-public class ClientResourceService: IResourceService, ITickableService, IDisposable
+public class ClientResourceService: IResourceService, IUpdatable, IDisposable
 {
     private readonly Dictionary<string, IResource> _resources = new ();
     private readonly ILoggingService _logger;
-    private readonly IGraphicsDeviceService _graphicsDeviceService;
+    
     private readonly FileSystemWatcher _watcher;
+    private readonly HashSet<string> _resourcesToReload = [];
 
-    private readonly HashSet<string> _resourcesToReload = new();
-
-    public ClientResourceService(ILoggingService logger, IGraphicsDeviceService graphicsDeviceService)
+    private IGraphicsDevice? _graphicsDevice;
+    
+    public ClientResourceService(ILoggingService logger)
     {
         _logger = logger;
-        _graphicsDeviceService = graphicsDeviceService;
 
         _watcher = new FileSystemWatcher
         {
@@ -31,6 +31,11 @@ public class ClientResourceService: IResourceService, ITickableService, IDisposa
         };
 
         _watcher.Changed += OnFileChanged;
+    }
+
+    public void SetGraphicsDevice(IGraphicsDevice graphicsDevice)
+    {
+        _graphicsDevice = graphicsDevice;
     }
     
     private void OnFileChanged(object sender, FileSystemEventArgs e)
@@ -66,8 +71,8 @@ public class ClientResourceService: IResourceService, ITickableService, IDisposa
 
         var resource = (T)T.LoadFromFile(path);
 
-        if (resource is IGraphicsResource graphicsResource)
-            resource = (T)graphicsResource.UploadToGraphicsDevice(_graphicsDeviceService);
+        if (resource is IGraphicsResource graphicsResource && _graphicsDevice != null)
+            resource = (T)graphicsResource.UploadToGraphicsDevice(_graphicsDevice);
 
         _resources[path] = resource;
         return resource;
@@ -91,14 +96,17 @@ public class ClientResourceService: IResourceService, ITickableService, IDisposa
 
             var resource = reloadableResource.Reload(path);
             
-            if (oldResource is IDisposable disposableResource) {
-                _graphicsDeviceService.WaitIdle();
-                disposableResource.Dispose();
+            if (resource is IGraphicsResource graphicsResource && _graphicsDevice != null) {
+                _graphicsDevice.WaitIdle();
+                
+                if (oldResource is IDisposable disposableResource) {
+                    disposableResource.Dispose();
+                }
+                
+                resource = graphicsResource.UploadToGraphicsDevice(_graphicsDevice);
             }
-            
-            if (resource is IGraphicsResource graphicsResource) {
-                _graphicsDeviceService.WaitIdle();
-                resource = graphicsResource.UploadToGraphicsDevice(_graphicsDeviceService);
+            else if (oldResource is IDisposable disposableResource) {
+                disposableResource.Dispose();
             }
             
             _resources[path] = resource;
@@ -121,6 +129,4 @@ public class ClientResourceService: IResourceService, ITickableService, IDisposa
         _resources.Clear();
         GC.SuppressFinalize(this);
     }
-
-    public void Draw() { }
 }
