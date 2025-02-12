@@ -5,7 +5,7 @@
 /// </summary>
 /// <remarks>The higher priority values get ticked first.</remarks>>
 [AttributeUsage(AttributeTargets.Class)]
-public class TickablePriorityAttribute : Attribute
+public class UpdatablePriorityAttribute : Attribute
 {
     /// <summary>
     ///     The tickable priority.
@@ -16,7 +16,7 @@ public class TickablePriorityAttribute : Attribute
     ///     Defines the priority to use for ticking.
     /// </summary>
     /// <param name="priority"></param>
-    public TickablePriorityAttribute(EPriority priority = EPriority.Normal)
+    public UpdatablePriorityAttribute(EPriority priority = EPriority.Normal)
     {
         Priority = priority;
     }

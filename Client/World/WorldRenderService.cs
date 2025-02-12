@@ -13,7 +13,7 @@ using ImGuiNET;
 namespace Client.World;
 
 
-[TickablePriority(EPriority.High)]
+[UpdatablePriority(EPriority.High)]
 public class WorldRenderService : IService, IDrawable
 {
     private readonly IWorldService _worldService;

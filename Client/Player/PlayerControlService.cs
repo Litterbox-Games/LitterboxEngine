@@ -13,7 +13,7 @@ using Silk.NET.Input;
 
 namespace Client.Player;
 
-[TickablePriority(EPriority.High)]
+[UpdatablePriority(EPriority.High)]
 public class PlayerControlService : IService, IUpdatable, IDrawable
 {
     private readonly ClientNetworkService _networkService;
