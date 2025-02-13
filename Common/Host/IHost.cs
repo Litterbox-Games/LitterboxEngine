@@ -3,16 +3,13 @@ using Common.DI.Attributes;
 
 namespace Common.Host;
 
-public class BaseHost: IUpdatable, IDisposable
+public interface IHost: IDisposable
 {
-    public readonly Container Container;
-    private readonly List<(EPriority, IUpdatable)> _updatables = [];
-    
-    public BaseHost(EGameMode gameMode)
+    public Container Container { get; }
+    List<(EPriority, IUpdatable)> Updatables { get; }
+
+    public void RegisterUpdatables()
     {
-        Container = new Container(gameMode);
-        Container.RegisterServices();
-        
         Container.FilterRegistries<IUpdatable>((updatable, type) =>
         {
             var tickableAttribute =
@@ -25,30 +22,24 @@ public class BaseHost: IUpdatable, IDisposable
 
             var inserted = false;
 
-            for (var i = 0; i < _updatables.Count && !inserted; i++)
+            for (var i = 0; i < Updatables.Count && !inserted; i++)
             {
-                if (priority <= _updatables[i].Item1)
+                if (priority <= Updatables[i].Item1)
                     continue;
 
-                _updatables.Insert(i, (priority, updatable));
+                Updatables.Insert(i, (priority, updatable));
                 inserted = true;
             }
 
             if (!inserted)
             {
-                _updatables.Add((priority, updatable));
+                Updatables.Add((priority, updatable));
             }
         });
     }
 
     public void Update(float deltaTime)
     {
-        _updatables.ForEach(x => x.Item2.Update(deltaTime));
-    }
-    
-    public void Dispose()
-    {
-        Container.Dispose();
-        GC.SuppressFinalize(this);
+        Updatables.ForEach(x => x.Item2.Update(deltaTime));
     }
 }

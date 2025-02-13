@@ -1,5 +1,4 @@
 ﻿using Client.Graphics;
-using Client.Network;
 using Common.DI;
 using Common.Host;
 using Common.Player;
@@ -7,33 +6,31 @@ using Common.Player;
 namespace Client.Host;
 
 /// <summary>
-///     The host used to represent the client game state.
+///     The host used for single player or for local hosting.
 /// </summary>
-public class ClientHost : IClientHost
+public class LocalHost : IClientHost, IServerHost
 {
     public Container Container { get; }
     public List<(EPriority, IUpdatable)> Updatables { get; } = [];
     public List<IDrawable> Drawables { get; } = [];
     
-    public ClientHost()
+    public LocalHost(bool singlePlayer)
     {
-        Container = new Container(EGameMode.Client);
+        Container = new Container(singlePlayer ? EGameMode.SinglePlayer : EGameMode.Host);
         Container.RegisterServices();
         (this as IHost).RegisterUpdatables();
         (this as IClientHost).RegisterDrawables();
         
         // Warm Service Singletons
         Container.Resolve<IPlayerService>();
-        
-        var networkService = Container.Resolve<ClientNetworkService>();
-        networkService.Connect("127.0.0.1", 7777);
+
+        (this as IServerHost).StartServer(7777);
     }
 
     public void Dispose()
-    {
-        Container.Dispose();
+    { 
+        Container.Dispose(); 
         GC.SuppressFinalize(this);
     }
 
-    
 }

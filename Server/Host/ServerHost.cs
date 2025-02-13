@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Common.DI;
 using Common.Entity;
 using Common.Host;
 using Common.Network;
@@ -8,23 +9,22 @@ namespace Server.Host;
 /// <summary>
 ///     The host for dedicated servers without a local client.
 /// </summary>
-public class ServerHost : BaseHost
+public class ServerHost : IServerHost
 {
-    public ServerHost(): base(EGameMode.Dedicated)
+    public List<(EPriority, IUpdatable)> Updatables { get; } = [];
+    public Container Container { get; }
+    
+    public ServerHost()
     {
-        var networking = Container.Resolve<ServerNetworkService>();
+        Container = new Container(EGameMode.Dedicated);
+        Container.RegisterServices();
+        (this as IHost).RegisterUpdatables();
+        (this as IServerHost).StartServer(7777);
+    }
 
-        const ushort port = 7777;
-        
-        networking.Listen(port);
-
-        var mobController = Container.Resolve<MobControllerService>();
-        for (var x = 0; x < 30; x++)
-        {
-            for (var y = 0; y < 30; y++)
-            {
-                mobController.SpawnMobEntity(new Vector2(x * 2, y * 2));
-            }    
-        }
+    public void Dispose()
+    {
+        Container.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
