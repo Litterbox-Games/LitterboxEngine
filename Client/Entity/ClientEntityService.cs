@@ -21,7 +21,7 @@ public class ClientEntityService : IEntityService, IDrawable
 
     public ClientEntityService(ClientNetworkService network)
     {
-        Entities = new List<GameEntity>();
+        Entities = [];
         
         _network = network;
 

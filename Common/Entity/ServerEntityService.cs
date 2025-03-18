@@ -18,7 +18,7 @@ public class ServerEntityService : IEntityService
     
     public ServerEntityService(ServerNetworkService network)
     {
-        Entities = new List<GameEntity>();
+        Entities = [];
         _network = network;
         
         _network.EventOnPlayerConnect += OnPlayerConnect;
