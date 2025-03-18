@@ -6,13 +6,13 @@ using Common.Player;
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 namespace Common.Entity;
 
-public class ServerEntityService : AbstractEntityService
+public class ServerEntityService : IEntityService
 {
-    public override List<GameEntity> Entities { get; }
+    public List<GameEntity> Entities { get; }
     
-    public override event Action<GameEntity>? EventOnEntitySpawn;
-    public override event Action<GameEntity>? EventOnEntityDespawn;
-    public override event Action<GameEntity>? EventOnEntityMove;
+    public event Action<GameEntity>? EventOnEntitySpawn;
+    public event Action<GameEntity>? EventOnEntityDespawn;
+    public event Action<GameEntity>? EventOnEntityMove;
 
     private readonly ServerNetworkService _network;
     
@@ -29,7 +29,7 @@ public class ServerEntityService : AbstractEntityService
     }
 
     /// <inheritdoc />
-    public override void Update(float deltaTime)
+    public void Update(float deltaTime)
     {
         var moveMessage = new EntityMoveMessage();
         var now = DateTime.Now;

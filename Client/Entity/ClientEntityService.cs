@@ -9,13 +9,13 @@ using ImGuiNET;
 
 namespace Client.Entity;
 
-public class ClientEntityService : AbstractEntityService, IDrawable
+public class ClientEntityService : IEntityService, IDrawable
 {
-    public override List<GameEntity> Entities { get; }
+    public List<GameEntity> Entities { get; }
 
-    public override event Action<GameEntity>? EventOnEntitySpawn;
-    public override event Action<GameEntity>? EventOnEntityDespawn;
-    public override event Action<GameEntity>? EventOnEntityMove;
+    public event Action<GameEntity>? EventOnEntitySpawn;
+    public event Action<GameEntity>? EventOnEntityDespawn;
+    public event Action<GameEntity>? EventOnEntityMove;
 
     private readonly ClientNetworkService _network;
 
@@ -30,7 +30,7 @@ public class ClientEntityService : AbstractEntityService, IDrawable
         _network.RegisterMessageHandle<EntityMoveMessage>(OnEntityMoveMessage);
     }
 
-    public override void Update(float deltaTime)
+    public void Update(float deltaTime)
     {
         var moveMessage = new EntityMoveMessage();
         var now = DateTime.Now;
