@@ -8,7 +8,7 @@ public sealed class PlayerConnectMessage : INetworkMessage
 {
     public NetDeliveryMethod NetworkChannel => NetDeliveryMethod.ReliableUnordered;
 
-    public NetworkPlayer NetworkPlayer;
+    public NetworkPlayer? NetworkPlayer;
 
     public void Serialize(NetOutgoingMessage writer)
     {

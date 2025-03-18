@@ -183,7 +183,9 @@ public class ServerNetworkService : AbstractNetworkService
         {
             Logger.Error("Encountered an error during a connection request!");
             Logger.Error(e.Message);
-            Logger.Error(e.StackTrace);
+            if (e.StackTrace != null)
+                Logger.Error(e.StackTrace);
+            
 
             return false;
         }

@@ -36,7 +36,7 @@ namespace Common.World.Generation
 
 		private CellularDistanceFunction m_cellularDistanceFunction = CellularDistanceFunction.Euclidean;
 		private CellularReturnType m_cellularReturnType = CellularReturnType.CellValue;
-		private FastNoise m_cellularNoiseLookup = null;
+		private FastNoise m_cellularNoiseLookup = null!;
 		private int m_cellularDistanceIndex0 = 0;
 		private int m_cellularDistanceIndex1 = 1;
 		private float m_cellularJitter = 0.45f;
