@@ -30,7 +30,6 @@ public class Window: IDisposable
             Title = Title,
             Size = new Vector2D<int>(Width, Height),
             IsEventDriven = false,
-            FramesPerSecond    = 144,
             UpdatesPerSecond = 60
         };
         
@@ -62,7 +61,6 @@ public class Window: IDisposable
 
     public void Dispose()
     {
-        Input.Dispose();
         InternalWindow.Dispose();
         GC.SuppressFinalize(this);
     }

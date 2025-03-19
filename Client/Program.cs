@@ -4,6 +4,7 @@ using Client.Graphics.Input;
 using Client.Graphics.Input.ImGui;
 using Client.Host;
 using Client.Resource;
+using Silk.NET.Input;
 
 namespace Client;
 
@@ -50,6 +51,8 @@ internal static class Program
             renderer.EndDrawing();
             imGui.Draw();
             renderer.EndFrame();   
+            
+            if (inputService.IsKeyDown(Key.Escape)) window.SetShouldClose();
             // ReSharper enable AccessToDisposedClosure
         };
         
@@ -57,5 +60,6 @@ internal static class Program
         
         // Clean Up
         graphicsDevice.WaitIdle();
+        resourceService.Dispose();
     }
 }
