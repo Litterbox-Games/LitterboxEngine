@@ -6,6 +6,7 @@ using Common.DI.Attributes;
 using Common.Entity;
 using Common.Mathematics;
 using Common.Network;
+using Common.Player;
 using Common.Resource;
 using Common.World;
 using ImGuiNET;
@@ -17,14 +18,14 @@ namespace Client.World;
 public class WorldRenderService : IService, IDrawable
 {
     private readonly IWorldService _worldService;
-    private readonly INetworkService _networkService;
+    private readonly IPlayerService _playerService;
     private readonly IResourceService _resourceService;
     
     private GameEntity? _playerEntity;
     
-    public WorldRenderService(INetworkService networkService, IResourceService resourceService, IWorldService worldService, IEntityService entityService)
+    public WorldRenderService(IPlayerService playerService, IResourceService resourceService, IWorldService worldService, IEntityService entityService)
     {
-        _networkService = networkService;
+        _playerService = playerService;
         _worldService = worldService;
         _resourceService = resourceService;
 
@@ -34,7 +35,7 @@ public class WorldRenderService : IService, IDrawable
     
     private void OnEntitySpawn(GameEntity entity)
     {
-        if (entity.EntityId == _networkService.PlayerId)
+        if (entity.EntityId == _playerService.PlayerId)
         {
             _playerEntity = entity;
         }
@@ -43,7 +44,7 @@ public class WorldRenderService : IService, IDrawable
 
     private void OnEntityDespawn(GameEntity entity)
     {
-        if (entity.EntityId == _networkService.PlayerId)
+        if (entity.EntityId == _playerService.PlayerId)
             _playerEntity = null;
     }
 
@@ -55,7 +56,7 @@ public class WorldRenderService : IService, IDrawable
 
         if (_worldService is ServerWorldService serverWorld)
         {
-            chunks = serverWorld.NetworkedChunks.Where(x => x.Observers.Any(y => y.PlayerID == _networkService.PlayerId))
+            chunks = serverWorld.NetworkedChunks.Where(x => x.Observers.Any(y => y.PlayerID == _playerService.PlayerId))
                 .Select(x => x.ChunkData);
         }
         else

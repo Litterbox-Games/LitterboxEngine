@@ -14,12 +14,14 @@ public class ServerEntityService : IEntityService
     public event Action<GameEntity>? EventOnEntityDespawn;
     public event Action<GameEntity>? EventOnEntityMove;
 
-    private readonly ServerNetworkService _network;
+    private readonly IServerNetworkService _network;
+    private readonly IPlayerService _playerService;
     
-    public ServerEntityService(ServerNetworkService network)
+    public ServerEntityService(IServerNetworkService network, IPlayerService playerService)
     {
         Entities = [];
         _network = network;
+        _playerService = playerService;
         
         _network.EventOnPlayerConnect += OnPlayerConnect;
         _network.EventOnPlayerDisconnect += OnPlayerDisconnect;
@@ -37,7 +39,7 @@ public class ServerEntityService : IEntityService
 
         foreach (var entity in Entities.Where(x => x.Position != x.LastSentPosition))
         {
-            if ((entity.OwnerId == _network.PlayerId || entity.OwnerId == 0) && 
+            if ((entity.OwnerId == _playerService.PlayerId || entity.OwnerId == 0) && 
                 (now - entity.LastUpdateTime).TotalMilliseconds > 50)
             {
                 moveMessage.Entities.Add(new EntityMovement
@@ -96,13 +98,7 @@ public class ServerEntityService : IEntityService
         }
 
         // Forward this packet to all players
-        foreach (var networkPlayer in _network.Players)
-        {
-            if (networkPlayer != player)
-            {
-                _network.SendToPlayer(castedMessage, networkPlayer);
-            }
-        }
+        _network.SendToAllPlayers(castedMessage, networkPlayer => networkPlayer != player);
     }
 
     public void SpawnEntity(GameEntity entity)
@@ -174,13 +170,7 @@ public class ServerEntityService : IEntityService
             EntityId = player.PlayerID
         };
 
-        foreach (var networkPlayer in _network.Players)
-        {
-            if (networkPlayer != player)
-            {
-                _network.SendToPlayer(entityDespawnMessage, networkPlayer);
-            }
-        }
+        _network.SendToAllPlayers(entityDespawnMessage, networkPlayer => networkPlayer != player);
 
         EventOnEntityDespawn?.Invoke(entity);
     }
@@ -190,7 +180,7 @@ public class ServerEntityService : IEntityService
     {
         if (_network.Players.Any())
         {
-            OnPlayerConnect(_network.Players.First(x => x.PlayerID == _network.PlayerId));
+            OnPlayerConnect(_network.Players.First(x => x.PlayerID == _playerService.PlayerId));
         }
     }
 }

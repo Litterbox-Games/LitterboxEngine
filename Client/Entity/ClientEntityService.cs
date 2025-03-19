@@ -17,13 +17,14 @@ public class ClientEntityService : IEntityService, IDrawable
     public event Action<GameEntity>? EventOnEntityDespawn;
     public event Action<GameEntity>? EventOnEntityMove;
 
-    private readonly ClientNetworkService _network;
+    private readonly IClientNetworkService _network;
+    private readonly IPlayerService _playerService;
 
-    public ClientEntityService(ClientNetworkService network)
+    public ClientEntityService(IClientNetworkService network, IPlayerService playerService)
     {
         Entities = [];
-        
         _network = network;
+        _playerService = playerService;
 
         _network.RegisterMessageHandle<EntitySpawnMessage>(OnEntitySpawnMessage);
         _network.RegisterMessageHandle<EntityDespawnMessage>(OnEntityDespawnMessage);
@@ -38,7 +39,7 @@ public class ClientEntityService : IEntityService, IDrawable
         
         foreach (var entity in Entities.Where(x => x.Position != x.LastSentPosition))
         {
-            if (entity.OwnerId == _network.PlayerId && 
+            if (entity.OwnerId == _playerService.PlayerId && 
                 (now - entity.LastUpdateTime).TotalMilliseconds > 50)
             {
                 moveMessage.Entities.Add(new EntityMovement

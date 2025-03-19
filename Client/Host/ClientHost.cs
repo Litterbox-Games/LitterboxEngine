@@ -11,13 +11,12 @@ namespace Client.Host;
 /// </summary>
 public class ClientHost : IClientHost
 {
-    public Container Container { get; }
+    public IContainer Container { get; } = new Container(EGameMode.Client);
     public List<(EPriority, IUpdatable)> Updatables { get; } = [];
     public List<IDrawable> Drawables { get; } = [];
     
     public ClientHost()
     {
-        Container = new Container(EGameMode.Client);
         Container.RegisterServices();
         (this as IHost).RegisterUpdatables();
         (this as IClientHost).RegisterDrawables();

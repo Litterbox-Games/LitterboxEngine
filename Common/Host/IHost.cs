@@ -5,7 +5,7 @@ namespace Common.Host;
 
 public interface IHost: IDisposable
 {
-    public Container Container { get; }
+    public IContainer Container { get; }
     List<(EPriority, IUpdatable)> Updatables { get; }
 
     public void RegisterUpdatables()

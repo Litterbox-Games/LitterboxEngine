@@ -38,7 +38,7 @@ public class HostServiceRegistrar : IServiceRegistrar
         container.RegisterSingleton<PlayerControlService, PlayerControlService>();
         container.RegisterSingleton<MobControllerService, MobControllerService>();
         
-        container.RegisterSingleton<INetworkService, ServerNetworkService>();
+        container.RegisterSingleton<IServerNetworkService, ServerNetworkService>();
         container.RegisterSingleton<IPlayerService, ServerPlayerService>();
         container.RegisterSingleton<IEntityService, ServerEntityService>();
         container.RegisterSingleton<IWorldGenerator, EarthGenerator>("earth");

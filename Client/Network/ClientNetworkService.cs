@@ -1,24 +1,33 @@
 ﻿using Common.DI;
 using Common.Logging;
 using Common.Network;
+using Common.Player;
 using Lidgren.Network;
 
 namespace Client.Network;
 
-public class ClientNetworkService : AbstractNetworkService
+public class ClientNetworkService : IClientNetworkService
 {
-    private NetClient _client;
-    private NetConnection? _connection;
-    
-    protected override NetPeer NetPeer => _client;
+    public Dictionary<int, Type> Messages { get; } = [];
+    public Dictionary<Type, List<OnMessage>> MessageHandles { get; } = [];
+    public NetPeer NetPeer => _client;
     
     public event Action? EventOnConnect;
     public event Action? EventOnDisconnect;
     
+    private readonly NetClient _client;
+    private readonly IContainer _container;
+    private readonly ILoggingService _logger;
+    
+    private NetConnection? _connection;
     private float _connectionAttemptTime;
     
-    public ClientNetworkService(IContainer container, ILoggingService logger) : base(container, logger)
+    public ClientNetworkService(IContainer container, ILoggingService logger)
     {
+        _container = container;
+        _logger = logger;
+        (this as INetworkService).RegisterMessageTypes(_logger);
+        
         var config = new NetPeerConfiguration("Ages of Automation") { 
             PingInterval = 1f,
             ConnectionTimeout = 5f
@@ -33,10 +42,11 @@ public class ClientNetworkService : AbstractNetworkService
         // Create a random ID and send it in the approval request message
         var msg = _client.CreateMessage();
 
-        PlayerId = (ulong) new Random(DateTime.Now.Millisecond).Next();
-        var playerName = $"Player {PlayerId}";
+        var playerService = _container.Resolve<IPlayerService>();
+        
+        var playerName = $"Player {playerService.PlayerId}";
 
-        msg.Write(PlayerId);
+        msg.Write(playerService.PlayerId);
         msg.Write(playerName);
 
         _connection = _client.Connect(ip, port, msg);
@@ -49,7 +59,7 @@ public class ClientNetworkService : AbstractNetworkService
         Thread.Sleep(100);
     }
 
-    public override void Update(float deltaTime)
+    public void Update(float deltaTime)
     {
         while (_client.ReadMessage() is { } incomingMsg)
         {
@@ -93,37 +103,34 @@ public class ClientNetworkService : AbstractNetworkService
 
     public void SendToServer(INetworkMessage message)
     {
-        SendMessage(_connection!, message);
+        (this as INetworkService).SendMessage(_connection!, message);
     }
-    
-    protected void OnData(NetIncomingMessage message)
+
+    private void OnData(NetIncomingMessage message)
     {
         var messageId = message.ReadInt32();
 
-        if (!Messages.ContainsKey(messageId))
+        if (!Messages.TryGetValue(messageId, out var messageType))
         {
-            Logger.Error($"The server attempted to send an invalid message with the ID ${messageId}.");
+            _logger.Error($"The server attempted to send an invalid message with the ID ${messageId}.");
             return;
         }
 
-        var messageType = Messages[messageId];
-
-        var castedMessage = (INetworkMessage) Activator.CreateInstance(messageType)!;
-
-        castedMessage.Deserialize(message);
-
-        if (!MessageHandles.ContainsKey(messageType))
+        if (!MessageHandles.TryGetValue(messageType, out var handlers))
         {
-            Logger.Error(
+            _logger.Error(
                 $"The server attempted to send an message with the ID ${messageId} that has no valid handles.");
             return;
         }
+        
+        var castedMessage = (INetworkMessage) Activator.CreateInstance(messageType)!;
 
-        MessageHandles[messageType].ForEach(x => x.Invoke(castedMessage, null));
+        castedMessage.Deserialize(message);
+        handlers.ForEach(x => x.Invoke(castedMessage, null));
     }
     
     private void OnStatusChange(NetConnectionStatus newStatus, string reason)
     {
-        Logger.Information($"Client status changed to {newStatus} for the reason: {reason}");
+        _logger.Information($"Client status changed to {newStatus} for the reason: {reason}");
     }
 }

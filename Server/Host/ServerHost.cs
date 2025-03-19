@@ -12,7 +12,7 @@ namespace Server.Host;
 public class ServerHost : IServerHost
 {
     public List<(EPriority, IUpdatable)> Updatables { get; } = [];
-    public Container Container { get; }
+    public IContainer Container { get; }
     
     public ServerHost()
     {

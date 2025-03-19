@@ -37,7 +37,7 @@ public class ClientServiceRegistrar : IServiceRegistrar
         container.RegisterSingleton<CameraService, CameraService>();
         container.RegisterSingleton<PlayerControlService, PlayerControlService>();
 
-        container.RegisterSingleton<INetworkService, ClientNetworkService>();
+        container.RegisterSingleton<IClientNetworkService, ClientNetworkService>();
         container.RegisterSingleton<IPlayerService, ClientPlayerService>();
         container.RegisterSingleton<IEntityService, ClientEntityService>();
         container.RegisterSingleton<IWorldService, ClientWorldService>();

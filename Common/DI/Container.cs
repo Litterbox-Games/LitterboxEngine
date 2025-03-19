@@ -6,23 +6,10 @@ using Unity;
 
 namespace Common.DI;
 
-public sealed class Container(EGameMode gameMode) : IContainer
+public sealed class Container(EGameMode gameMode): IContainer
 {
     private readonly UnityContainer _container = new();
-    
     public EGameMode GameMode { get; } = gameMode;
-
-    public void FilterRegistries<T>(Action<T, Type> action)
-    {
-        _container.Registrations
-            .Where(x => x.MappedToType.IsAssignableTo(typeof(T)))
-            .ForEach(registration =>
-            {
-                var service = (T)_container.Resolve(registration.MappedToType);
-                action(service, registration.MappedToType);
-            });
-    }
-    
     
     public void RegisterServices()
     {
@@ -80,6 +67,17 @@ public sealed class Container(EGameMode gameMode) : IContainer
             var registrar = (IServiceRegistrar)Activator.CreateInstance(x.Item2)!;
             registrar.RegisterServices(this);
         });
+    }
+    
+    public void FilterRegistries<T>(Action<T, Type> action)
+    {
+        _container.Registrations
+            .Where(x => x.MappedToType.IsAssignableTo(typeof(T)))
+            .ForEach(registration =>
+            {
+                var service = (T)_container.Resolve(registration.MappedToType);
+                action(service, registration.MappedToType);
+            });
     }
     
     /// <inheritdoc />

@@ -5,6 +5,7 @@ using Common.DI;
 using Common.Entity;
 using Common.Mathematics;
 using Common.Network;
+using Common.Player;
 using Common.Resource;
 using Common.World;
 
@@ -13,17 +14,17 @@ namespace Client.Entity;
 public class EntityRenderService : IService, IDrawable
 {
     private readonly IEntityService _entityService;
-    private readonly INetworkService _networkService;
+    private readonly IPlayerService _playerService;
     private readonly IResourceService _resourceService;
     
     private GameEntity? _playerEntity;
     private readonly Rectangle _textureSource = new(32, 112, 20, 16);
     
     
-    public EntityRenderService(IEntityService entityService, INetworkService networkService, IResourceService resourceService)
+    public EntityRenderService(IEntityService entityService, IPlayerService playerService, IResourceService resourceService)
     {
         _entityService = entityService;
-        _networkService = networkService;
+        _playerService = playerService;
         _resourceService = resourceService;
         
         entityService.EventOnEntitySpawn += OnEntitySpawn;
@@ -33,7 +34,7 @@ public class EntityRenderService : IService, IDrawable
     
     private void OnEntitySpawn(GameEntity entity)
     {
-        if (entity.EntityId == _networkService.PlayerId)
+        if (entity.EntityId == _playerService.PlayerId)
         {
             _playerEntity = entity;
         }
@@ -42,7 +43,7 @@ public class EntityRenderService : IService, IDrawable
 
     private void OnEntityDespawn(GameEntity entity)
     {
-        if (entity.EntityId == _networkService.PlayerId)
+        if (entity.EntityId == _playerService.PlayerId)
             _playerEntity = null;
     }
 

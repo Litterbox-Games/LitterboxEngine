@@ -8,16 +8,18 @@ namespace Common.Player;
 
 public sealed class ServerPlayerService : IPlayerService
 {
-    public IEnumerable<Common.Player.NetworkPlayer> Players => _network.Players;
+    public ulong PlayerId { get; }
+    public IEnumerable<NetworkPlayer> Players => _network.Players;
 
-    private ServerNetworkService _network;
-
+    private readonly IServerNetworkService _network;
     private readonly IContainer _container;
 
-    public ServerPlayerService(IContainer container, INetworkService networkService)
+    public ServerPlayerService(IContainer container, IServerNetworkService networkService)
     {
+        PlayerId = (ulong) new Random(DateTime.Now.Millisecond).Next();
+        
         _container = container;
-        _network = (ServerNetworkService) networkService;
+        _network = networkService;
         
         _network.EventOnPlayerConnect += OnPlayerConnect;
         _network.EventOnPlayerDisconnect += OnPlayerDisconnect;
@@ -46,7 +48,7 @@ public sealed class ServerPlayerService : IPlayerService
 
         foreach (var p in Players)
         {
-            if (p.PlayerID != player.PlayerID && p.PlayerID != _network.PlayerId)
+            if (p.PlayerID != player.PlayerID && p.PlayerID != PlayerId)
             {
                 _network.SendToPlayer(connectMessage, (ServerPlayer) p);
             }

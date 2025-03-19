@@ -6,6 +6,7 @@ using Common.DI;
 using Common.DI.Attributes;
 using Common.Entity;
 using Common.Mathematics;
+using Common.Player;
 using Common.World;
 using Common.World.Messages;
 using ImGuiNET;
@@ -21,19 +22,22 @@ public class PlayerControlService : IService, IUpdatable, IDrawable
     private readonly InputService _inputService;
     private readonly CameraService _cameraService;
     private readonly IEntityService _entityService;
+    private readonly IPlayerService _playerService;
+    
     
     private GameEntity? _playerEntity;
     private Vector2i _chunkPosition;
 
     private Queue<float> _fpsRecordings = new();
     
-    public PlayerControlService(ClientNetworkService networkService, IEntityService entityService, IWorldService worldService, InputService inputService, CameraService cameraService)
+    public PlayerControlService(ClientNetworkService networkService, IEntityService entityService, IWorldService worldService, InputService inputService, CameraService cameraService, IPlayerService playerService)
     {
         _networkService = networkService;
         _worldService = worldService;
         _inputService = inputService;
         _cameraService = cameraService;
         _entityService = entityService;
+        _playerService = playerService;
 
         _entityService.EventOnEntitySpawn += OnEntitySpawn;
         _entityService.EventOnEntityDespawn += OnEntityDespawn;
@@ -119,7 +123,7 @@ public class PlayerControlService : IService, IUpdatable, IDrawable
     
     private void OnEntitySpawn(GameEntity entity)
     {
-        if (entity.EntityId == _networkService.PlayerId)
+        if (entity.EntityId == _playerService.PlayerId)
         {
             _playerEntity = entity;
             UpdateChunks(entity.Position);
@@ -129,36 +133,36 @@ public class PlayerControlService : IService, IUpdatable, IDrawable
 
     private void OnEntityDespawn(GameEntity entity)
     {
-        if (entity.EntityId == _networkService.PlayerId)
+        if (entity.EntityId == _playerService.PlayerId)
             _playerEntity = null;
     }
 
     private void OnMouseClick(MouseButton button, Vector2 position)
     {
-        if (button == MouseButton.Left)
-        {
-            var worldPosition = _cameraService.ScreenToWorldPosition(position); 
-
-            var message = new BlockUpdateMessage
-            {
-              Chunk = (worldPosition / ChunkData.ChunkSize).Modulus(IWorldService.WorldSize).ToVector2i(), 
-              Position = worldPosition.Modulus(IWorldService.WorldSize).ToVector2i(),
-              BlockType = EBlockType.Object,
-              Id = 1 // TODO: need a real block to put here (reserve 0 for Air or Nothing)
-            };
-
-            var chunk = _worldService.GetChunkData(message.Chunk);
-
-            if (chunk == null)
-            {
-                return;
-            }
-            
-            // Were going to predict that the server will listen to our request
-            chunk.SetBlockAtLocalPosition(message.Id, message.Position, message.BlockType);
-            
-            _networkService.SendToServer(message);
-        }
+        // if (button == MouseButton.Left)
+        // {
+        //     var worldPosition = _cameraService.ScreenToWorldPosition(position); 
+        // 
+        //     var message = new BlockUpdateMessage
+        //     {
+        //       Chunk = (worldPosition / ChunkData.ChunkSize).Modulus(IWorldService.WorldSize).ToVector2i(), 
+        //       Position = worldPosition.Modulus(IWorldService.WorldSize).ToVector2i(),
+        //       BlockType = EBlockType.Object,
+        //       Id = 1 // TODO: need a real block to put here (reserve 0 for Air or Nothing)
+        //     };
+        // 
+        //     var chunk = _worldService.GetChunkData(message.Chunk);
+        // 
+        //     if (chunk == null)
+        //     {
+        //         return;
+        //     }
+        //     
+        //     // Were going to predict that the server will listen to our request
+        //     chunk.SetBlockAtLocalPosition(message.Id, message.Position, message.BlockType);
+        //     
+        //     _networkService.SendToServer(message);
+        // }
     }
     
     /// <inheritdoc />

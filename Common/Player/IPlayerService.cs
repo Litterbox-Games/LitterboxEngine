@@ -5,5 +5,6 @@ namespace Common.Player;
 
 public interface IPlayerService : IService
 {
+    ulong PlayerId { get; }
     IEnumerable<NetworkPlayer> Players { get; }
 }

@@ -10,7 +10,7 @@ namespace Client.Host;
 /// </summary>
 public class LocalHost : IClientHost, IServerHost
 {
-    public Container Container { get; }
+    public IContainer Container { get; }
     public List<(EPriority, IUpdatable)> Updatables { get; } = [];
     public List<IDrawable> Drawables { get; } = [];
     

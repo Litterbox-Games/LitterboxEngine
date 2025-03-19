@@ -9,12 +9,12 @@ namespace Client.World;
 
 public class ClientWorldService : IWorldService
 {
-    private readonly ClientNetworkService _network;
-    private readonly List<ChunkData> _chunks = new();
+    private readonly IClientNetworkService _network;
+    private readonly List<ChunkData> _chunks = [];
 
     public IEnumerable<ChunkData> Chunks => _chunks;
 
-    public ClientWorldService(ClientNetworkService network)
+    public ClientWorldService(IClientNetworkService network)
     {
         _network = network;
         _network.RegisterMessageHandle<ChunkDataMessage>(OnChunkDataMessage);
@@ -22,8 +22,8 @@ public class ClientWorldService : IWorldService
         _network.EventOnConnect += OnConnect;
     }
 
-    private readonly HashSet<Vector2i> _chunksToRequestLoad = new();
-    private readonly HashSet<Vector2i> _chunksToRequestUnload = new();
+    private readonly HashSet<Vector2i> _chunksToRequestLoad = [];
+    private readonly HashSet<Vector2i> _chunksToRequestUnload = [];
 
     public void Update(float deltaTime)
     {

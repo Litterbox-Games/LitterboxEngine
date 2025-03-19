@@ -7,25 +7,34 @@ using Lidgren.Network;
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 namespace Common.Network;
 
-public class ServerNetworkService : AbstractNetworkService
+public class ServerNetworkService : IServerNetworkService
 {
-    private NetServer? _server;
-    protected override NetPeer? NetPeer => _server;
+    public Dictionary<int, Type> Messages { get; } = [];
+    public Dictionary<Type, List<OnMessage>> MessageHandles { get; } = [];
+    public NetPeer? NetPeer => _server;
     
     public event Action? EventOnStartListen;
     public event Action? EventOnStopListen;
     public event Action? EventOnPreStopListen;
     public event Action<ServerPlayer>? EventOnPlayerConnect;
     public event Action<ServerPlayer>? EventOnPlayerDisconnect;
-
-    private IPlayerService? _playerService;
-    public IEnumerable<ServerPlayer> Players => _players;
     
-    private readonly List<ServerPlayer> _players = new();
+    public IEnumerable<ServerPlayer> Players => _players;
 
-    public ServerNetworkService(IContainer container, ILoggingService logger) : base(container, logger) { }
+    private NetServer? _server;
+    private IPlayerService? _playerService;
+    private readonly List<ServerPlayer> _players = [];
+    private readonly IContainer _container;
+    private readonly ILoggingService _logger;
+    
+    public ServerNetworkService(IContainer container, ILoggingService logger)
+    {
+        _container = container;
+        _logger = logger;
+        (this as INetworkService).RegisterMessageTypes(_logger);
+    }
 
-    public override void Update(float deltaTime)
+    public void Update(float deltaTime)
     {
         if (_server == null)
             return;
@@ -87,14 +96,13 @@ public class ServerNetworkService : AbstractNetworkService
         _server = new NetServer(config);
         _server.Start();
 
-        _playerService = Container.Resolve<IPlayerService>();
+        _playerService = _container.Resolve<IPlayerService>();
         
-        Logger.Information("Server is now listening on port 7777.");
+        _logger.Information("Server is now listening on port 7777.");
         
-        if (Container.GameMode == EGameMode.Host || Container.GameMode == EGameMode.SinglePlayer)
+        if (_container.GameMode == EGameMode.Host || _container.GameMode == EGameMode.SinglePlayer)
         {
-            PlayerId = (ulong) new Random(DateTime.Now.Millisecond).Next();
-            _players.Add(new ServerPlayer(PlayerId, $"Player {PlayerId}", null));
+            _players.Add(new ServerPlayer(_playerService.PlayerId, $"Player {_playerService.PlayerId}", null));
         }
         
         EventOnStartListen?.Invoke();
@@ -118,20 +126,23 @@ public class ServerNetworkService : AbstractNetworkService
         if (player.PlayerConnection == null)
             throw new ArgumentNullException(nameof(player), "The player object passed must have a valid connection to receive a packet.");
         
-        SendMessage(player.PlayerConnection, message);
+        (this as INetworkService).SendMessage(player.PlayerConnection, message);
     }
 
-    public void SendToAllPlayers(INetworkMessage message)
+    public void SendToAllPlayers(INetworkMessage message, Predicate<ServerPlayer>? predicate = null)
     {
         if (_playerService == null)
             throw new InvalidOperationException("Cannot send message to clients without a running server");
 
-        var connections = _playerService.Players.Cast<ServerPlayer>().Select(x => x.PlayerConnection).Where(x => x != null).Cast<NetConnection>();
-
-        if (!connections.Any())
-            return;
+        var players = _playerService.Players.Cast<ServerPlayer>();
+        if (predicate != null)
+            players = players.Where(p => predicate(p));
         
-        SendMessage(_playerService.Players.Cast<ServerPlayer>().Select(x => x.PlayerConnection).Where(x => x != null).Cast<NetConnection>(), message);
+        var connections = players.Select(x => x.PlayerConnection).Where(x => x != null).Cast<NetConnection>().ToList();
+
+        if (connections.Count == 0) return;
+        
+        (this as INetworkService).SendMessage(connections, message);
     }
     
     private void OnData(NetIncomingMessage message)
@@ -140,7 +151,7 @@ public class ServerNetworkService : AbstractNetworkService
 
         if (player == null)
         {
-            Logger.Warning("An unknown connection attempted to send a packet.");
+            _logger.Warning("An unknown connection attempted to send a packet.");
             return;
         }
 
@@ -148,7 +159,7 @@ public class ServerNetworkService : AbstractNetworkService
 
         if (!Messages.ContainsKey(messageId))
         {
-            Logger.Warning(
+            _logger.Warning(
                 $"A player ${player.PlayerID} attempted to send an invalid message with the ID ${messageId}.");
             return;
         }
@@ -161,7 +172,7 @@ public class ServerNetworkService : AbstractNetworkService
 
         if (!MessageHandles.ContainsKey(messageType))
         {
-            Logger.Warning(
+            _logger.Warning(
                 $"A player ${player.PlayerID} attempted to send an message with the ID ${messageId} that has no valid handles.");
             return;
         }
@@ -171,7 +182,7 @@ public class ServerNetworkService : AbstractNetworkService
     
     private bool OnConnectionRequest(NetIncomingMessage message)
     {
-        if (Container.GameMode == EGameMode.SinglePlayer)
+        if (_container.GameMode == EGameMode.SinglePlayer)
             return false;
         
         try
@@ -181,12 +192,10 @@ public class ServerNetworkService : AbstractNetworkService
         }
         catch (Exception e)
         {
-            Logger.Error("Encountered an error during a connection request!");
-            Logger.Error(e.Message);
-            if (e.StackTrace != null)
-                Logger.Error(e.StackTrace);
+            _logger.Error("Encountered an error during a connection request!");
+            _logger.Error(e.Message);
+            if (e.StackTrace != null) _logger.Error(e.StackTrace);
             
-
             return false;
         }
 
@@ -196,18 +205,18 @@ public class ServerNetworkService : AbstractNetworkService
     private void OnConnect(NetConnection conn)
     {
         var player =
-            _players.FirstOrDefault(x => x.PlayerConnection?.RemoteUniqueIdentifier == conn!.RemoteUniqueIdentifier);
+            _players.FirstOrDefault(x => x.PlayerConnection?.RemoteUniqueIdentifier == conn.RemoteUniqueIdentifier);
 
         if (player == null)
         {
-            conn!.Disconnect("Authentication failed or wasn't performed.");
+            conn.Disconnect("Authentication failed or wasn't performed.");
 
             return;
         }
 
         EventOnPlayerConnect?.Invoke(player);
 
-        Logger.Information($"{player.PlayerName} has connected!");
+        _logger.Information($"{player.PlayerName} has connected!");
 
         // Synchronize client and server state
     }
@@ -215,7 +224,7 @@ public class ServerNetworkService : AbstractNetworkService
     private void OnDisconnect(NetConnection conn)
     {
         var player =
-            _players.FirstOrDefault(x => x.PlayerConnection?.RemoteUniqueIdentifier == conn!.RemoteUniqueIdentifier);
+            _players.FirstOrDefault(x => x.PlayerConnection?.RemoteUniqueIdentifier == conn.RemoteUniqueIdentifier);
 
         if (player == null)
             return;
@@ -224,11 +233,11 @@ public class ServerNetworkService : AbstractNetworkService
 
         _players.Remove(player);
 
-        Logger.Information($"{player.PlayerName} has disconnected!");
+        _logger.Information($"{player.PlayerName} has disconnected!");
     }
     
     private void OnStatusChange(NetConnectionStatus newStatus, string reason)
     {
-        Logger.Debug("Server status changed to {newStatus} for reason: {reason}!");
+        _logger.Debug($"Server status changed to {newStatus} for reason: {reason}!");
     }
 }

@@ -24,7 +24,7 @@ public class ServerServiceRegistrar : IServiceRegistrar
         
         container.RegisterSingleton<IResourceService, ServerResourceService>();
         
-        container.RegisterSingleton<INetworkService, ServerNetworkService>();
+        container.RegisterSingleton<IServerNetworkService, ServerNetworkService>();
         container.RegisterSingleton<IPlayerService, ServerPlayerService>();
         container.RegisterSingleton<IEntityService, ServerEntityService>();
         container.RegisterSingleton<MobControllerService, MobControllerService>();

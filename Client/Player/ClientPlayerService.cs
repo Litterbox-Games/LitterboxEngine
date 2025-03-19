@@ -1,4 +1,5 @@
-﻿using Common.DI;
+﻿using Client.Network;
+using Common.DI;
 using Common.Network;
 using Common.Player;
 using Common.Player.Messages;
@@ -7,21 +8,19 @@ namespace Client.Player;
 
 public class ClientPlayerService : IPlayerService
 {
-    private readonly List<NetworkPlayer> _players = new();
-
-    private IContainer _container;
-    private INetworkService _network;
+    public ulong PlayerId { get; }
 
     public IEnumerable<NetworkPlayer> Players => _players;
 
-    public ClientPlayerService(IContainer container, INetworkService networkService)
+    private readonly List<NetworkPlayer> _players = [];
+    
+    public ClientPlayerService(IClientNetworkService networkService)
     {
-        _container = container;
-        _network = networkService;
-
-        _network.RegisterMessageHandle<PlayerConnectMessage>(OnPlayerConnectMessage);
-        _network.RegisterMessageHandle<PlayerDisconnectMessage>(OnPlayerDisconnectMessage);
-        _network.RegisterMessageHandle<PlayerListSyncMessage>(OnPlayerListSyncMessage);
+        PlayerId = (ulong) new Random(DateTime.Now.Millisecond).Next();
+        
+        networkService.RegisterMessageHandle<PlayerConnectMessage>(OnPlayerConnectMessage);
+        networkService.RegisterMessageHandle<PlayerDisconnectMessage>(OnPlayerDisconnectMessage);
+        networkService.RegisterMessageHandle<PlayerListSyncMessage>(OnPlayerListSyncMessage);
     }
 
     private void OnPlayerConnectMessage(INetworkMessage message, NetworkPlayer? _)

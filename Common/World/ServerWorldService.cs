@@ -14,13 +14,15 @@ public class ServerWorldService : IWorldService
     public IEnumerable<ChunkData> Chunks => NetworkedChunks.Select(x => x.ChunkData);
 
     private readonly IContainer _container;
-    private readonly ServerNetworkService _networkService;
+    private readonly IServerNetworkService _networkService;
+    private readonly IPlayerService _playerService;
     private readonly IWorldGenerator _generation;
 
-    public ServerWorldService(IContainer container, ServerNetworkService networkService)
+    public ServerWorldService(IContainer container, IServerNetworkService networkService, IPlayerService playerService)
     {
         _container = container;
         _networkService = networkService;
+        _playerService = playerService;
         _generation = container.Resolve<IWorldGenerator>("earth");
         
         _networkService.EventOnPlayerDisconnect += OnPlayerDisconnect;
@@ -55,7 +57,7 @@ public class ServerWorldService : IWorldService
             throw new InvalidOperationException("INVALID CHUNK REQUESTED AT POSITION = " + position);
         }
 
-        var player = _networkService.Players.First(x => x.PlayerID == _networkService.PlayerId);
+        var player = _networkService.Players.First(x => x.PlayerID == _playerService.PlayerId);
 
         var chunk = GetChunk(position);
 
@@ -79,7 +81,7 @@ public class ServerWorldService : IWorldService
 
         var chunk = NetworkedChunks.FirstOrDefault(x => x.ChunkData.Position == position);
 
-        chunk?.Observers.Remove(_networkService.Players.FirstOrDefault(x => x.PlayerID == _networkService.PlayerId)!);
+        chunk?.Observers.Remove(_networkService.Players.FirstOrDefault(x => x.PlayerID == _playerService.PlayerId)!);
     }
 
     private void OnChunkRequest(INetworkMessage message, NetworkPlayer? player)
