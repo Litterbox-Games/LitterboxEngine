@@ -1,5 +1,6 @@
 ﻿using Common.DI;
 using Common.Host;
+using Common.Logging;
 using Common.Mathematics;
 using Common.Network;
 using Common.Player;
@@ -10,19 +11,21 @@ namespace Common.World;
 
 public class ServerWorldService : IWorldService
 {
-    public readonly List<NetworkedChunk> NetworkedChunks = new();
+    public readonly List<NetworkedChunk> NetworkedChunks = [];
     public IEnumerable<ChunkData> Chunks => NetworkedChunks.Select(x => x.ChunkData);
 
     private readonly IContainer _container;
     private readonly IServerNetworkService _networkService;
     private readonly IPlayerService _playerService;
+    private readonly ILoggingService _logger;
     private readonly IWorldGenerator _generation;
 
-    public ServerWorldService(IContainer container, IServerNetworkService networkService, IPlayerService playerService)
+    public ServerWorldService(IContainer container, IServerNetworkService networkService, IPlayerService playerService, ILoggingService logger)
     {
         _container = container;
         _networkService = networkService;
         _playerService = playerService;
+        _logger = logger;
         _generation = container.Resolve<IWorldGenerator>("earth");
         
         _networkService.EventOnPlayerDisconnect += OnPlayerDisconnect;
@@ -48,17 +51,17 @@ public class ServerWorldService : IWorldService
     {
         if (_container.GameMode == EGameMode.Dedicated)
         {
-            throw new InvalidOperationException(
-                "Invalid use of method. This may only be called when the server acts as a host.");
+            throw new InvalidOperationException("Invalid use of method. This may only be called when the server acts as a host.");
         }
 
         if (position.X is >= IWorldService.WorldSize or < 0 || position.Y is >= IWorldService.WorldSize or < 0)
         {
-            throw new InvalidOperationException("INVALID CHUNK REQUESTED AT POSITION = " + position);
+            _logger.Warning($"Invalid chunk request. Chunk position: {position}");
+            return;
         }
 
         var player = _networkService.Players.First(x => x.PlayerID == _playerService.PlayerId);
-
+        
         var chunk = GetChunk(position);
 
         if (chunk == null)
