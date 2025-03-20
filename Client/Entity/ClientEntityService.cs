@@ -1,15 +1,13 @@
 ﻿using System.Numerics;
-using Client.Graphics;
 using Client.Network;
 using Common.Entity;
 using Common.Entity.Messages;
 using Common.Network;
 using Common.Player;
-using ImGuiNET;
 
 namespace Client.Entity;
 
-public class ClientEntityService : IEntityService, IDrawable
+public class ClientEntityService : IEntityService
 {
     public List<GameEntity> Entities { get; }
 
@@ -75,19 +73,6 @@ public class ClientEntityService : IEntityService, IDrawable
 
         if (moveMessage.Entities.Count > 0)
             _network.SendToServer(moveMessage);
-        
-    }
-
-    public void Draw(Renderer renderer)
-    {
-        ImGui.Begin("EntityService");
-
-        foreach (var entity in Entities)
-        {
-            ImGui.Text($"{entity.EntityId} {entity.OwnerId} ({entity.Position.X}, {entity.Position.Y})");    
-        }
-        
-        ImGui.End();
         
     }
 

@@ -8,6 +8,7 @@ using Common.Network;
 using Common.Player;
 using Common.Resource;
 using Common.World;
+using ImGuiNET;
 
 namespace Client.Entity;
 
@@ -49,12 +50,16 @@ public class EntityRenderService : IService, IDrawable
 
     public void Draw(Renderer renderer)
     {
+        ImGui.Begin("EntityService");
+        
         if (_playerEntity == null) return;
 
         var texture = _resourceService.Get<Aseprite>("Aseprites/Player.aseprite").Texture;
         
         foreach (var entity in _entityService.Entities)
         {
+            ImGui.Text($"{entity.EntityId} {entity.OwnerId} ({entity.Position.X}, {entity.Position.Y})");
+            
             const int worldSize = IWorldService.WorldSize * ChunkData.ChunkSize;
             
             var position = entity.Position.Modulus(worldSize);
@@ -73,5 +78,7 @@ public class EntityRenderService : IService, IDrawable
             
             renderer.DrawTexture(texture, _textureSource, new RectangleF(entityX, entityY, 1.25f, 1), Color.White);
         }
+        
+        ImGui.End();
     }
 }
