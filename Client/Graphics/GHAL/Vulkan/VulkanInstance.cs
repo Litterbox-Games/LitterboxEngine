@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Common.Services.Logging;
 using Silk.NET.Core;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
@@ -31,7 +32,7 @@ public class VulkanInstance: IDisposable
 #endif
     };
     
-    public unsafe VulkanInstance(Vk vk, string applicationName, bool validate = false)
+    public unsafe VulkanInstance(Vk vk, string applicationName, bool validate = false, ILoggingService? logger = null)
     {
         _vk = vk;
 
@@ -50,9 +51,9 @@ public class VulkanInstance: IDisposable
         if (validate && validationLayers.Length == 0)
         {
             validate = false;
-            Console.WriteLine("Validation requested but failed to find a supported validation layer");
+            logger?.Warning("Vulkan validation layers requested but failed to find a supported validation layer");
         }
-        Console.WriteLine($"Validation: {validate}");
+        logger?.Information($"Vulkan validation: {(validate ? "On" : "Off")}");
 
         var extensions = GetInstanceExtensions();
 

@@ -4,6 +4,7 @@ using Client.Graphics.Input;
 using Client.Graphics.Input.ImGui;
 using Client.Host;
 using Client.Services.Resource;
+using Common.Services.Logging;
 using Silk.NET.Input;
 
 namespace Client;
@@ -16,8 +17,10 @@ internal static class Program
         // TODO: this will eventually be the code called when a player starts/joins a world
         using IClientHost host = new ClientHost();
         
+        var logger = host.Container.Resolve<ILoggingService>();
+        
         using var window = new Window();
-        using var graphicsDevice = new VulkanGraphicsDevice(window);
+        using var graphicsDevice = new VulkanGraphicsDevice(window, logger);
         
         // TODO: this feels hacky, we should probably restructure the ResourceService design
         var resourceService = host.Container.Resolve<ClientResourceService>();

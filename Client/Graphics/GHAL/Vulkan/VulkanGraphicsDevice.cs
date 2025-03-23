@@ -1,6 +1,7 @@
 ﻿using Client.Graphics.Input;
 using Client.Graphics.Input.ImGui;
 using Client.Services.Resource;
+using Common.Services.Logging;
 using Silk.NET.Input;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.ImGui;
@@ -23,11 +24,11 @@ public sealed class VulkanGraphicsDevice : IGraphicsDevice, IDisposable
     private readonly VulkanDescriptorPool _descriptorPool;
     private readonly Window _window;
 
-    public VulkanGraphicsDevice(Window window)
+    public VulkanGraphicsDevice(Window window, ILoggingService? logger = null)
     {
         Vk = Vk.GetApi();
         _window = window;
-        _instance = new VulkanInstance(Vk, _window.Title, true);
+        _instance = new VulkanInstance(Vk, _window.Title, true, logger);
         var physicalDevice = VulkanPhysicalDevice.SelectPreferredPhysicalDevice(Vk, _instance);
         LogicalDevice = new VulkanLogicalDevice(Vk, physicalDevice);
         _surface = new VulkanSurface(Vk, _instance, physicalDevice, _window);
