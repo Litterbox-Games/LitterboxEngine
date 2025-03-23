@@ -47,6 +47,7 @@
 
     <ItemGroup>
       <Folder Include="Core\" />
+      <Folder Include="Services\" />
     </ItemGroup>
 
     <Target Name="BuildVulkanShader" AfterTargets="Build">

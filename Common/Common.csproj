@@ -15,4 +15,8 @@
       <PackageReference Include="Unity.Container" Version="5.11.11" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Services\" />
+    </ItemGroup>
+
 </Project>
