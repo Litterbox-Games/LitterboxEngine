@@ -1,25 +1,25 @@
 ﻿using System.Numerics;
 using Arch.Core;
-using Arch.Core.Extensions;
+using Client.Components;
 using Client.Graphics;
 using Client.Graphics.Input;
 using Common.Components;
-using Common.DI;
-using Common.DI.Attributes;
-using Common.Entities;
-using Common.Entities.Components;
+using Common.Core;
+using Common.Core.Attributes;
 using Common.Mathematics;
-using Common.Players;
-using Common.Systems;
-using Common.World;
+using Common.Services.Entities;
+using Common.Services.Players;
+using Common.Services.World;
 using ImGuiNET;
 using Silk.NET.Input;
 
-namespace Client.Entities.Systems;
+namespace Client.Systems;
 
 [UpdatablePriority(EPriority.High)]
 public class PlayerControlSystem : ISystem, IUpdatable, IDrawable
 {
+    private readonly QueryDescription _playerControlled = new QueryDescription().WithAll<Position, PlayerControls>();
+    
     private readonly IWorldService _worldService;
     private readonly InputService _inputService;
     private readonly CameraService _cameraService;
@@ -30,8 +30,6 @@ public class PlayerControlSystem : ISystem, IUpdatable, IDrawable
 
     private readonly Queue<float> _fpsRecordings = new();
     
-    private Entity? _playerEntity; 
-    
     public PlayerControlSystem(IEntityService entityService, IWorldService worldService, InputService inputService, CameraService cameraService, IPlayerService playerService)
     {
         _worldService = worldService;
@@ -41,71 +39,40 @@ public class PlayerControlSystem : ISystem, IUpdatable, IDrawable
         _playerService = playerService;
         
         _inputService.EventOnMouseClick += OnMouseClick;
-        entityService.EventOnEntitySpawn += OnEntitySpawn;
-        entityService.EventOnEntityDespawn += OnEntityDespawn;
-    }
-
-    private void OnEntitySpawn(Entity entity)
-    {
-        if (!entity.Has<Networked, Position, Player>()) return;
-        var networked = entity.Get<Networked>();
-        if (networked.OwnerId != _playerService.PlayerId) return;
-        _playerEntity = entity;
-        var position = entity.Get<Position>();
-        UpdateChunks(position.Current);
-    }
-    
-    private void OnEntityDespawn(Entity entity)
-    {
-        if (!entity.Has<Networked, Player>()) return;
-        var networked = entity.Get<Networked>();
-        if (networked.OwnerId == _playerService.PlayerId) _playerEntity = null;       
     }
     
     /// <inheritdoc />
     public void Update(float deltaTime)
     {
-        var newPosition = UpdatePosition(deltaTime);
+        _entityService.Entities.Query(in _playerControlled, ( 
+            ref Position position
+        ) => {
+            const float speed = 15f; // TODO: assign speeds to entities rather than hard coding here
+            var direction = Vector2.Zero;
+        
+            if (_inputService.IsKeyDown(Key.W))
+                direction.Y -= 1f;
+        
+            if (_inputService.IsKeyDown(Key.A))
+                direction.X -= 1f;
+        
+            if (_inputService.IsKeyDown(Key.S))
+                direction.Y += 1f;
+        
+            if (_inputService.IsKeyDown(Key.D))
+                direction.X += 1f;
 
-        if (newPosition.HasValue)
-        {
-            UpdateChunks(newPosition.Value);
-        }
+            if (direction == Vector2.Zero) return;
+        
+            direction = Vector2.Normalize(direction);
+            position.Current += direction * speed * deltaTime;
+            _cameraService.Target = position.Current;
+
+            UpdateChunks(position.Current);
+        });
         
         _fpsRecordings.Enqueue(MathF.Round(1f / deltaTime));
         if (_fpsRecordings.Count > 60) _fpsRecordings.Dequeue();
-    }
-
-    private Vector2? UpdatePosition(float deltaTime)
-    {
-        if (_playerEntity == null)
-            return null;
-        
-        ref var position = ref _playerEntity.Value.Get<Position>();
-        
-        const float speed = 15f; // TODO: assign speeds to entities rather than hard coding here
-        var direction = Vector2.Zero;
-        
-        if (_inputService.IsKeyDown(Key.W))
-            direction.Y -= 1f;
-        
-        if (_inputService.IsKeyDown(Key.A))
-            direction.X -= 1f;
-        
-        if (_inputService.IsKeyDown(Key.S))
-            direction.Y += 1f;
-        
-        if (_inputService.IsKeyDown(Key.D))
-            direction.X += 1f;
-
-        if (direction == Vector2.Zero)
-            return null;
-        
-        direction = Vector2.Normalize(direction);
-        position.Current += direction * speed * deltaTime;
-        _cameraService.Target = position.Current;
-
-        return position.Current;
     }
 
     private void UpdateChunks(Vector2 playerEntityPosition)
@@ -171,17 +138,16 @@ public class PlayerControlSystem : ISystem, IUpdatable, IDrawable
     public void Draw(Renderer renderer)
     {
         ImGui.Begin("Debug");
-        
-        if (_playerEntity != null)
-        {
-            var position = _playerEntity.Value.Get<Position>();
-            
+
+        _entityService.Entities.Query(in _playerControlled, ( 
+            ref Position position
+        ) => {
             ImGui.PlotLines("FPS", ref _fpsRecordings.ToArray()[0], _fpsRecordings.Count, 0, "", 0, 60, new Vector2(450, 150));
             ImGui.Text($"Player: {_playerService.PlayerId}");
             ImGui.Text($"Player Position: ({position.Current.X}, {position.Current.Y})");  
             ImGui.Text($"Chunk Position: ({_chunkPosition.X}, {_chunkPosition.Y})");
             ImGui.Text($"Entity Count: {_entityService.Entities.CountEntities(new QueryDescription())}");
-        }
+        });
         
         ImGui.End();
     }
