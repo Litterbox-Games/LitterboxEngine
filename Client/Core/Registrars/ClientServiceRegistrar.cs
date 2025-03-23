@@ -34,7 +34,6 @@ public class ClientServiceRegistrar : IServiceRegistrar
         container.RegisterSingleton<ILoggingService, ConsoleLoggingService>("console");
         
         container.RegisterSingleton<IResourceService, ClientResourceService>();
-        container.RegisterSingleton<CameraService, CameraService>();
 
         container.RegisterSingleton<IClientNetworkService, ClientNetworkService>();
         container.RegisterSingleton<IPlayerService, ClientPlayerService>();
@@ -44,6 +43,7 @@ public class ClientServiceRegistrar : IServiceRegistrar
         container.RegisterSingleton<WorldRenderService, WorldRenderService>();
         
         // Systems
+        container.RegisterSingleton<CameraSystem, CameraSystem>();
         container.RegisterSingleton<PlayerControlSystem, PlayerControlSystem>();
         container.RegisterSingleton<EntityRenderSystem, EntityRenderSystem>();
         container.RegisterSingleton<ClientMovementSystem, ClientMovementSystem>();

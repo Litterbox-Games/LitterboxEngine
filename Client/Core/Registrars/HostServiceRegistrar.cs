@@ -34,7 +34,6 @@ public class HostServiceRegistrar : IServiceRegistrar
         container.RegisterSingleton<ILoggingService, ConsoleLoggingService>("console");
         
         container.RegisterSingleton<IResourceService, ClientResourceService>();
-        container.RegisterSingleton<CameraService, CameraService>();
         
         container.RegisterSingleton<IServerNetworkService, ServerNetworkService>();
         container.RegisterSingleton<IPlayerService, ServerPlayerService>();
@@ -45,6 +44,7 @@ public class HostServiceRegistrar : IServiceRegistrar
         container.RegisterSingleton<WorldRenderService, WorldRenderService>();
         
         // Systems
+        container.RegisterSingleton<CameraSystem, CameraSystem>();
         container.RegisterSingleton<MobControllerSystem, MobControllerSystem>();
         container.RegisterSingleton<PlayerControlSystem, PlayerControlSystem>();
         container.RegisterSingleton<EntityRenderSystem, EntityRenderSystem>();

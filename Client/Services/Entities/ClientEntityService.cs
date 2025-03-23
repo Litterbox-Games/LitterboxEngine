@@ -5,7 +5,6 @@ using Client.Services.Network;
 using Common.Components;
 using Common.Services.Entities;
 using Common.Services.Entities.Messages;
-using Common.Services.Network;
 using Common.Services.Players;
 
 namespace Client.Services.Entities;
@@ -42,8 +41,12 @@ public class ClientEntityService : IEntityService
                     new Player(),
                     new Position(message.EntityPosition));
 
-                if (message.EntityOwner == _playerService.PlayerId) 
-                    entity.Add<PlayerControls>();   
+                if (message.EntityOwner == _playerService.PlayerId)
+                {
+                    entity.Add<PlayerControls>();
+                    entity.Add<CameraFollow>();
+                }
+                       
             
                 EventOnEntitySpawn?.Invoke(entity);
                 break;

@@ -3,6 +3,7 @@ using Client.Graphics.GHAL.Vulkan;
 using Client.Graphics.ImGui;
 using Client.Host;
 using Client.Services.Resource;
+using Client.Systems;
 using Common.Services.Logging;
 using Silk.NET.Input;
 
@@ -27,8 +28,8 @@ internal static class Program
         var resourceService = host.Container.Resolve<ClientResourceService>();
         resourceService.SetGraphicsDevice(graphicsDevice);
         
-        // TODO: remove these as services
-        var cameraService = host.Container.Resolve<CameraService>();
+        // TODO: is there a better way to grab the camera? It would be nice if we could set the renderers camera?
+        var cameraService = host.Container.Resolve<CameraSystem>();
         cameraService.SetWindow(window);
         
         using var renderer = new Renderer(resourceService, graphicsDevice);
@@ -39,9 +40,9 @@ internal static class Program
         // TODO: turn this into a while (!window.ShouldClose()) loop instead of using lambda
         window.OnUpdate += deltaTime =>
         {
+            // ReSharper disable AccessToDisposedClosure
             host.Input(input);
             
-            // ReSharper disable AccessToDisposedClosure
             host.Update(deltaTime);
             
             // Needs to be called at the same rate as imGui.Draw()

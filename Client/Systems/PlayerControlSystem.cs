@@ -20,7 +20,7 @@ public class PlayerControlSystem : ISystem, IInputable, IUpdatable, IDrawable
     private readonly QueryDescription _playerControlled = new QueryDescription().WithAll<Position, Velocity, PlayerControls>();
     
     private readonly IWorldService _worldService;
-    private readonly CameraService _cameraService;
+    private readonly CameraSystem _cameraSystem;
     private readonly IEntityService _entityService;
     private readonly IPlayerService _playerService;
     
@@ -28,10 +28,10 @@ public class PlayerControlSystem : ISystem, IInputable, IUpdatable, IDrawable
 
     private readonly Queue<float> _fpsRecordings = new();
     
-    public PlayerControlSystem(IEntityService entityService, IWorldService worldService, CameraService cameraService, IPlayerService playerService)
+    public PlayerControlSystem(IEntityService entityService, IWorldService worldService, CameraSystem cameraSystem, IPlayerService playerService)
     {
         _worldService = worldService;
-        _cameraService = cameraService;
+        _cameraSystem = cameraSystem;
         _entityService = entityService;
         _playerService = playerService;
     }
@@ -104,7 +104,6 @@ public class PlayerControlSystem : ISystem, IInputable, IUpdatable, IDrawable
             ref Velocity velocity
         ) => {
             position.Current += velocity.ToVector2() * deltaTime;
-            _cameraService.Target = position.Current;
         });
     }
     
