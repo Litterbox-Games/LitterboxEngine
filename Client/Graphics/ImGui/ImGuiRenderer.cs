@@ -1,7 +1,7 @@
 ﻿using Client.Graphics.GHAL.Vulkan;
 using Silk.NET.Vulkan.Extensions.ImGui;
 
-namespace Client.Graphics.Input.ImGui;
+namespace Client.Graphics.ImGui;
 
 public class ImGuiRenderer: IDisposable
 {

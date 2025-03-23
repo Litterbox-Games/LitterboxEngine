@@ -38,6 +38,7 @@ public class ClientEntityService : IEntityService
             {
                 var entity = Entities.Create(
                     new Networked { OwnerId = message.EntityOwner, NetworkId = message.EntityId, EntityType = message.EntityType },
+                    new Velocity(),
                     new Player(),
                     new Position(message.EntityPosition));
 

@@ -1,7 +1,6 @@
 ﻿using Client.Graphics;
 using Client.Graphics.GHAL.Vulkan;
-using Client.Graphics.Input;
-using Client.Graphics.Input.ImGui;
+using Client.Graphics.ImGui;
 using Client.Host;
 using Client.Services.Resource;
 using Common.Services.Logging;
@@ -22,14 +21,13 @@ internal static class Program
         using var window = new Window();
         using var graphicsDevice = new VulkanGraphicsDevice(window, logger);
         
+        var input = new Input(window);
+        
         // TODO: this feels hacky, we should probably restructure the ResourceService design
         var resourceService = host.Container.Resolve<ClientResourceService>();
         resourceService.SetGraphicsDevice(graphicsDevice);
         
         // TODO: remove these as services
-        var inputService = host.Container.Resolve<InputService>();
-        inputService.SetWindow(window);
-        
         var cameraService = host.Container.Resolve<CameraService>();
         cameraService.SetWindow(window);
         
@@ -41,6 +39,8 @@ internal static class Program
         // TODO: turn this into a while (!window.ShouldClose()) loop instead of using lambda
         window.OnUpdate += deltaTime =>
         {
+            host.Input(input);
+            
             // ReSharper disable AccessToDisposedClosure
             host.Update(deltaTime);
             
@@ -55,7 +55,8 @@ internal static class Program
             imGui.Draw();
             renderer.EndFrame();   
             
-            if (inputService.IsKeyDown(Key.Escape)) window.SetShouldClose();
+            if (input.IsKeyDown(Key.Escape)) 
+                window.SetShouldClose();
             // ReSharper enable AccessToDisposedClosure
         };
         

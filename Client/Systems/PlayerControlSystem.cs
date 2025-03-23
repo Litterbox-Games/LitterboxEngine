@@ -2,7 +2,6 @@
 using Arch.Core;
 using Client.Components;
 using Client.Graphics;
-using Client.Graphics.Input;
 using Common.Components;
 using Common.Core;
 using Common.Core.Attributes;
@@ -16,12 +15,11 @@ using Silk.NET.Input;
 namespace Client.Systems;
 
 [UpdatablePriority(EPriority.High)]
-public class PlayerControlSystem : ISystem, IUpdatable, IDrawable
+public class PlayerControlSystem : ISystem, IInputable, IUpdatable, IDrawable
 {
-    private readonly QueryDescription _playerControlled = new QueryDescription().WithAll<Position, PlayerControls>();
+    private readonly QueryDescription _playerControlled = new QueryDescription().WithAll<Position, Velocity, PlayerControls>();
     
     private readonly IWorldService _worldService;
-    private readonly InputService _inputService;
     private readonly CameraService _cameraService;
     private readonly IEntityService _entityService;
     private readonly IPlayerService _playerService;
@@ -30,15 +28,63 @@ public class PlayerControlSystem : ISystem, IUpdatable, IDrawable
 
     private readonly Queue<float> _fpsRecordings = new();
     
-    public PlayerControlSystem(IEntityService entityService, IWorldService worldService, InputService inputService, CameraService cameraService, IPlayerService playerService)
+    public PlayerControlSystem(IEntityService entityService, IWorldService worldService, CameraService cameraService, IPlayerService playerService)
     {
         _worldService = worldService;
-        _inputService = inputService;
         _cameraService = cameraService;
         _entityService = entityService;
         _playerService = playerService;
+    }
+
+    public void Input(Input input)
+    {
+        _entityService.Entities.Query(in _playerControlled, ( 
+            ref Velocity velocity
+        ) => {
+            const float speed = 15f; // TODO: assign speeds to entities rather than hard coding here
+            velocity = Vector2.Zero;
         
-        _inputService.EventOnMouseClick += OnMouseClick;
+            if (input.IsKeyDown(Key.W))
+                velocity.Y -= 1f;
+        
+            if (input.IsKeyDown(Key.A))
+                velocity.X -= 1f;
+        
+            if (input.IsKeyDown(Key.S))
+                velocity.Y += 1f;
+        
+            if (input.IsKeyDown(Key.D))
+                velocity.X += 1f;
+
+            if (velocity == Vector2.Zero) return;
+        
+            velocity = Vector2.Normalize(velocity) * speed;
+        });
+
+        // if (input.IsMouseDown(MouseButton.Right))
+        // {
+        //     var worldPosition = _cameraService.ScreenToWorldPosition(position); 
+        //     
+        //     var message = new BlockUpdateMessage
+        //     {
+        //       Chunk = (worldPosition / ChunkData.ChunkSize).Modulus(IWorldService.WorldSize).ToVector2i(), 
+        //       Position = worldPosition.Modulus(IWorldService.WorldSize).ToVector2i(),
+        //       BlockType = EBlockType.Object,
+        //       Id = 1 // TODO: need a real block to put here (reserve 0 for Air or Nothing)
+        //     };
+        //     
+        //     var chunk = _worldService.GetChunkData(message.Chunk);
+        //     
+        //     if (chunk == null)
+        //     {
+        //         return;
+        //     }
+        //     
+        //     // Were going to predict that the server will listen to our request
+        //     chunk.SetBlockAtLocalPosition(message.Id, message.Position, message.BlockType);
+        //     
+        //     _networkService.SendToServer(message);
+        // }
     }
     
     /// <inheritdoc />
@@ -50,31 +96,14 @@ public class PlayerControlSystem : ISystem, IUpdatable, IDrawable
         _fpsRecordings.Enqueue(MathF.Round(1f / deltaTime));
         if (_fpsRecordings.Count > 60) _fpsRecordings.Dequeue();
     }
-
+    
     private void UpdatePosition(float deltaTime)
     {
         _entityService.Entities.Query(in _playerControlled, ( 
-            ref Position position
+            ref Position position,
+            ref Velocity velocity
         ) => {
-            const float speed = 15f; // TODO: assign speeds to entities rather than hard coding here
-            var direction = Vector2.Zero;
-        
-            if (_inputService.IsKeyDown(Key.W))
-                direction.Y -= 1f;
-        
-            if (_inputService.IsKeyDown(Key.A))
-                direction.X -= 1f;
-        
-            if (_inputService.IsKeyDown(Key.S))
-                direction.Y += 1f;
-        
-            if (_inputService.IsKeyDown(Key.D))
-                direction.X += 1f;
-
-            if (direction == Vector2.Zero) return;
-        
-            direction = Vector2.Normalize(direction);
-            position.Current += direction * speed * deltaTime;
+            position.Current += velocity.ToVector2() * deltaTime;
             _cameraService.Target = position.Current;
         });
     }
@@ -115,34 +144,6 @@ public class PlayerControlSystem : ISystem, IUpdatable, IDrawable
                 }
             }
         });
-    }
-
-    private void OnMouseClick(MouseButton button, Vector2 position)
-    {
-        // if (button == MouseButton.Left)
-        // {
-        //     var worldPosition = _cameraService.ScreenToWorldPosition(position); 
-        // 
-        //     var message = new BlockUpdateMessage
-        //     {
-        //       Chunk = (worldPosition / ChunkData.ChunkSize).Modulus(IWorldService.WorldSize).ToVector2i(), 
-        //       Position = worldPosition.Modulus(IWorldService.WorldSize).ToVector2i(),
-        //       BlockType = EBlockType.Object,
-        //       Id = 1 // TODO: need a real block to put here (reserve 0 for Air or Nothing)
-        //     };
-        // 
-        //     var chunk = _worldService.GetChunkData(message.Chunk);
-        // 
-        //     if (chunk == null)
-        //     {
-        //         return;
-        //     }
-        //     
-        //     // Were going to predict that the server will listen to our request
-        //     chunk.SetBlockAtLocalPosition(message.Id, message.Position, message.BlockType);
-        //     
-        //     _networkService.SendToServer(message);
-        // }
     }
     
     /// <inheritdoc />

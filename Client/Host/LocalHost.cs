@@ -11,6 +11,7 @@ namespace Client.Host;
 public class LocalHost : IClientHost, IServerHost
 {
     public IContainer Container { get; }
+    public List<IInputable> Inputables { get; } = [];
     public List<(EPriority, IUpdatable)> Updatables { get; } = [];
     public List<IDrawable> Drawables { get; } = [];
     
@@ -19,6 +20,7 @@ public class LocalHost : IClientHost, IServerHost
         Container = new Container(singlePlayer ? EGameMode.SinglePlayer : EGameMode.Host);
         Container.RegisterServices();
         (this as IHost).RegisterUpdatables();
+        (this as IClientHost).RegisterInputables();
         (this as IClientHost).RegisterDrawables();
         
         // Warm Service Singletons

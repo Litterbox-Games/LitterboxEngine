@@ -12,6 +12,7 @@ namespace Client.Host;
 public class ClientHost : IClientHost
 {
     public IContainer Container { get; } = new Container(EGameMode.Client);
+    public List<IInputable> Inputables { get; } = [];
     public List<(EPriority, IUpdatable)> Updatables { get; } = [];
     public List<IDrawable> Drawables { get; } = [];
     
@@ -19,6 +20,7 @@ public class ClientHost : IClientHost
     {
         Container.RegisterServices();
         (this as IHost).RegisterUpdatables();
+        (this as IClientHost).RegisterInputables();
         (this as IClientHost).RegisterDrawables();
         
         // Warm Service Singletons

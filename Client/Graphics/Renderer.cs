@@ -132,9 +132,10 @@ public class Renderer: IDisposable
 
     private void Flush()
     {
-        ImGui.Begin("RendererService");
-        ImGui.Text($"Quads Per Frame: {_quadCount}");
-        ImGui.End();
+        // TODO: move this out and save a RendererStats struct each frame
+        ImGuiNET.ImGui.Begin("RendererService");
+        ImGuiNET.ImGui.Text($"Quads Per Frame: {_quadCount}");
+        ImGuiNET.ImGui.End();
         _commandList.SetResourceSet(2, _textureSet);
         
         _commandList.UpdateBuffer(_quadsBuffer, 0, _quads);

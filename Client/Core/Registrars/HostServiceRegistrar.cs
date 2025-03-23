@@ -1,6 +1,5 @@
 ﻿using Arch.Core.Utils;
 using Client.Graphics;
-using Client.Graphics.Input;
 using Client.Services.Resource;
 using Client.Services.World;
 using Client.Systems;
@@ -35,7 +34,6 @@ public class HostServiceRegistrar : IServiceRegistrar
         container.RegisterSingleton<ILoggingService, ConsoleLoggingService>("console");
         
         container.RegisterSingleton<IResourceService, ClientResourceService>();
-        container.RegisterSingleton<InputService, InputService>();
         container.RegisterSingleton<CameraService, CameraService>();
         
         container.RegisterSingleton<IServerNetworkService, ServerNetworkService>();

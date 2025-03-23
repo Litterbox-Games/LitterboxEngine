@@ -3,7 +3,7 @@ using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 
-namespace Client.Graphics.Input;
+namespace Client.Graphics;
 
 public class Window: IDisposable
 {

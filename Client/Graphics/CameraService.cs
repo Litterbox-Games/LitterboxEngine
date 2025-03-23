@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using Client.Graphics.Input;
 using Common.Core;
 using Common.Mathematics;
 

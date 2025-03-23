@@ -23,6 +23,8 @@ public class ClientMovementSystem: ISystem, IUpdatable
         _entityService = entityService;
         _network = network;
         _playerService = playerService;
+
+        // Events.RegisterHandler<EntityMoveEvent>(OnEntityMove);
         
         _network.RegisterMessageHandle<EntityMoveMessage>(OnEntityMoveMessage);
     }

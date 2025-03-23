@@ -1,6 +1,4 @@
-﻿using Client.Graphics.Input;
-using Client.Graphics.Input.ImGui;
-using Client.Services.Resource;
+﻿using Client.Services.Resource;
 using Common.Services.Logging;
 using Silk.NET.Input;
 using Silk.NET.Vulkan;
