@@ -1,6 +1,6 @@
 ﻿using Lidgren.Network;
 
-namespace Common.Players;
+namespace Common.Services.Players;
 
 public class NetworkPlayer(ulong id, string name)
 {

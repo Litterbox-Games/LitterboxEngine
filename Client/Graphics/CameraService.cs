@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 using Client.Graphics.Input;
-using Common.DI;
+using Common.Core;
 using Common.Mathematics;
 
 namespace Client.Graphics;

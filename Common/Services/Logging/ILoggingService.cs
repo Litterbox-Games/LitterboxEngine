@@ -1,6 +1,6 @@
-﻿using Common.DI;
+﻿using Common.Core;
 
-namespace Common.Logging;
+namespace Common.Services.Logging;
 
 /// <summary>
 ///     A service contract for logging events or messages.

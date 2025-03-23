@@ -1,7 +1,7 @@
-﻿using Common.Network;
+﻿using Common.Services.Network;
 using Lidgren.Network;
 
-namespace Common.Players.Messages;
+namespace Common.Services.Players.Messages;
 
 public sealed class PlayerDisconnectMessage : INetworkMessage
 {

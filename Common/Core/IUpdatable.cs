@@ -1,4 +1,4 @@
-﻿namespace Common.DI;
+﻿namespace Common.Core;
 
 public interface IUpdatable
 {

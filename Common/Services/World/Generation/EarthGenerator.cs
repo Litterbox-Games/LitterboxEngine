@@ -1,7 +1,7 @@
 ﻿using Common.Mathematics;
 using MoreLinq;
 
-namespace Common.World.Generation;
+namespace Common.Services.World.Generation;
 
 public class EarthGenerator : IWorldGenerator
 {

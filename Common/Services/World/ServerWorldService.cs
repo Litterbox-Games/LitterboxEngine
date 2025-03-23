@@ -1,13 +1,13 @@
-﻿using Common.DI;
+﻿using Common.Core;
 using Common.Host;
-using Common.Logging;
 using Common.Mathematics;
-using Common.Network;
-using Common.Players;
-using Common.World.Generation;
-using Common.World.Messages;
+using Common.Services.Logging;
+using Common.Services.Network;
+using Common.Services.Players;
+using Common.Services.World.Generation;
+using Common.Services.World.Messages;
 
-namespace Common.World;
+namespace Common.Services.World;
 
 public class ServerWorldService : IWorldService
 {

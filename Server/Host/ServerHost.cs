@@ -1,5 +1,4 @@
 ﻿using Common.Core;
-using Common.DI;
 using Common.Host;
 
 namespace Server.Host;

@@ -1,6 +1,4 @@
-﻿using Common.Host;
-
-namespace Common.DI;
+﻿namespace Common.Core;
 
 /// <summary>
 ///     A service registrar used to handle the registration of specific services.

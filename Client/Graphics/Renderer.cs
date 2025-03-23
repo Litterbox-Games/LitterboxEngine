@@ -2,8 +2,8 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Client.Graphics.GHAL;
-using Client.Resource;
-using Common.Resource;
+using Client.Services.Resource;
+using Common.Services.Resource;
 using ImGuiNET;
 using Buffer = Client.Graphics.GHAL.Buffer;
 

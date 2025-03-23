@@ -1,11 +1,10 @@
 ﻿using System.Numerics;
 using Arch.Core;
 using Common.Components;
-using Common.DI;
-using Common.Entities.Components;
-using Common.Systems;
+using Common.Core;
+using Common.Services.Entities;
 
-namespace Common.Entities.Systems;
+namespace Common.Systems;
 
 public class MobControllerSystem : ISystem, IUpdatable
 {

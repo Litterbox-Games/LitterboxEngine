@@ -1,15 +1,14 @@
 ﻿using System.Numerics;
 using Arch.Core;
-using Client.Network;
-using Common.DI;
-using Common.Entities;
-using Common.Entities.Components;
-using Common.Network;
-using Common.Players;
-using Common.Systems;
-using Common.Systems.Messages;
+using Client.Services.Network;
+using Common.Components;
+using Common.Core;
+using Common.Services.Entities;
+using Common.Services.Entities.Messages;
+using Common.Services.Network;
+using Common.Services.Players;
 
-namespace Client.Entities.Systems;
+namespace Client.Systems;
 
 public class ClientMovementSystem: ISystem, IUpdatable
 {

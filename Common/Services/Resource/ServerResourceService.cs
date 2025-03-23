@@ -1,8 +1,8 @@
-﻿using Common.Logging;
-using Common.Resource.Exceptions;
+﻿using Common.Services.Logging;
+using Common.Services.Resource.Exceptions;
 using MoreLinq;
 
-namespace Common.Resource;
+namespace Common.Services.Resource;
 
 public class ServerResourceService: IResourceService, IDisposable
 {

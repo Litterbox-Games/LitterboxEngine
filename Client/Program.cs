@@ -3,7 +3,7 @@ using Client.Graphics.GHAL.Vulkan;
 using Client.Graphics.Input;
 using Client.Graphics.Input.ImGui;
 using Client.Host;
-using Client.Resource;
+using Client.Services.Resource;
 using Silk.NET.Input;
 
 namespace Client;

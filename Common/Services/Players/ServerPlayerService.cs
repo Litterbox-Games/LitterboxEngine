@@ -1,9 +1,9 @@
-﻿using Common.DI;
+﻿using Common.Core;
 using Common.Host;
-using Common.Network;
-using Common.Players.Messages;
+using Common.Services.Network;
+using Common.Services.Players.Messages;
 
-namespace Common.Players;
+namespace Common.Services.Players;
 
 public sealed class ServerPlayerService : IPlayerService
 {

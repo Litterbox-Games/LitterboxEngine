@@ -1,6 +1,6 @@
-﻿using Common.Network;
+﻿using Common.Services.Network;
 
-namespace Client.Network;
+namespace Client.Services.Network;
 
 public interface IClientNetworkService: INetworkService
 {

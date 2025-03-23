@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
-using Common.Entities.Systems;
-using Common.Network;
+using Common.Services.Network;
+using Common.Systems;
 
 namespace Common.Host;
 

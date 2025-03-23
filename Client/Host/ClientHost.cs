@@ -1,9 +1,8 @@
 ﻿using Client.Graphics;
-using Client.Network;
+using Client.Services.Network;
 using Common.Core;
-using Common.DI;
 using Common.Host;
-using Common.Players;
+using Common.Services.Players;
 
 namespace Client.Host;
 

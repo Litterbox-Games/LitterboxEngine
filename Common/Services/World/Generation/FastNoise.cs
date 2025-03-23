@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace Common.World.Generation
+namespace Common.Services.World.Generation
 {
 	// Uncomment the line below to swap all the inputs/outputs/calculations of FastNoise to doubles instead of floats
 	//#define FN_USE_DOUBLES

@@ -1,9 +1,9 @@
 ﻿using AsepriteDotNet.Aseprite.Types;
 using AsepriteDotNet.IO;
 using Client.Graphics.GHAL;
-using Common.Resource;
+using Common.Services.Resource;
 
-namespace Client.Resource;
+namespace Client.Services.Resource;
 
 public class Aseprite : IResource, IGraphicsResource, IReloadable, IDisposable
 {

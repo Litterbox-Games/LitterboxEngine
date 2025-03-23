@@ -1,7 +1,7 @@
 ﻿using Client.Graphics.GHAL;
-using Common.Resource;
+using Common.Services.Resource;
 
-namespace Client.Resource;
+namespace Client.Services.Resource;
 
 public class Shader : IResource, IDisposable
 {

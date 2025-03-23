@@ -1,6 +1,4 @@
-﻿using Common.DI;
-
-namespace Common.Systems;
+﻿namespace Common.Core;
 
 
 // TODO: make useful

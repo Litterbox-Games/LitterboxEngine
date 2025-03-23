@@ -1,4 +1,4 @@
-﻿namespace Common.DI.Attributes;
+﻿namespace Common.Core.Attributes;
 
 /// <summary>
 ///     Do not register this service during the primary registration.

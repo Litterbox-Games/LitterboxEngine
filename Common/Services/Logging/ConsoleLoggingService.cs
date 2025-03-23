@@ -1,8 +1,7 @@
-﻿using System;
-using Serilog;
+﻿using Serilog;
 using Serilog.Core;
 
-namespace Common.Logging;
+namespace Common.Services.Logging;
 
 /// <summary>
 ///     A service implementing the logging contract to log information to the system console.

@@ -1,4 +1,4 @@
-﻿namespace Common.Resource.Exceptions;
+﻿namespace Common.Services.Resource.Exceptions;
 
 /// <summary>
 ///     A resource file was not found.

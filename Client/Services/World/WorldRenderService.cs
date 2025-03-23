@@ -2,19 +2,18 @@
 using Arch.Core;
 using Arch.Core.Extensions;
 using Client.Graphics;
-using Client.Resource;
+using Client.Services.Resource;
 using Common.Components;
-using Common.DI;
-using Common.DI.Attributes;
-using Common.Entities;
-using Common.Entities.Components;
+using Common.Core;
+using Common.Core.Attributes;
 using Common.Mathematics;
-using Common.Players;
-using Common.Resource;
-using Common.World;
+using Common.Services.Entities;
+using Common.Services.Players;
+using Common.Services.Resource;
+using Common.Services.World;
 using ImGuiNET;
 
-namespace Client.World;
+namespace Client.Services.World;
 
 
 [UpdatablePriority(EPriority.High)]

@@ -1,8 +1,7 @@
 ﻿using Client.Graphics;
 using Common.Core;
-using Common.DI;
 using Common.Host;
-using Common.Players;
+using Common.Services.Players;
 
 namespace Client.Host;
 

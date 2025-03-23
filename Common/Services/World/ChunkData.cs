@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using Common.Mathematics;
 
-namespace Common.World;
+namespace Common.Services.World;
 
 public class ChunkData
 {

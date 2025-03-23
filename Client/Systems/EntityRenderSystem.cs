@@ -1,23 +1,20 @@
 ﻿using System.Drawing;
-using System.Globalization;
 using System.Numerics;
-using System.Reflection;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
 using Client.Graphics;
-using Client.Resource;
+using Client.Services.Resource;
 using Common.Components;
-using Common.Entities;
-using Common.Entities.Components;
+using Common.Core;
 using Common.Mathematics;
-using Common.Players;
-using Common.Resource;
-using Common.Systems;
-using Common.World;
+using Common.Services.Entities;
+using Common.Services.Players;
+using Common.Services.Resource;
+using Common.Services.World;
 using ImGuiNET;
 
-namespace Client.Entities.Systems;
+namespace Client.Systems;
 
 public class EntityRenderSystem: ISystem, IDrawable
 {

@@ -1,7 +1,7 @@
 ﻿using Arch.Core;
-using Common.DI;
+using Common.Core;
 
-namespace Common.Entities;
+namespace Common.Services.Entities;
 
 public interface IEntityService : IService
 {

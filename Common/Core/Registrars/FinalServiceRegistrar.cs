@@ -1,8 +1,7 @@
-﻿using Common.DI.Attributes;
-using Common.Host;
-using Common.Logging;
+﻿using Common.Core.Attributes;
+using Common.Services.Logging;
 
-namespace Common.DI.Registrars;
+namespace Common.Core.Registrars;
 
 /// <summary>
 ///     Registers an services that must be loaded last.

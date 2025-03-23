@@ -1,7 +1,6 @@
 ﻿using Common.Host;
-using Unity;
 
-namespace Common.DI;
+namespace Common.Core;
 
 /// <summary>
 ///     The contract representing the host container of an application/game state.

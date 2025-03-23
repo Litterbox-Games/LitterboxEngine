@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Common.DI;
+﻿using Common.Core;
 
-namespace Common.Logging;
+namespace Common.Services.Logging;
 
 /// <summary>
 ///     The root logging service. Registered under the default mapping, this sends log events to every logging service registered.

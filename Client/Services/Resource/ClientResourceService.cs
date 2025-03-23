@@ -1,11 +1,11 @@
 ﻿using Client.Graphics.GHAL;
-using Common.DI;
-using Common.Logging;
-using Common.Resource;
-using Common.Resource.Exceptions;
+using Common.Core;
+using Common.Services.Logging;
+using Common.Services.Resource;
+using Common.Services.Resource.Exceptions;
 using MoreLinq;
 
-namespace Client.Resource;
+namespace Client.Services.Resource;
 
 public class ClientResourceService: IResourceService, IUpdatable, IDisposable
 {

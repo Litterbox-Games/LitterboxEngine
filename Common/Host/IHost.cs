@@ -1,5 +1,5 @@
-﻿using Common.DI;
-using Common.DI.Attributes;
+﻿using Common.Core;
+using Common.Core.Attributes;
 
 namespace Common.Host;
 

@@ -1,14 +1,14 @@
-﻿using System.Numerics;
-using Arch.Core;
-using Client.Network;
+﻿using Arch.Core;
+using Arch.Core.Extensions;
+using Client.Components;
+using Client.Services.Network;
 using Common.Components;
-using Common.Entities;
-using Common.Entities.Components;
-using Common.Entities.Messages;
-using Common.Network;
-using Common.Players;
+using Common.Services.Entities;
+using Common.Services.Entities.Messages;
+using Common.Services.Network;
+using Common.Services.Players;
 
-namespace Client.Entities;
+namespace Client.Services.Entities;
 
 public class ClientEntityService : IEntityService
 {
@@ -42,6 +42,9 @@ public class ClientEntityService : IEntityService
                     new Networked { OwnerId = castedMessage.EntityOwner, NetworkId = castedMessage.EntityId, EntityType = castedMessage.EntityType },
                     new Player(),
                     new Position(castedMessage.EntityPosition));
+
+                if (castedMessage.EntityOwner == _playerService.PlayerId) 
+                    entity.Add<PlayerControls>();   
             
                 EventOnEntitySpawn?.Invoke(entity);
                 break;

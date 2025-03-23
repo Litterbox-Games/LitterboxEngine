@@ -1,4 +1,4 @@
-﻿namespace Common.Resource;
+﻿namespace Common.Services.Resource;
 
 /// <summary>
 ///     A contract representing a loadable resource.

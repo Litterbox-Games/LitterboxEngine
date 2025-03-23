@@ -1,6 +1,6 @@
-﻿using Common.DI;
+﻿using Common.Core;
 
-namespace Common.Resource;
+namespace Common.Services.Resource;
 
 public interface IResourceService : IService
 {

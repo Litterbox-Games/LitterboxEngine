@@ -1,4 +1,4 @@
-﻿namespace Common.DI;
+﻿namespace Common.Core;
 
 /// <summary>
 ///     A simple priority enum.

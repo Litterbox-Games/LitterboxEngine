@@ -1,4 +1,4 @@
-﻿using Client.Resource;
+﻿using Client.Services.Resource;
 using Silk.NET.Vulkan;
 
 namespace Client.Graphics.GHAL.Vulkan;

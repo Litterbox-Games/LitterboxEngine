@@ -1,7 +1,7 @@
-﻿using Common.DI;
+﻿using Common.Core;
 using Common.Mathematics;
 
-namespace Common.World;
+namespace Common.Services.World;
 
 public interface IWorldService : IService, IUpdatable
 {

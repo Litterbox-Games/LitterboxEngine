@@ -1,11 +1,11 @@
-﻿using Client.Network;
+﻿using Client.Services.Network;
 using Common.Mathematics;
-using Common.Network;
-using Common.Players;
-using Common.World;
-using Common.World.Messages;
+using Common.Services.Network;
+using Common.Services.Players;
+using Common.Services.World;
+using Common.Services.World.Messages;
 
-namespace Client.World;
+namespace Client.Services.World;
 
 public class ClientWorldService : IWorldService
 {

@@ -1,6 +1,6 @@
-﻿using Common.Players;
+﻿using Common.Services.Players;
 
-namespace Common.Network;
+namespace Common.Services.Network;
 
 public interface IServerNetworkService: INetworkService
 {

@@ -1,9 +1,9 @@
 ﻿using System.Numerics;
-using Common.Network;
+using Common.Services.Network;
 using Lidgren.Network;
 using MoreLinq;
 
-namespace Common.Systems.Messages;
+namespace Common.Services.Entities.Messages;
 
 public record EntityMovement
 {

@@ -1,4 +1,4 @@
-﻿namespace Common.DI.Attributes;
+﻿namespace Common.Core.Attributes;
 
 /// <summary>
 ///     Sets the priority of a tickable service.

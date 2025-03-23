@@ -1,4 +1,4 @@
-﻿namespace Common.World;
+﻿namespace Common.Services.World;
 
 public enum EChunkRequest : byte
 {

@@ -1,15 +1,13 @@
-﻿using Common.DI;
-using Common.Entities.Messages;
-using Common.Logging;
-using Common.Players;
-using Common.Players.Messages;
-using Common.Systems.Messages;
-using Common.World.Messages;
+﻿using Common.Core;
+using Common.Services.Entities.Messages;
+using Common.Services.Logging;
+using Common.Services.Players;
+using Common.Services.Players.Messages;
+using Common.Services.World.Messages;
 using Lidgren.Network;
-using MoreLinq;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-namespace Common.Network;
+namespace Common.Services.Network;
 
 public delegate void OnMessage(INetworkMessage message, NetworkPlayer? player);
 

@@ -1,7 +1,7 @@
 ﻿using Lidgren.Network;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-namespace Common.Network;
+namespace Common.Services.Network;
 
 public interface INetworkMessage
 {

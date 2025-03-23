@@ -1,8 +1,8 @@
 ﻿using System.Numerics;
-using Common.Network;
+using Common.Services.Network;
 using Lidgren.Network;
 
-namespace Common.Entities.Messages;
+namespace Common.Services.Entities.Messages;
 
 public sealed class EntitySpawnMessage : INetworkMessage
 {

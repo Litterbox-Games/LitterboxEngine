@@ -1,10 +1,10 @@
-﻿using Common.DI;
+﻿using Common.Core;
 using Common.Host;
-using Common.Logging;
-using Common.Players;
+using Common.Services.Logging;
+using Common.Services.Players;
 using Lidgren.Network;
 
-namespace Common.Network;
+namespace Common.Services.Network;
 
 public class ServerNetworkService : IServerNetworkService
 {

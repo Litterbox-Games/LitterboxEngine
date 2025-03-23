@@ -1,13 +1,13 @@
 ﻿using System.Numerics;
 using Arch.Core;
-using Common.DI;
-using Common.Entities.Components;
-using Common.Network;
-using Common.Players;
-using Common.Systems;
-using Common.Systems.Messages;
+using Common.Components;
+using Common.Core;
+using Common.Services.Entities;
+using Common.Services.Entities.Messages;
+using Common.Services.Network;
+using Common.Services.Players;
 
-namespace Common.Entities.Systems;
+namespace Common.Systems;
 
 public class ServerMovementSystem: ISystem, IUpdatable
 {

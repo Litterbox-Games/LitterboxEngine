@@ -1,10 +1,10 @@
-﻿using Common.DI;
-using Common.Logging;
-using Common.Network;
-using Common.Players;
+﻿using Common.Core;
+using Common.Services.Logging;
+using Common.Services.Network;
+using Common.Services.Players;
 using Lidgren.Network;
 
-namespace Client.Network;
+namespace Client.Services.Network;
 
 public class ClientNetworkService : IClientNetworkService
 {

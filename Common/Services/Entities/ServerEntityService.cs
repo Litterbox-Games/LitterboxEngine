@@ -1,13 +1,12 @@
 ﻿using System.Numerics;
-using Common.Components;
-using Common.Entities.Components;
-using Common.Entities.Messages;
-using Common.Network;
-using Common.Players;
 using Arch.Core;
 using Arch.Core.Extensions;
+using Common.Components;
+using Common.Services.Entities.Messages;
+using Common.Services.Network;
+using Common.Services.Players;
 
-namespace Common.Entities;
+namespace Common.Services.Entities;
 
 public class ServerEntityService: IEntityService
 {

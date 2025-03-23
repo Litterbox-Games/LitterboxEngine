@@ -1,21 +1,21 @@
 ﻿using Arch.Core.Utils;
-using Client.Entities.Systems;
 using Client.Graphics;
 using Client.Graphics.Input;
-using Client.Resource;
-using Client.World;
-using Common.DI;
-using Common.DI.Attributes;
-using Common.Entities;
-using Common.Entities.Components;
-using Common.Entities.Systems;
+using Client.Services.Resource;
+using Client.Services.World;
+using Client.Systems;
+using Common.Components;
+using Common.Core;
+using Common.Core.Attributes;
 using Common.Host;
-using Common.Logging;
-using Common.Network;
-using Common.Players;
-using Common.Resource;
-using Common.World;
-using Common.World.Generation;
+using Common.Services.Entities;
+using Common.Services.Logging;
+using Common.Services.Network;
+using Common.Services.Players;
+using Common.Services.Resource;
+using Common.Services.World;
+using Common.Services.World.Generation;
+using Common.Systems;
 
 namespace Client.Core.Registrars;
 

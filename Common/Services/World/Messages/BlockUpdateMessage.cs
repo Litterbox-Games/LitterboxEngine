@@ -1,8 +1,8 @@
 ﻿using Common.Mathematics;
-using Common.Network;
+using Common.Services.Network;
 using Lidgren.Network;
 
-namespace Common.World.Messages;
+namespace Common.Services.World.Messages;
 
 public sealed class BlockUpdateMessage : INetworkMessage
 {

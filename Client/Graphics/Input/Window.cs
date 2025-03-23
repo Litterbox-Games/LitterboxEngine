@@ -1,5 +1,4 @@
-﻿using Common.DI;
-using Common.Mathematics;
+﻿using Common.Mathematics;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;

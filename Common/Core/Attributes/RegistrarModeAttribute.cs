@@ -1,6 +1,6 @@
 ﻿using Common.Host;
 
-namespace Common.DI.Attributes;
+namespace Common.Core.Attributes;
 
 /// <summary>
 ///     Define the game states in which this registration is called.

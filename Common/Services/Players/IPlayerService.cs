@@ -1,6 +1,6 @@
-﻿using Common.DI;
+﻿using Common.Core;
 
-namespace Common.Players;
+namespace Common.Services.Players;
 
 public interface IPlayerService : IService
 {

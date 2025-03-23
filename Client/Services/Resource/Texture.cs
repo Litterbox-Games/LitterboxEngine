@@ -1,9 +1,9 @@
 ﻿using System.Drawing;
 using Client.Graphics.GHAL;
-using Common.Resource;
+using Common.Services.Resource;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace Client.Resource;
+namespace Client.Services.Resource;
 
 public class Texture : IResource, IGraphicsResource, IReloadable, IDisposable
 {

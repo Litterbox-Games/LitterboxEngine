@@ -1,4 +1,4 @@
-﻿namespace Client.Entities.Systems;
+﻿namespace Client.Systems;
 
 public class CameraSystem
 {

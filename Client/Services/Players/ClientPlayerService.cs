@@ -1,9 +1,9 @@
-﻿using Client.Network;
-using Common.Network;
-using Common.Players;
-using Common.Players.Messages;
+﻿using Client.Services.Network;
+using Common.Services.Network;
+using Common.Services.Players;
+using Common.Services.Players.Messages;
 
-namespace Client.Players;
+namespace Client.Services.Players;
 
 public class ClientPlayerService : IPlayerService
 {
