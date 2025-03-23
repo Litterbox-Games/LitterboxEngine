@@ -22,24 +22,19 @@ public class ClientPlayerService : IPlayerService
         networkService.RegisterMessageHandle<PlayerListSyncMessage>(OnPlayerListSyncMessage);
     }
 
-    private void OnPlayerConnectMessage(INetworkMessage message, NetworkPlayer? _)
+    private void OnPlayerConnectMessage(PlayerConnectMessage message, NetworkPlayer? _)
     {
-        var castedMessage = (PlayerConnectMessage) message;
-        _players.Add(castedMessage.NetworkPlayer!);
+        _players.Add(message.NetworkPlayer!);
     }
 
-    private void OnPlayerDisconnectMessage(INetworkMessage message, NetworkPlayer? _)
+    private void OnPlayerDisconnectMessage(PlayerDisconnectMessage message, NetworkPlayer? _)
     {
-        var castedMessage = (PlayerDisconnectMessage) message;
-
-        _players.Remove(_players.First(x => x.PlayerId == castedMessage.PlayerId));
+        _players.Remove(_players.First(x => x.PlayerId == message.PlayerId));
     }
 
-    private void OnPlayerListSyncMessage(INetworkMessage message, NetworkPlayer? _)
+    private void OnPlayerListSyncMessage(PlayerListSyncMessage message, NetworkPlayer? _)
     {
-        var castedMessage = (PlayerListSyncMessage) message;
-
         _players.Clear();
-        _players.AddRange(castedMessage.Players);
+        _players.AddRange(message.Players);
     }
 }

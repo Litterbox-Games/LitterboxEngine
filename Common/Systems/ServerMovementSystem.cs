@@ -72,18 +72,17 @@ public class ServerMovementSystem: ISystem, IUpdatable
             _network.SendToAllPlayers(moveMessage);
     }
     
-    private void OnEntityMoveMessage(INetworkMessage message, NetworkPlayer? player)
+    private void OnEntityMoveMessage(EntityMoveMessage message, NetworkPlayer? player)
     {
         var now = DateTime.Now;
-        var castedMessage = (EntityMoveMessage) message;
 
-        // Iterate Entities once because castedMessage.Entities.Length < Entities.Length (typically)
+        // Iterate Entities once because message.Entities.Length < Entities.Length (typically)
         _entityService.Entities.Query(in _movable, (
             ref Networked network, 
             ref Position position
         ) => {
             var entityId = network.NetworkId;
-            var movement = castedMessage.Entities.FirstOrDefault(x => x.EntityId == entityId);   
+            var movement = message.Entities.FirstOrDefault(x => x.EntityId == entityId);   
             
             if (movement == null) return;
             
@@ -94,7 +93,7 @@ public class ServerMovementSystem: ISystem, IUpdatable
         });
 
         // Forward this packet to all players
-        _network.SendToAllPlayers(castedMessage, networkPlayer => networkPlayer != player);
+        _network.SendToAllPlayers(message, networkPlayer => networkPlayer != player);
     }
 }
 

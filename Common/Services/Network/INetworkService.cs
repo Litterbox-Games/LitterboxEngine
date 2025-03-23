@@ -9,12 +9,14 @@ using Lidgren.Network;
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 namespace Common.Services.Network;
 
-public delegate void OnMessage(INetworkMessage message, NetworkPlayer? player);
+public delegate void OnMessage<in T>(T message, NetworkPlayer? player) where T : INetworkMessage;
 
 public interface INetworkService : IService, IUpdatable
 {
     protected Dictionary<int, Type> Messages { get; }
-    protected Dictionary<Type, List<OnMessage>> MessageHandles { get; }
+    
+    protected Dictionary<Type, List<Delegate>> MessageHandles { get; }
+    
     public NetPeer NetPeer { get; }
 
     void SendMessage(NetConnection connection, INetworkMessage message)
@@ -62,6 +64,7 @@ public interface INetworkService : IService, IUpdatable
     {
         var hash = GetDeterministicHashCode(typeof(T).FullName!);
 
+        logger?.Information($"Registering message '{typeof(T).Name}'");
         if (Messages.TryGetValue(hash, out var message))
         {
             logger?.Warning("Attempted to register messages sharing the same hash.");
@@ -74,7 +77,7 @@ public interface INetworkService : IService, IUpdatable
         Messages[hash] = typeof(T);
     }
 
-    public void RegisterMessageHandle<T>(OnMessage handle) where T : INetworkMessage, new()
+    public void RegisterMessageHandle<T>(OnMessage<T> handle) where T : INetworkMessage, new()
     {
         if (MessageHandles.ContainsKey(typeof(T)))
             MessageHandles[typeof(T)].Add(handle);

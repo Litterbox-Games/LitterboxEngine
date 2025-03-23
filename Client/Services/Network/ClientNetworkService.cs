@@ -9,7 +9,7 @@ namespace Client.Services.Network;
 public class ClientNetworkService : IClientNetworkService
 {
     public Dictionary<int, Type> Messages { get; } = [];
-    public Dictionary<Type, List<OnMessage>> MessageHandles { get; } = [];
+    public Dictionary<Type, List<Delegate>> MessageHandles { get; } = [];
     public NetPeer NetPeer => _client;
     
     public event Action? EventOnConnect;
@@ -124,9 +124,17 @@ public class ClientNetworkService : IClientNetworkService
         }
         
         var castedMessage = (INetworkMessage) Activator.CreateInstance(messageType)!;
-
         castedMessage.Deserialize(message);
-        handlers.ForEach(x => x.Invoke(castedMessage, null));
+        
+        foreach (var handler in handlers)
+        {
+            var handlerType = handler.GetType();
+            var delegateType = typeof(OnMessage<>).MakeGenericType(messageType);
+
+            if (!handlerType.IsAssignableFrom(delegateType)) return;
+            
+            handler.DynamicInvoke(castedMessage, null);
+        }
     }
     
     private void OnStatusChange(NetConnectionStatus newStatus, string reason)

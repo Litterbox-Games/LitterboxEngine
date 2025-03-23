@@ -9,7 +9,7 @@ namespace Common.Services.Network;
 public class ServerNetworkService : IServerNetworkService
 {
     public Dictionary<int, Type> Messages { get; } = [];
-    public Dictionary<Type, List<OnMessage>> MessageHandles { get; } = [];
+    public Dictionary<Type, List<Delegate>> MessageHandles { get; } = [];
     public NetPeer? NetPeer => _server;
     
     public event Action? EventOnStartListen;
@@ -156,27 +156,32 @@ public class ServerNetworkService : IServerNetworkService
 
         var messageId = message.ReadInt32();
 
-        if (!Messages.ContainsKey(messageId))
+        if (!Messages.TryGetValue(messageId, out var messageType))
         {
             _logger.Warning(
                 $"A player ${player.PlayerId} attempted to send an invalid message with the ID ${messageId}.");
             return;
         }
 
-        var messageType = Messages[messageId];
-
         var castedMessage = (INetworkMessage) Activator.CreateInstance(messageType)!;
-
         castedMessage.Deserialize(message);
 
-        if (!MessageHandles.ContainsKey(messageType))
+        if (!MessageHandles.TryGetValue(messageType, out var handlers))
         {
             _logger.Warning(
                 $"A player ${player.PlayerId} attempted to send an message with the ID ${messageId} that has no valid handles.");
             return;
         }
 
-        MessageHandles[messageType].ForEach(x => x.Invoke(castedMessage, player));
+        foreach (var handler in handlers)
+        {
+            var handlerType = handler.GetType();
+            var delegateType = typeof(OnMessage<>).MakeGenericType(messageType);
+
+            if (!handlerType.IsAssignableFrom(delegateType))return;
+            
+            handler.DynamicInvoke(castedMessage, player);
+        }
     }
     
     private bool OnConnectionRequest(NetIncomingMessage message)
