@@ -3,7 +3,7 @@ using Common.Host;
 using Common.Logging;
 using Common.Mathematics;
 using Common.Network;
-using Common.Player;
+using Common.Players;
 using Common.World.Generation;
 using Common.World.Messages;
 
@@ -60,7 +60,7 @@ public class ServerWorldService : IWorldService
             return;
         }
 
-        var player = _networkService.Players.First(x => x.PlayerID == _playerService.PlayerId);
+        var player = _networkService.Players.First(x => x.PlayerId == _playerService.PlayerId);
         
         var chunk = GetChunk(position);
 
@@ -84,7 +84,7 @@ public class ServerWorldService : IWorldService
 
         var chunk = NetworkedChunks.FirstOrDefault(x => x.ChunkData.Position == position);
 
-        chunk?.Observers.Remove(_networkService.Players.FirstOrDefault(x => x.PlayerID == _playerService.PlayerId)!);
+        chunk?.Observers.Remove(_networkService.Players.FirstOrDefault(x => x.PlayerId == _playerService.PlayerId)!);
     }
 
     private void OnChunkRequest(INetworkMessage message, NetworkPlayer? player)

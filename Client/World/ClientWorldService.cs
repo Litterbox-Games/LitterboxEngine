@@ -1,7 +1,7 @@
 ﻿using Client.Network;
 using Common.Mathematics;
 using Common.Network;
-using Common.Player;
+using Common.Players;
 using Common.World;
 using Common.World.Messages;
 

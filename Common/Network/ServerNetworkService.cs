@@ -1,10 +1,9 @@
 ﻿using Common.DI;
 using Common.Host;
 using Common.Logging;
-using Common.Player;
+using Common.Players;
 using Lidgren.Network;
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 namespace Common.Network;
 
 public class ServerNetworkService : IServerNetworkService
@@ -160,7 +159,7 @@ public class ServerNetworkService : IServerNetworkService
         if (!Messages.ContainsKey(messageId))
         {
             _logger.Warning(
-                $"A player ${player.PlayerID} attempted to send an invalid message with the ID ${messageId}.");
+                $"A player ${player.PlayerId} attempted to send an invalid message with the ID ${messageId}.");
             return;
         }
 
@@ -173,7 +172,7 @@ public class ServerNetworkService : IServerNetworkService
         if (!MessageHandles.ContainsKey(messageType))
         {
             _logger.Warning(
-                $"A player ${player.PlayerID} attempted to send an message with the ID ${messageId} that has no valid handles.");
+                $"A player ${player.PlayerId} attempted to send an message with the ID ${messageId} that has no valid handles.");
             return;
         }
 

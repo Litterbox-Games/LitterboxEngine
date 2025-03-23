@@ -1,5 +1,5 @@
 ﻿using System.Numerics;
-using Common.Entity;
+using Common.Entities.Systems;
 using Common.Network;
 
 namespace Common.Host;
@@ -12,7 +12,7 @@ public interface IServerHost: IHost
         
         networking.Listen(port);
 
-        var mobController = Container.Resolve<MobControllerService>();
+        var mobController = Container.Resolve<MobControllerSystem>();
         for (var x = 0; x < 30; x++)
         {
             for (var y = 0; y < 30; y++)

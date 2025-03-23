@@ -14,7 +14,7 @@ internal static class Program
     {
         // Game Initialization
         // TODO: this will eventually be the code called when a player starts/joins a world
-        using IClientHost host = new LocalHost(false);
+        using IClientHost host = new ClientHost();
         
         using var window = new Window();
         using var graphicsDevice = new VulkanGraphicsDevice(window);

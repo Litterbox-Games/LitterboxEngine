@@ -1,12 +1,15 @@
 ﻿using System.Drawing;
+using Arch.Core;
+using Arch.Core.Extensions;
 using Client.Graphics;
 using Client.Resource;
+using Common.Components;
 using Common.DI;
 using Common.DI.Attributes;
-using Common.Entity;
+using Common.Entities;
+using Common.Entities.Components;
 using Common.Mathematics;
-using Common.Network;
-using Common.Player;
+using Common.Players;
 using Common.Resource;
 using Common.World;
 using ImGuiNET;
@@ -21,7 +24,7 @@ public class WorldRenderService : IService, IDrawable
     private readonly IPlayerService _playerService;
     private readonly IResourceService _resourceService;
     
-    private GameEntity? _playerEntity;
+    private Entity? _playerEntity;
     
     public WorldRenderService(IPlayerService playerService, IResourceService resourceService, IWorldService worldService, IEntityService entityService)
     {
@@ -33,19 +36,18 @@ public class WorldRenderService : IService, IDrawable
         entityService.EventOnEntityDespawn += OnEntityDespawn;
     }
     
-    private void OnEntitySpawn(GameEntity entity)
+    private void OnEntitySpawn(Entity entity)
     {
-        if (entity.EntityId == _playerService.PlayerId)
-        {
-            _playerEntity = entity;
-        }
-            
+        if (!entity.Has<Networked, Player>()) return;
+        var networked = entity.Get<Networked>();
+        if (networked.OwnerId == _playerService.PlayerId) _playerEntity = entity;
     }
-
-    private void OnEntityDespawn(GameEntity entity)
+    
+    private void OnEntityDespawn(Entity entity)
     {
-        if (entity.EntityId == _playerService.PlayerId)
-            _playerEntity = null;
+        if (!entity.Has<Networked, Player>()) return;
+        var networked = entity.Get<Networked>();
+        if (networked.OwnerId == _playerService.PlayerId) _playerEntity = null;       
     }
 
     public void Draw(Renderer renderer)
@@ -56,7 +58,7 @@ public class WorldRenderService : IService, IDrawable
 
         if (_worldService is ServerWorldService serverWorld)
         {
-            chunks = serverWorld.NetworkedChunks.Where(x => x.Observers.Any(y => y.PlayerID == _playerService.PlayerId))
+            chunks = serverWorld.NetworkedChunks.Where(x => x.Observers.Any(y => y.PlayerId == _playerService.PlayerId))
                 .Select(x => x.ChunkData);
         }
         else
@@ -64,8 +66,9 @@ public class WorldRenderService : IService, IDrawable
             chunks = _worldService.Chunks;
         }
 
-        var playerChunkX = (int)Math.Floor(_playerEntity.Position.X / ChunkData.ChunkSize);
-        var playerChunkY = (int)Math.Floor(_playerEntity.Position.Y / ChunkData.ChunkSize);
+        var playerPosition = _playerEntity.Value.Get<Position>();
+        var playerChunkX = (int)Math.Floor(playerPosition.Current.X / ChunkData.ChunkSize);
+        var playerChunkY = (int)Math.Floor(playerPosition.Current.Y / ChunkData.ChunkSize);
 
         ImGui.Begin("WorldRenderService");
         

@@ -1,7 +1,7 @@
 ﻿using Common.DI;
 using Common.Logging;
 using Common.Network;
-using Common.Player;
+using Common.Players;
 using Lidgren.Network;
 
 namespace Client.Network;
