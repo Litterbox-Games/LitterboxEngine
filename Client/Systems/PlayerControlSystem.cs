@@ -44,6 +44,15 @@ public class PlayerControlSystem : ISystem, IUpdatable, IDrawable
     /// <inheritdoc />
     public void Update(float deltaTime)
     {
+        UpdatePosition(deltaTime);
+        UpdateChunks();
+        
+        _fpsRecordings.Enqueue(MathF.Round(1f / deltaTime));
+        if (_fpsRecordings.Count > 60) _fpsRecordings.Dequeue();
+    }
+
+    private void UpdatePosition(float deltaTime)
+    {
         _entityService.Entities.Query(in _playerControlled, ( 
             ref Position position
         ) => {
@@ -67,43 +76,45 @@ public class PlayerControlSystem : ISystem, IUpdatable, IDrawable
             direction = Vector2.Normalize(direction);
             position.Current += direction * speed * deltaTime;
             _cameraService.Target = position.Current;
-
-            UpdateChunks(position.Current);
         });
-        
-        _fpsRecordings.Enqueue(MathF.Round(1f / deltaTime));
-        if (_fpsRecordings.Count > 60) _fpsRecordings.Dequeue();
     }
-
-    private void UpdateChunks(Vector2 playerEntityPosition)
+    
+    private void UpdateChunks()
     {
+        // TODO: turn into user setting - can expose through ImGui first
         const int chunkRadius = 2;
         
-        _chunkPosition = (playerEntityPosition / ChunkData.ChunkSize).Modulus(IWorldService.WorldSize).ToVector2i();
-
-        // Load and unload chunks based on square distance
-        for (var dx = -chunkRadius - 1; dx <= chunkRadius + 1; dx++)
+        _entityService.Entities.Query(in _playerControlled, ( 
+            ref Position position
+        ) =>
         {
-            for (var dy = -chunkRadius - 1; dy <= chunkRadius + 1; dy++)
+            // TODO: maybe need to prevent from doing this every frame?
+            _chunkPosition = (position.Current / ChunkData.ChunkSize).Modulus(IWorldService.WorldSize).ToVector2i();
+            
+            // Load and unload chunks based on square distance
+            for (var dx = -chunkRadius - 1; dx <= chunkRadius + 1; dx++)
             {
-                var chunk = new Vector2i(
-                    (_chunkPosition.X + dx).Modulus(IWorldService.WorldSize),
-                    (_chunkPosition.Y + dy).Modulus(IWorldService.WorldSize)
-                );
-            
-                var squareDistance = dx * dx + dy * dy;
-            
-                switch (squareDistance)
+                for (var dy = -chunkRadius - 1; dy <= chunkRadius + 1; dy++)
                 {
-                    case <= chunkRadius * chunkRadius:
-                        _worldService.RequestChunk(chunk);
-                        break;
-                    case <= (chunkRadius + 1) * (chunkRadius + 1):
-                        _worldService.RequestUnloadChunk(chunk);
-                        break;
+                    var chunk = new Vector2i(
+                        (_chunkPosition.X + dx).Modulus(IWorldService.WorldSize),
+                        (_chunkPosition.Y + dy).Modulus(IWorldService.WorldSize)
+                    );
+            
+                    var squareDistance = dx * dx + dy * dy;
+            
+                    switch (squareDistance)
+                    {
+                        case <= chunkRadius * chunkRadius:
+                            _worldService.RequestChunk(chunk);
+                            break;
+                        case <= (chunkRadius + 1) * (chunkRadius + 1):
+                            _worldService.RequestUnloadChunk(chunk);
+                            break;
+                    }
                 }
             }
-        }
+        });
     }
 
     private void OnMouseClick(MouseButton button, Vector2 position)
