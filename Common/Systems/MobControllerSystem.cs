@@ -8,7 +8,7 @@ namespace Common.Systems;
 
 public class MobControllerSystem : ISystem, IUpdatable
 {
-    private readonly QueryDescription _mobs = new QueryDescription().WithAll<Mob, Position>();
+    private readonly QueryDescription _mobs = new QueryDescription().WithAll<Mob, Position, Velocity>();
     
     private readonly ServerEntityService _entityService;
 
@@ -23,12 +23,13 @@ public class MobControllerSystem : ISystem, IUpdatable
     {
         var signX = _random.Next() > int.MaxValue / 2 ? -1 : 1;
         var signY = _random.Next() > int.MaxValue / 2 ? -1 : 1;
-        
+        var velocity = Vector2.Normalize(new Vector2(signX * _random.Next(), signY * _random.Next()));
         
         var entity = _entityService.Entities.Create(
             new Networked { OwnerId = 0, NetworkId = (ulong) _random.Next(), EntityType = 1 },
-            new Mob { Direction = Vector2.Normalize(new Vector2(signX * _random.Next(), signY * _random.Next()) )}, 
-            new Position(position));
+            new Mob(), 
+            new Position(position),
+            new Velocity(velocity.X, velocity.Y) );
         
         _entityService.SpawnEntity(entity);
     }
@@ -39,18 +40,23 @@ public class MobControllerSystem : ISystem, IUpdatable
 
         _entityService.Entities.Query(_mobs, (
             ref Mob mob,
-            ref Position position
-        ) => {
+            ref Velocity velocity
+        ) =>
+        {
             // Change direction randomly if we haven't changed directions in the last 3-7 seconds
-            if (DateTime.Now - mob.LastChangedDirections > new TimeSpan(0, 0, 0, _random.Next() % 5 + 3))
-            {
-                var signX = _random.Next() > int.MaxValue / 2 ? -1 : 1;
-                var signY = _random.Next() > int.MaxValue / 2 ? -1 : 1;
-                mob.Direction = Vector2.Normalize(new Vector2(signX * _random.Next(), signY * _random.Next()));
-                mob.LastChangedDirections = DateTime.Now;
-            }
+            if (DateTime.Now - mob.LastChangedDirections <= new TimeSpan(0, 0, 0, _random.Next() % 5 + 3)) return;
             
-            position.Current += mob.Direction * deltaTime * movementSpeed;
+            var signX = _random.Next() > int.MaxValue / 2 ? -1 : 1;
+            var signY = _random.Next() > int.MaxValue / 2 ? -1 : 1;
+            velocity = Vector2.Normalize(new Vector2(signX * _random.Next(), signY * _random.Next())) * movementSpeed;
+            mob.LastChangedDirections = DateTime.Now;
+        });
+        
+        _entityService.Entities.Query(_mobs, (
+            ref Position position,
+            ref Velocity velocity
+        ) => {
+            position.Current += velocity.ToVector2() * deltaTime;
         });
     }
 }
