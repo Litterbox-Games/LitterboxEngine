@@ -9,6 +9,7 @@ using Common.Components;
 using Common.Core;
 using Common.Mathematics;
 using Common.Services.Entities;
+using Common.Services.Events;
 using Common.Services.Players;
 using Common.Services.Resource;
 using Common.Services.World;
@@ -27,17 +28,29 @@ public class EntityRenderSystem: ISystem, IDrawable
     private Entity? _playerEntity;
     private readonly Rectangle _textureSource = new(32, 112, 20, 16);
     
-    public EntityRenderSystem(IEntityService entityService, IPlayerService playerService, IResourceService resourceService)
+    private readonly EventService _eventService;
+    
+    public EntityRenderSystem(IEntityService entityService, IPlayerService playerService, IResourceService resourceService, EventService eventService)
     {
         _entityService = entityService;
         _playerService = playerService;
         _resourceService = resourceService;
+        _eventService = eventService;
         entityService.EventOnEntitySpawn += OnEntitySpawn;
         entityService.EventOnEntityDespawn += OnEntityDespawn;
+        
+        eventService.Handle<TestEvent>(OnTestEvent);
+    }
+
+    private void OnTestEvent(TestEvent e)
+    {
+        Console.WriteLine($"Got test event:{e.Foo}");
     }
 
     private void OnEntitySpawn(Entity entity)
     {
+        _eventService.Emit(new TestEvent {Foo = "Hello World"});
+        
         if (!entity.Has<Networked, Player>()) return;
         var networked = entity.Get<Networked>();
         if (networked.OwnerId == _playerService.PlayerId) _playerEntity = entity;
