@@ -1,13 +1,17 @@
 ﻿using Common.Mathematics;
+using Common.Services.Events;
 using Common.Services.Network;
+using Common.Services.Players;
 using Lidgren.Network;
 
 namespace Common.Services.World.Messages;
 
-public sealed class BlockUpdateMessage : INetworkMessage
+public struct BlockUpdateMessage : INetworkEvent
 {
-    NetDeliveryMethod INetworkMessage.NetworkChannel => NetDeliveryMethod.ReliableOrdered;
-
+    public NetDeliveryMethod NetworkChannel => NetDeliveryMethod.ReliableOrdered;
+    public ServerPlayer? Sender { get; set; }
+    public Predicate<ServerPlayer>? Receivers { get; set; }
+    
     public Vector2i Chunk;
     public Vector2i Position;
     public EBlockType BlockType;

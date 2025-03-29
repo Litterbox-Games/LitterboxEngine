@@ -1,11 +1,15 @@
-﻿using Common.Services.Network;
+﻿using Common.Services.Events;
+using Common.Services.Players;
 using Lidgren.Network;
 
 namespace Common.Services.Entities.Messages;
 
-public sealed class EntityDespawnMessage : INetworkMessage
+public struct EntityDespawnEvent : INetworkEvent
 {
     public NetDeliveryMethod NetworkChannel => NetDeliveryMethod.ReliableUnordered;
+    public ServerPlayer? Sender { get; set; }
+    public Predicate<ServerPlayer>? Receivers { get; set; }
+    
 
     public ulong EntityId;
 

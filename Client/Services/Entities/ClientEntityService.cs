@@ -5,6 +5,7 @@ using Client.Services.Network;
 using Common.Components;
 using Common.Services.Entities;
 using Common.Services.Entities.Messages;
+using Common.Services.Events;
 using Common.Services.Players;
 
 namespace Client.Services.Entities;
@@ -15,63 +16,63 @@ public class ClientEntityService : IEntityService
     
     public Arch.Core.World Entities { get; } = Arch.Core.World.Create();
 
-    public event Action<Entity>? EventOnEntitySpawn;
-    public event Action<Entity>? EventOnEntityDespawn;
-
     private readonly IPlayerService _playerService;
+    private readonly EventService _eventService;
 
-    public ClientEntityService(IClientNetworkService network, IPlayerService playerService)
+    public ClientEntityService(EventService eventService, IPlayerService playerService)
     {
         _playerService = playerService;
+        _eventService = eventService;
 
-        network.RegisterMessageHandle<EntitySpawnMessage>(OnEntitySpawnMessage);
-        network.RegisterMessageHandle<EntityDespawnMessage>(OnEntityDespawnMessage);
+        _eventService.Handle<EntitySpawnEvent>(OnEntitySpawn);
+        _eventService.Handle<EntityDespawnEvent>(OnEntityDespawn);
     }
 
-    private void OnEntitySpawnMessage(EntitySpawnMessage message, NetworkPlayer? _)
+    private void OnEntitySpawn(EntitySpawnEvent e)
     {
-        switch (message.EntityType)
+        Console.WriteLine(e.EntityOwner == _playerService.PlayerId);
+        switch (e.EntityType)
         {
             // TODO: Better way to lookup entity by `EntityType` and cast to the correct entity.
             case 0: // Player
             {
                 var entity = Entities.Create(
-                    new Networked { OwnerId = message.EntityOwner, NetworkId = message.EntityId, EntityType = message.EntityType },
+                    new Networked { OwnerId = e.EntityOwner, NetworkId = e.EntityId, EntityType = e.EntityType },
                     new Velocity(),
                     new Player(),
-                    new Position(message.EntityPosition));
+                    new Position(e.EntityPosition));
 
-                if (message.EntityOwner == _playerService.PlayerId)
+                if (e.EntityOwner == _playerService.PlayerId)
                 {
                     entity.Add<PlayerControls>();
                     entity.Add<CameraFollow>();
                 }
                        
             
-                EventOnEntitySpawn?.Invoke(entity);
+                _eventService.Emit(new EntityCreatedEvent { Entity = entity });
                 break;
             }
             case 1: // Mob
             {
                 var entity = Entities.Create(
-                    new Networked { OwnerId = message.EntityOwner, NetworkId = message.EntityId, EntityType = message.EntityType },
-                    new Position(message.EntityPosition));
+                    new Networked { OwnerId = e.EntityOwner, NetworkId = e.EntityId, EntityType = e.EntityType },
+                    new Position(e.EntityPosition));
             
-                EventOnEntitySpawn?.Invoke(entity);
+                _eventService.Emit(new EntityCreatedEvent { Entity = entity });
                 break;
             }
         }
     }
 
-    private void OnEntityDespawnMessage(EntityDespawnMessage message, NetworkPlayer? _)
+    private void OnEntityDespawn(EntityDespawnEvent e)
     {
         Entities.Query(_networkEntities,( 
             ref Entity entity, 
             ref Networked network 
         ) => { 
-            if (network.NetworkId != message.EntityId) return;
+            if (network.NetworkId != e.EntityId) return;
             Entities.Destroy(entity);
-            EventOnEntityDespawn?.Invoke(entity);
+            _eventService.Emit(new EntityDestroyedEvent{ Entity = entity });
         });
     }
 }

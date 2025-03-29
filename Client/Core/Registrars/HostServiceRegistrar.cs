@@ -35,7 +35,7 @@ public class HostServiceRegistrar : IServiceRegistrar
         
         container.RegisterSingleton<IResourceService, ClientResourceService>();
         
-        container.RegisterSingleton<IServerNetworkService, ServerNetworkService>();
+        container.RegisterSingleton<ServerNetworkService, ServerNetworkService>();
         container.RegisterSingleton<IPlayerService, ServerPlayerService>();
         container.RegisterSingleton<IEntityService, ServerEntityService>();
         container.RegisterSingleton<IWorldGenerator, EarthGenerator>("earth");
@@ -48,6 +48,6 @@ public class HostServiceRegistrar : IServiceRegistrar
         container.RegisterSingleton<MobControllerSystem, MobControllerSystem>();
         container.RegisterSingleton<PlayerControlSystem, PlayerControlSystem>();
         container.RegisterSingleton<EntityRenderSystem, EntityRenderSystem>();
-        container.RegisterSingleton<ServerMovementSystem, ServerMovementSystem>();        
+        container.RegisterSingleton<MovementSystem, MovementSystem>();        
     }
 }

@@ -13,9 +13,11 @@ using Common.Host;
 using Common.Services.Entities;
 using Common.Services.Events;
 using Common.Services.Logging;
+using Common.Services.Network;
 using Common.Services.Players;
 using Common.Services.Resource;
 using Common.Services.World;
+using Common.Systems;
 
 namespace Client.Core.Registrars;
 
@@ -38,7 +40,7 @@ public class ClientServiceRegistrar : IServiceRegistrar
         
         container.RegisterSingleton<IResourceService, ClientResourceService>();
 
-        container.RegisterSingleton<IClientNetworkService, ClientNetworkService>();
+        container.RegisterSingleton<NetworkService, ClientNetworkService>();
         container.RegisterSingleton<IPlayerService, ClientPlayerService>();
         container.RegisterSingleton<IEntityService, ClientEntityService>();
         container.RegisterSingleton<IWorldService, ClientWorldService>();
@@ -49,6 +51,6 @@ public class ClientServiceRegistrar : IServiceRegistrar
         container.RegisterSingleton<CameraSystem, CameraSystem>();
         container.RegisterSingleton<PlayerControlSystem, PlayerControlSystem>();
         container.RegisterSingleton<EntityRenderSystem, EntityRenderSystem>();
-        container.RegisterSingleton<ClientMovementSystem, ClientMovementSystem>();
+        container.RegisterSingleton<MovementSystem, MovementSystem>();
     }
 }

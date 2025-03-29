@@ -4,6 +4,7 @@ using Common.Core;
 using Common.Core.Attributes;
 using Common.Host;
 using Common.Services.Entities;
+using Common.Services.Events;
 using Common.Services.Logging;
 using Common.Services.Network;
 using Common.Services.Players;
@@ -31,7 +32,8 @@ public class ServerServiceRegistrar : IServiceRegistrar
         
         container.RegisterSingleton<IResourceService, ServerResourceService>();
         
-        container.RegisterSingleton<IServerNetworkService, ServerNetworkService>();
+        container.RegisterSingleton<EventService, EventService>();
+        container.RegisterSingleton<NetworkService, ServerNetworkService>();
         container.RegisterSingleton<IPlayerService, ServerPlayerService>();
         container.RegisterSingleton<IEntityService, ServerEntityService>();
         container.RegisterSingleton<IWorldGenerator, EarthGenerator>("earth");
@@ -39,6 +41,6 @@ public class ServerServiceRegistrar : IServiceRegistrar
         
         // Systems
         container.RegisterSingleton<MobControllerSystem, MobControllerSystem>();
-        container.RegisterSingleton<ServerMovementSystem, ServerMovementSystem>();
+        container.RegisterSingleton<MovementSystem, MovementSystem>();
     }
 }

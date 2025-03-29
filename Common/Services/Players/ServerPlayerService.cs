@@ -1,5 +1,6 @@
 ﻿using Common.Core;
 using Common.Host;
+using Common.Services.Events;
 using Common.Services.Network;
 using Common.Services.Players.Messages;
 
@@ -10,21 +11,23 @@ public sealed class ServerPlayerService : IPlayerService
     public ulong PlayerId { get; }
     public IEnumerable<NetworkPlayer> Players => _network.Players;
 
-    private readonly IServerNetworkService _network;
+    private readonly ServerNetworkService _network;
     private readonly IContainer _container;
+    private readonly EventService _eventService;
 
-    public ServerPlayerService(IContainer container, IServerNetworkService networkService)
+    public ServerPlayerService(IContainer container, ServerNetworkService networkService, EventService eventService)
     {
         PlayerId = (ulong) new Random(DateTime.Now.Millisecond).Next();
         
         _container = container;
         _network = networkService;
+        _eventService = eventService;
         
-        _network.EventOnPlayerConnect += OnPlayerConnect;
-        _network.EventOnPlayerDisconnect += OnPlayerDisconnect;
+        eventService.Handle<PlayerConnectMessage>(OnPlayerConnect);
+        eventService.Handle<PlayerDisconnectMessage>(OnPlayerDisconnect);
     }
 
-    private void OnPlayerConnect(ServerPlayer player)
+    private void OnPlayerConnect(PlayerConnectMessage e)
     {
         var syncMessage = new PlayerListSyncMessage();
 
@@ -33,43 +36,34 @@ public sealed class ServerPlayerService : IPlayerService
             syncMessage.Players.Add(p);
         }
 
-        _network.SendToPlayer(syncMessage, player);
+        syncMessage.Receivers = serverPlayer => serverPlayer == e.Sender; 
+        _eventService.Emit(syncMessage);
 
-        if (Players.Count() < 2)
-        {
-            return;
-        }
+        // if (Players.Count() < 2)
+        // {
+        //     return;
+        // }
 
-        var connectMessage = new PlayerConnectMessage
-        {
-            NetworkPlayer = player
-        };
-
-        foreach (var p in Players)
-        {
-            if (p.PlayerId != player.PlayerId && p.PlayerId != PlayerId)
-            {
-                _network.SendToPlayer(connectMessage, (ServerPlayer) p);
-            }
-        }
+        // var connectMessage = new PlayerConnectMessage
+        // {
+        //     NetworkPlayer = e.Sender,
+        //     Receivers = serverPlayer => serverPlayer != e.Sender
+        // };
+        // 
+        // _eventService.Emit(connectMessage);
     }
 
-    private void OnPlayerDisconnect(ServerPlayer player)
+    private void OnPlayerDisconnect(PlayerDisconnectMessage e)
     {
         if (!Players.Any() || Players.Count() == 2 && _container.GameMode == EGameMode.Host)
             return;
 
         var disconnectMessage = new PlayerDisconnectMessage
         {
-            PlayerId = player.PlayerId
+            PlayerId = e.PlayerId,
+            Receivers = serverPlayer => serverPlayer != e.Sender
         };
 
-        foreach (var p in Players)
-        {
-            if (p.PlayerId != player.PlayerId)
-            {
-                _network.SendToPlayer(disconnectMessage, (ServerPlayer) p);
-            }
-        }
+        _eventService.Emit(disconnectMessage);
     }
 }

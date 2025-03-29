@@ -8,7 +8,7 @@ public interface IServerHost: IHost
 {
     public void StartServer(ushort port)
     {
-        var networking = Container.Resolve<IServerNetworkService>();
+        var networking = Container.Resolve<ServerNetworkService>();
         
         networking.Listen(port);
 

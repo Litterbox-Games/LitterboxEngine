@@ -1,16 +1,16 @@
 ﻿using Common.Core;
 using Common.Host;
+using Common.Services.Events;
 using Common.Services.Logging;
 using Common.Services.Players;
+using Common.Services.Players.Messages;
 using Lidgren.Network;
 
 namespace Common.Services.Network;
 
-public class ServerNetworkService : IServerNetworkService
+public class ServerNetworkService: NetworkService
 {
-    public Dictionary<int, Type> Messages { get; } = [];
-    public Dictionary<Type, List<Delegate>> MessageHandles { get; } = [];
-    public NetPeer? NetPeer => _server;
+    public override NetPeer NetPeer => _server!;
     
     public event Action? EventOnStartListen;
     public event Action? EventOnStopListen;
@@ -25,15 +25,17 @@ public class ServerNetworkService : IServerNetworkService
     private readonly List<ServerPlayer> _players = [];
     private readonly IContainer _container;
     private readonly ILoggingService _logger;
+    private readonly EventService _eventService;
     
-    public ServerNetworkService(IContainer container, ILoggingService logger)
+    public ServerNetworkService(IContainer container, ILoggingService logger, EventService eventService): base(logger)
     {
         _container = container;
         _logger = logger;
-        (this as INetworkService).RegisterMessageTypes(_logger);
+        _eventService = eventService;
+        eventService.Network = this;
     }
 
-    public void Update(float deltaTime)
+    public override void Update(float deltaTime)
     {
         if (_server == null)
             return;
@@ -41,22 +43,22 @@ public class ServerNetworkService : IServerNetworkService
         if (_server.Status != NetPeerStatus.Running)
             return;
         
-        while (_server.ReadMessage() is { } incomingMsg)
+        while (_server.ReadMessage() is { } message)
         {
-            switch (incomingMsg.MessageType)
+            switch (message.MessageType)
             {
                 case NetIncomingMessageType.StatusChanged:
-                    var status = (NetConnectionStatus) incomingMsg.ReadByte();
-                    var reason = incomingMsg.ReadString();
+                    var status = (NetConnectionStatus) message.ReadByte();
+                    var reason = message.ReadString();
 
                     // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
                     switch (status)
                     {
                         case NetConnectionStatus.Connected:
-                            OnConnect(incomingMsg.SenderConnection);
+                            OnConnect(message.SenderConnection);
                             continue;
                         case NetConnectionStatus.Disconnected:
-                            OnDisconnect(incomingMsg.SenderConnection);
+                            OnDisconnect(message.SenderConnection);
                             continue;
                     }
 
@@ -64,17 +66,20 @@ public class ServerNetworkService : IServerNetworkService
 
                     break;
                 case NetIncomingMessageType.ConnectionApproval:
-                    var approve = OnConnectionRequest(incomingMsg);
+                    var approve = OnConnectionRequest(message);
 
                     if (approve)
-                        incomingMsg.SenderConnection.Approve();
+                        message.SenderConnection.Approve();
                     else
-                        incomingMsg.SenderConnection.Deny();
+                        message.SenderConnection.Deny();
 
                     break;
 
                 case NetIncomingMessageType.Data:
-                    OnData(incomingMsg);
+                    var e = OnData(message);
+                    if (e == null) break;
+                    e.Sender = _players.FirstOrDefault(x => x.PlayerConnection == message.SenderConnection);
+                    _eventService.EmitIncoming(e);
                     break;
             }
         }
@@ -120,68 +125,17 @@ public class ServerNetworkService : IServerNetworkService
         _server = null;
     }
 
-    public void SendToPlayer(INetworkMessage message, ServerPlayer player)
+    public override void Send(INetworkEvent e)
     {
-        if (player.PlayerConnection == null)
-            throw new ArgumentNullException(nameof(player), "The player object passed must have a valid connection to receive a packet.");
-        
-        (this as INetworkService).SendMessage(player.PlayerConnection, message);
-    }
-
-    public void SendToAllPlayers(INetworkMessage message, Predicate<ServerPlayer>? predicate = null)
-    {
-        if (_playerService == null)
-            throw new InvalidOperationException("Cannot send message to clients without a running server");
-
-        var players = _playerService.Players.Cast<ServerPlayer>();
-        if (predicate != null)
-            players = players.Where(p => predicate(p));
+        IEnumerable<ServerPlayer> players = _players;
+        if (e.Receivers != null)
+            players = players.Where(p => e.Receivers(p));
         
         var connections = players.Select(x => x.PlayerConnection).Where(x => x != null).Cast<NetConnection>().ToList();
 
         if (connections.Count == 0) return;
         
-        (this as INetworkService).SendMessage(connections, message);
-    }
-    
-    private void OnData(NetIncomingMessage message)
-    {
-        var player = _players.FirstOrDefault(x => x.PlayerConnection == message.SenderConnection);
-
-        if (player == null)
-        {
-            _logger.Warning("An unknown connection attempted to send a packet.");
-            return;
-        }
-
-        var messageId = message.ReadInt32();
-
-        if (!Messages.TryGetValue(messageId, out var messageType))
-        {
-            _logger.Warning(
-                $"A player ${player.PlayerId} attempted to send an invalid message with the ID ${messageId}.");
-            return;
-        }
-
-        var castedMessage = (INetworkMessage) Activator.CreateInstance(messageType)!;
-        castedMessage.Deserialize(message);
-
-        if (!MessageHandles.TryGetValue(messageType, out var handlers))
-        {
-            _logger.Warning(
-                $"A player ${player.PlayerId} attempted to send an message with the ID ${messageId} that has no valid handles.");
-            return;
-        }
-
-        foreach (var handler in handlers)
-        {
-            var handlerType = handler.GetType();
-            var delegateType = typeof(OnMessage<>).MakeGenericType(messageType);
-
-            if (!handlerType.IsAssignableFrom(delegateType))return;
-            
-            handler.DynamicInvoke(castedMessage, player);
-        }
+        SendMessage(connections, e);
     }
     
     private bool OnConnectionRequest(NetIncomingMessage message)
@@ -218,7 +172,8 @@ public class ServerNetworkService : IServerNetworkService
             return;
         }
 
-        EventOnPlayerConnect?.Invoke(player);
+        // EventOnPlayerConnect?.Invoke(player);
+        _eventService.Emit(new PlayerConnectMessage { NetworkPlayer = player, Receivers = serverPlayer => serverPlayer != player });
 
         _logger.Information($"{player.PlayerName} has connected!");
 

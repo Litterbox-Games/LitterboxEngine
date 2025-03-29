@@ -3,6 +3,7 @@ using Arch.Core;
 using Common.Components;
 using Common.Core;
 using Common.Services.Entities;
+using Common.Services.Players;
 
 namespace Common.Systems;
 
@@ -11,12 +12,14 @@ public class MobControllerSystem : ISystem, IUpdatable
     private readonly QueryDescription _mobs = new QueryDescription().WithAll<Mob, Position, Velocity>();
     
     private readonly ServerEntityService _entityService;
-
+    private readonly IPlayerService _playerService;
+    
     private readonly Random _random = new();
 
-    public MobControllerSystem(ServerEntityService entityService)
+    public MobControllerSystem(ServerEntityService entityService, IPlayerService playerService)
     {
         _entityService = entityService;
+        _playerService = playerService;
     }
 
     public void SpawnMobEntity(Vector2 position)
@@ -26,7 +29,7 @@ public class MobControllerSystem : ISystem, IUpdatable
         var velocity = Vector2.Normalize(new Vector2(signX * _random.Next(), signY * _random.Next()));
         
         var entity = _entityService.Entities.Create(
-            new Networked { OwnerId = 0, NetworkId = (ulong) _random.Next(), EntityType = 1 },
+            new Networked { OwnerId = _playerService.PlayerId, NetworkId = (ulong) _random.Next(), EntityType = 1 },
             new Mob(), 
             new Position(position),
             new Velocity(velocity.X, velocity.Y) );

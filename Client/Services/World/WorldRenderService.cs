@@ -8,6 +8,8 @@ using Common.Core;
 using Common.Core.Attributes;
 using Common.Mathematics;
 using Common.Services.Entities;
+using Common.Services.Entities.Messages;
+using Common.Services.Events;
 using Common.Services.Players;
 using Common.Services.Resource;
 using Common.Services.World;
@@ -25,27 +27,27 @@ public class WorldRenderService : IService, IDrawable
     
     private Entity? _playerEntity;
     
-    public WorldRenderService(IPlayerService playerService, IResourceService resourceService, IWorldService worldService, IEntityService entityService)
+    public WorldRenderService(IPlayerService playerService, IResourceService resourceService, IWorldService worldService, EventService eventService)
     {
         _playerService = playerService;
         _worldService = worldService;
         _resourceService = resourceService;
 
-        entityService.EventOnEntitySpawn += OnEntitySpawn;
-        entityService.EventOnEntityDespawn += OnEntityDespawn;
+        eventService.Handle<EntityCreatedEvent>(OnEntityCreated);
+        eventService.Handle<EntityDestroyedEvent>(OnEntityDestroyed);
     }
     
-    private void OnEntitySpawn(Entity entity)
+    private void OnEntityCreated(EntityCreatedEvent e)
     {
-        if (!entity.Has<Networked, Player>()) return;
-        var networked = entity.Get<Networked>();
-        if (networked.OwnerId == _playerService.PlayerId) _playerEntity = entity;
+        if (!e.Entity.Has<Networked, Player>()) return;
+        var networked = e.Entity.Get<Networked>();
+        if (networked.OwnerId == _playerService.PlayerId) _playerEntity = e.Entity;
     }
     
-    private void OnEntityDespawn(Entity entity)
+    private void OnEntityDestroyed(EntityDestroyedEvent e)
     {
-        if (!entity.Has<Networked, Player>()) return;
-        var networked = entity.Get<Networked>();
+        if (!e.Entity.Has<Networked, Player>()) return;
+        var networked = e.Entity.Get<Networked>();
         if (networked.OwnerId == _playerService.PlayerId) _playerEntity = null;       
     }
 

@@ -1,37 +1,35 @@
 ﻿using System.Numerics;
 using Arch.Core;
-using Client.Services.Network;
 using Common.Components;
 using Common.Core;
 using Common.Services.Entities;
 using Common.Services.Entities.Messages;
-using Common.Services.Network;
+using Common.Services.Events;
 using Common.Services.Players;
 
-namespace Client.Systems;
+namespace Common.Systems;
 
-public class ClientMovementSystem: ISystem, IUpdatable
+public class MovementSystem: ISystem, IUpdatable
 {
     private readonly QueryDescription _movable = new QueryDescription().WithAll<Networked, Position>();
 
-    private readonly IClientNetworkService _network;
+    private readonly EventService _eventService;
     private readonly IEntityService _entityService;
     private readonly IPlayerService _playerService;
     
-    public ClientMovementSystem(IEntityService entityService, IClientNetworkService network, IPlayerService playerService)
+    public MovementSystem(IEntityService entityService, IPlayerService playerService, EventService eventService)
     {
+        _eventService = eventService;
         _entityService = entityService;
-        _network = network;
         _playerService = playerService;
-
-        // Events.RegisterHandler<EntityMoveEvent>(OnEntityMove);
         
-        _network.RegisterMessageHandle<EntityMoveMessage>(OnEntityMoveMessage);
+        _eventService.Handle<EntityMoveEvent>(OnEntityMoveMessage);
     }
     
     public void Update(float deltaTime)
     {
-        var moveMessage = new EntityMoveMessage();
+        // TODO: estimate needed capacity before adding entities?
+        var moveMessage = new EntityMoveEvent();
         var now = DateTime.Now;
         var renderTime = now - new TimeSpan(0, 0, 0, 0, 100);
         
@@ -71,11 +69,12 @@ public class ClientMovementSystem: ISystem, IUpdatable
             }
         });
         
+        // Send to all players
         if (moveMessage.Entities.Count > 0)
-            _network.SendToServer(moveMessage);
+            _eventService.EmitOutgoing(moveMessage);
     }
     
-    private void OnEntityMoveMessage(EntityMoveMessage message, NetworkPlayer? player)
+    private void OnEntityMoveMessage(EntityMoveEvent e)
     {
         var now = DateTime.Now;
 
@@ -83,17 +82,24 @@ public class ClientMovementSystem: ISystem, IUpdatable
         _entityService.Entities.Query(in _movable, (
             ref Networked network, 
             ref Position position
-        ) => {
+        ) =>
+        {
+            if (network.NetworkId == _playerService.PlayerId) return;
+            
             var entityId = network.NetworkId;
-            var movement = message.Entities.FirstOrDefault(x => x.EntityId == entityId);   
+            var movement = e.Entities.FirstOrDefault(x => x.EntityId == entityId);   
             
             if (movement == null) return;
             
             position.Queued.Enqueue(new QueuedMovement(movement.NewPosition, now));
-
+        
             // TODO: Shouldn't need to do this unless Entity changes owners (car maybe?)
             position.LastSent = movement.NewPosition;
         });
+
+        // Forward this packet to all players but sender
+        // e.Receivers = networkPlayer => networkPlayer != e.Sender; 
+        // _eventService.Emit(e);
     }
 }
 

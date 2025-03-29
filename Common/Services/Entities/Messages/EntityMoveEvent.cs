@@ -1,5 +1,7 @@
 ﻿using System.Numerics;
+using Common.Services.Events;
 using Common.Services.Network;
+using Common.Services.Players;
 using Lidgren.Network;
 using MoreLinq;
 
@@ -13,11 +15,13 @@ public record EntityMovement
     public ESyncMode SyncMode = ESyncMode.Interpolate;
 }
 
-public sealed class EntityMoveMessage : INetworkMessage
+public struct EntityMoveEvent() : INetworkEvent
 {
     public NetDeliveryMethod NetworkChannel => NetDeliveryMethod.UnreliableSequenced;
+    public ServerPlayer? Sender { get; set; } = null;
+    public Predicate<ServerPlayer>? Receivers { get; set; } = null;
 
-    public readonly List<EntityMovement> Entities = [];
+    public List<EntityMovement> Entities = [];
 
     public void Serialize(NetOutgoingMessage writer)
     {
@@ -34,12 +38,17 @@ public sealed class EntityMoveMessage : INetworkMessage
     public void Deserialize(NetIncomingMessage reader)
     {
         var length = reader.ReadInt32();
-        Enumerable.Range(0, length).ForEach(_ => Entities.Add( new EntityMovement
+        Entities = new List<EntityMovement>(length);
+
+        for (var i = 0; i < length; i++)
         {
-            EntityId = reader.ReadUInt64(),
-            NewPosition = new Vector2(reader.ReadFloat(), reader.ReadFloat()),
-            SyncMode = (ESyncMode) reader.ReadByte()
-        }));
+            Entities.Add(new EntityMovement
+            {
+                EntityId = reader.ReadUInt64(),
+                NewPosition = new Vector2(reader.ReadFloat(), reader.ReadFloat()),
+                SyncMode = (ESyncMode) reader.ReadByte()
+            });
+        }
     }
 }
 

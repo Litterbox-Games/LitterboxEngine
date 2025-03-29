@@ -3,8 +3,10 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Common.Components;
 using Common.Services.Entities.Messages;
+using Common.Services.Events;
 using Common.Services.Network;
 using Common.Services.Players;
+using Common.Services.Players.Messages;
 
 namespace Common.Services.Entities;
 
@@ -14,25 +16,22 @@ public class ServerEntityService: IEntityService
     
     // TODO: we shouldn't really require Position here
     private readonly QueryDescription _players = new QueryDescription().WithAll<Networked, Position>();
-    
-    public event Action<Entity>? EventOnEntitySpawn;
-    public event Action<Entity>? EventOnEntityDespawn;
 
     public Arch.Core.World Entities { get; } = Arch.Core.World.Create();
     
-    private readonly IServerNetworkService _network;
+    private readonly EventService _eventService;
     private readonly IPlayerService _playerService;
     
     private readonly Random _random = new();
     
-    public ServerEntityService(IServerNetworkService network, IPlayerService playerService)
+    public ServerEntityService(EventService eventService, IPlayerService playerService)
     {
-        _network = network;
+        _eventService = eventService;
         _playerService = playerService;
         
-        _network.EventOnPlayerConnect += OnPlayerConnect;
-        _network.EventOnPlayerDisconnect += OnPlayerDisconnect;
-        _network.EventOnStartListen += OnStartListen;
+        _eventService.Handle<PlayerConnectMessage>(OnPlayerConnect);
+        _eventService.Handle<PlayerDisconnectMessage>(OnPlayerDisconnect);
+        // _eventService.Handle<ServerStartEvent>(OnServerStart);
     }
 
     public void SpawnEntity(Entity entity)
@@ -42,16 +41,14 @@ public class ServerEntityService: IEntityService
         var position = entity.Get<Position>();
         var network = entity.Get<Networked>();
         
-        var entitySpawnMessage = new EntitySpawnMessage()
+        _eventService.Emit(new EntitySpawnEvent
         {
             EntityType = network.EntityType,
             EntityId = network.NetworkId,
             EntityOwner = network.OwnerId,
             EntityPosition = position.Current
-        };
-        
-        _network.SendToAllPlayers(entitySpawnMessage);
-        EventOnEntitySpawn?.Invoke(entity);
+        });
+        // _eventService.Emit(new EntityCreatedEvent { Entity = entity });
     }
 
     public void DespawnEntity(Entity entity)
@@ -62,24 +59,20 @@ public class ServerEntityService: IEntityService
             return;
         }                        
         
-        var network = entity.Get<Networked>();
-        
         Entities.Destroy(entity);
         
-        var entityDeleteMessage = new EntityDespawnMessage
-        {
-            EntityId = network.NetworkId
-        };
-        
-        _network.SendToAllPlayers(entityDeleteMessage);
-        
-        EventOnEntityDespawn?.Invoke(entity);
+        _eventService.Emit(new EntityDespawnEvent { EntityId = entity.Get<Networked>().NetworkId });
+        // _eventService.Emit(new EntityDestroyedEvent { Entity = entity });
     }
 
-    private void OnPlayerConnect(ServerPlayer player)
+    private void OnPlayerConnect(PlayerConnectMessage e)
     {
+        Console.WriteLine(_playerService.PlayerId);
+        Console.WriteLine(e.NetworkPlayer!.PlayerId);
+        
+        
         var entity = Entities.Create(
-            new Networked { OwnerId = player.PlayerId, NetworkId = (ulong) _random.Next(), EntityType = 0 },
+            new Networked { OwnerId = e.NetworkPlayer!.PlayerId, NetworkId = (ulong) _random.Next(), EntityType = 0 },
             new Player(), 
             new Position(Vector2.Zero));
         
@@ -89,35 +82,37 @@ public class ServerEntityService: IEntityService
             ref Networked network, 
             ref Position position
         ) => { 
-            if (network.OwnerId == player.PlayerId) return;
+            if (network.OwnerId == e.NetworkPlayer!.PlayerId) return;
             
-            var entitySpawnMessage = new EntitySpawnMessage
+            var entitySpawnMessage = new EntitySpawnEvent
             {
                 EntityId = network.NetworkId,
                 EntityOwner = network.OwnerId,
                 EntityType = network.EntityType,
-                EntityPosition = position.Current
+                EntityPosition = position.Current,
+                Receivers = serverPlayer => serverPlayer.PlayerId == e.NetworkPlayer!.PlayerId
             };
 
-            _network.SendToPlayer(entitySpawnMessage, player); 
+            _eventService.Emit(entitySpawnMessage);
         });
     }
 
-    private void OnPlayerDisconnect(ServerPlayer player)
+    private void OnPlayerDisconnect(PlayerDisconnectMessage e)
     {
         Entities.Query(_networkEntities,( 
             Entity entity, 
             ref Networked network 
         ) => { 
-            if (network.OwnerId != player.PlayerId) return;
+            if (network.OwnerId != e.PlayerId) return;
             DespawnEntity(entity);
         });
     }
 
     // If player is hosting, spawn them an entity as if they just connected to a server.
-    private void OnStartListen()
-    {
-        if (!_network.Players.Any()) return;
-        OnPlayerConnect(_network.Players.First(x => x.PlayerId == _playerService.PlayerId));
-    }
+    // TODO: just handle in ClientEntityService
+    // private void OnServerStart(ServerStartEvent _)
+    // {
+    //     if (!_playerService.Players.Any()) return;
+    //     OnPlayerConnect(_playerService.Players.First(x => x.PlayerId == _playerService.PlayerId));
+    // }
 }

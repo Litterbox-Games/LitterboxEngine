@@ -1,5 +1,6 @@
 ﻿using Client.Services.Network;
 using Common.Mathematics;
+using Common.Services.Events;
 using Common.Services.Network;
 using Common.Services.Players;
 using Common.Services.World;
@@ -9,17 +10,15 @@ namespace Client.Services.World;
 
 public class ClientWorldService : IWorldService
 {
-    private readonly IClientNetworkService _network;
+    private readonly EventService _eventService;
     private readonly List<ChunkData> _chunks = [];
 
     public IEnumerable<ChunkData> Chunks => _chunks;
 
-    public ClientWorldService(IClientNetworkService network)
+    public ClientWorldService(EventService eventService)
     {
-        _network = network;
-        _network.RegisterMessageHandle<ChunkDataMessage>(OnChunkDataMessage);
-
-        _network.EventOnConnect += OnConnect;
+        _eventService = eventService;
+        _eventService.Handle<ChunkDataMessage>(OnChunkDataMessage);
     }
 
     private readonly HashSet<Vector2i> _chunksToRequestLoad = [];
@@ -35,7 +34,7 @@ public class ClientWorldService : IWorldService
                 Chunks = _chunksToRequestLoad.ToArray()
             };
 
-            _network.SendToServer(chunkRequestMessage);
+            _eventService.Emit(chunkRequestMessage);
 
             _chunksToRequestLoad.Clear();
         }
@@ -48,7 +47,7 @@ public class ClientWorldService : IWorldService
                 Chunks = _chunksToRequestUnload.ToArray()
             };
 
-            _network.SendToServer(chunkRequestMessage);
+            _eventService.Emit(chunkRequestMessage);
 
             _chunksToRequestUnload.Clear();
         }
@@ -76,36 +75,26 @@ public class ClientWorldService : IWorldService
         _chunks.Remove(chunkData);
     }
 
-    private void OnChunkDataMessage(INetworkMessage message, NetworkPlayer? player)
+    private void OnChunkDataMessage(ChunkDataMessage message)
     {
-        var dataMessage = message as ChunkDataMessage;
-
-        var chunkData = _chunks.FirstOrDefault(x => x.Position == dataMessage!.Position);
+        var chunkData = _chunks.FirstOrDefault(x => x.Position == message!.Position);
 
         if (chunkData == null)
         {
-            chunkData = new ChunkData(dataMessage!.Position);
+            chunkData = new ChunkData(message.Position);
             _chunks.Add(chunkData);
         }
 
-        chunkData.GroundArray = dataMessage!.GroundLayer!;
-        chunkData.ObjectArray = dataMessage!.ObjectLayer!;
+        chunkData.GroundArray = message.GroundLayer!;
+        chunkData.ObjectArray = message.ObjectLayer!;
 
-        chunkData.BiomeArray = dataMessage!.BiomeMap!.Cast<EBiomeType>().ToArray();
-        chunkData.HeatArray = dataMessage!.HeatMap!.Cast<EHeatType>().ToArray();
-        chunkData.MoistureArray = dataMessage!.MoistureMap!.Cast<EMoistureType>().ToArray();
+        chunkData.BiomeArray = message.BiomeMap!.Cast<EBiomeType>().ToArray();
+        chunkData.HeatArray = message.HeatMap!.Cast<EHeatType>().ToArray();
+        chunkData.MoistureArray = message.MoistureMap!.Cast<EMoistureType>().ToArray();
     }
     
     public ChunkData? GetChunkData(Vector2i position)
     {
         return Chunks.FirstOrDefault(x => x.Position == position);
     }
-
-    // TODO: Update on entity system implementation
-    private void OnConnect()
-    {
-        
-    }
-
-    public void Draw() { }
 }

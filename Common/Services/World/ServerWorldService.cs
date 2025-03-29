@@ -1,9 +1,11 @@
 ﻿using Common.Core;
 using Common.Host;
 using Common.Mathematics;
+using Common.Services.Events;
 using Common.Services.Logging;
 using Common.Services.Network;
 using Common.Services.Players;
+using Common.Services.Players.Messages;
 using Common.Services.World.Generation;
 using Common.Services.World.Messages;
 
@@ -15,28 +17,29 @@ public class ServerWorldService : IWorldService
     public IEnumerable<ChunkData> Chunks => NetworkedChunks.Select(x => x.ChunkData);
 
     private readonly IContainer _container;
-    private readonly IServerNetworkService _networkService;
+    private readonly ServerNetworkService _networkService;
     private readonly IPlayerService _playerService;
     private readonly ILoggingService _logger;
+    private readonly EventService _eventService;
     private readonly IWorldGenerator _generation;
 
-    public ServerWorldService(IContainer container, IServerNetworkService networkService, IPlayerService playerService, ILoggingService logger)
+    public ServerWorldService(IContainer container, ServerNetworkService networkService, IPlayerService playerService, ILoggingService logger, EventService eventService)
     {
         _container = container;
         _networkService = networkService;
         _playerService = playerService;
         _logger = logger;
+        _eventService = eventService;
         _generation = container.Resolve<IWorldGenerator>("earth");
         
-        _networkService.EventOnPlayerDisconnect += OnPlayerDisconnect;
-        _networkService.RegisterMessageHandle<ChunkRequestMessage>(OnChunkRequest);
-        _networkService.RegisterMessageHandle<BlockUpdateMessage>(OnBlockUpdate);
+        _eventService.Handle<PlayerDisconnectMessage>(OnPlayerDisconnect);
+        _eventService.Handle<ChunkRequestMessage>(OnChunkRequest);
+        _eventService.Handle<BlockUpdateMessage>(OnBlockUpdate);
     }
 
-    private void OnBlockUpdate(INetworkMessage message, NetworkPlayer? player)
+    private void OnBlockUpdate(BlockUpdateMessage blockUpdate)
     { 
-        var blockUpdate = message as BlockUpdateMessage;
-        var chunk = GetChunk(blockUpdate!.Chunk);
+        var chunk = GetChunk(blockUpdate.Chunk);
 
         if (chunk == null)
         {
@@ -87,17 +90,15 @@ public class ServerWorldService : IWorldService
         chunk?.Observers.Remove(_networkService.Players.FirstOrDefault(x => x.PlayerId == _playerService.PlayerId)!);
     }
 
-    private void OnChunkRequest(INetworkMessage message, NetworkPlayer? player)
+    private void OnChunkRequest(ChunkRequestMessage message)
     {
-        var chunkRequest = message as ChunkRequestMessage;
+        if (message.Sender == null) return;
 
-        var serverPlayer = (ServerPlayer) player!;
-
-        foreach (var pos in chunkRequest!.Chunks!)
+        foreach (var pos in message.Chunks!)
         {
             var chunk = GetChunk(pos);
 
-            if (chunkRequest.RequestType == EChunkRequest.Load)
+            if (message.RequestType == EChunkRequest.Load)
             {
                 if (chunk == null)
                 {
@@ -106,9 +107,9 @@ public class ServerWorldService : IWorldService
                     NetworkedChunks.Add(chunk);
                 }
 
-                if (!chunk.Observers.Contains(serverPlayer))
+                if (!chunk.Observers.Contains(message.Sender))
                 {
-                    chunk.Observers.Add(serverPlayer);
+                    chunk.Observers.Add(message.Sender);
                 }
 
                 var dataMessage = new ChunkDataMessage
@@ -118,14 +119,14 @@ public class ServerWorldService : IWorldService
                     ObjectLayer = chunk.ChunkData.ObjectArray,
                     BiomeMap = chunk.ChunkData.BiomeArray.Cast<byte>().ToArray(),
                     HeatMap = chunk.ChunkData.HeatArray.Cast<byte>().ToArray(),
-                    MoistureMap = chunk.ChunkData.MoistureArray.Cast<byte>().ToArray(),
+                    MoistureMap = chunk.ChunkData.MoistureArray.Cast<byte>().ToArray()
                 };
 
-                _networkService.SendToPlayer(dataMessage, serverPlayer);
+                _eventService.Emit(dataMessage);
             }
             else
             {
-                chunk?.Observers.Remove(serverPlayer);
+                chunk?.Observers.Remove(message.Sender);
             }
         }
     }
@@ -159,21 +160,23 @@ public class ServerWorldService : IWorldService
                 BiomeMap = x.ChunkData.BiomeArray.Cast<byte>().ToArray(),
                 HeatMap = x.ChunkData.HeatArray.Cast<byte>().ToArray(),
                 MoistureMap = x.ChunkData.MoistureArray.Cast<byte>().ToArray(),
+                // TODO: can we make this less disgusting??
+                Receivers = x.Observers.Contains
             };
 
-            x.Observers.ForEach(p => _networkService.SendToPlayer(dataMessage, p));
+            _eventService.Emit(dataMessage);
         });
 
         chunksToUnload.ForEach(x => NetworkedChunks.Remove(x));
     }
 
-    private void OnPlayerDisconnect(ServerPlayer player)
+    private void OnPlayerDisconnect(PlayerDisconnectMessage e)
     {
         var removedChunk = new List<NetworkedChunk>();
 
         NetworkedChunks.ForEach(x =>
         {
-            if (x.Observers.Contains(player))
+            if (x.Observers.Contains(e.Sender!))
             {
                 removedChunk.Add(x);
             }
@@ -181,7 +184,7 @@ public class ServerWorldService : IWorldService
 
         removedChunk.ForEach(x =>
         {
-            x.Observers.Remove(player);
+            x.Observers.Remove(e.Sender!);
             if (x.Observers.Count == 0)
                 NetworkedChunks.Remove(x);
         });
@@ -198,14 +201,8 @@ public class ServerWorldService : IWorldService
     }
 }
 
-public sealed class NetworkedChunk
+public sealed class NetworkedChunk(ChunkData data)
 {
-    public readonly ChunkData ChunkData;
-    public readonly List<ServerPlayer> Observers;
-
-    public NetworkedChunk(ChunkData data)
-    {
-        ChunkData = data;
-        Observers = new List<ServerPlayer>();
-    }
+    public readonly ChunkData ChunkData = data;
+    public readonly List<ServerPlayer> Observers = [];
 }

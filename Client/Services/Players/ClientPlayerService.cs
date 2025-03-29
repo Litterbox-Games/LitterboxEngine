@@ -1,4 +1,5 @@
 ﻿using Client.Services.Network;
+using Common.Services.Events;
 using Common.Services.Network;
 using Common.Services.Players;
 using Common.Services.Players.Messages;
@@ -13,26 +14,26 @@ public class ClientPlayerService : IPlayerService
 
     private readonly List<NetworkPlayer> _players = [];
     
-    public ClientPlayerService(IClientNetworkService networkService)
+    public ClientPlayerService(EventService eventService)
     {
         PlayerId = (ulong) new Random(DateTime.Now.Millisecond).Next();
         
-        networkService.RegisterMessageHandle<PlayerConnectMessage>(OnPlayerConnectMessage);
-        networkService.RegisterMessageHandle<PlayerDisconnectMessage>(OnPlayerDisconnectMessage);
-        networkService.RegisterMessageHandle<PlayerListSyncMessage>(OnPlayerListSyncMessage);
+        eventService.Handle<PlayerConnectMessage>(OnPlayerConnectMessage);
+        eventService.Handle<PlayerDisconnectMessage>(OnPlayerDisconnectMessage);
+        eventService.Handle<PlayerListSyncMessage>(OnPlayerListSyncMessage);
     }
 
-    private void OnPlayerConnectMessage(PlayerConnectMessage message, NetworkPlayer? _)
+    private void OnPlayerConnectMessage(PlayerConnectMessage message)
     {
         _players.Add(message.NetworkPlayer!);
     }
 
-    private void OnPlayerDisconnectMessage(PlayerDisconnectMessage message, NetworkPlayer? _)
+    private void OnPlayerDisconnectMessage(PlayerDisconnectMessage message)
     {
         _players.Remove(_players.First(x => x.PlayerId == message.PlayerId));
     }
 
-    private void OnPlayerListSyncMessage(PlayerListSyncMessage message, NetworkPlayer? _)
+    private void OnPlayerListSyncMessage(PlayerListSyncMessage message)
     {
         _players.Clear();
         _players.AddRange(message.Players);

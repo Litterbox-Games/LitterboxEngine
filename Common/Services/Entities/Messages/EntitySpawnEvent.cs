@@ -1,17 +1,22 @@
 ﻿using System.Numerics;
+using Common.Services.Events;
 using Common.Services.Network;
+using Common.Services.Players;
 using Lidgren.Network;
 
 namespace Common.Services.Entities.Messages;
 
-public sealed class EntitySpawnMessage : INetworkMessage
+public struct EntitySpawnEvent() : INetworkEvent
 {
     public NetDeliveryMethod NetworkChannel => NetDeliveryMethod.ReliableUnordered;
+    public ServerPlayer? Sender { get; set; } = null;
 
-    public ulong EntityId;
-    public ulong EntityOwner;
-    public ushort EntityType;
-    public Vector2 EntityPosition;
+    public Predicate<ServerPlayer>? Receivers { get; set; } = null;
+
+    public ulong EntityId = 0;
+    public ulong EntityOwner = 0;
+    public ushort EntityType = 0;
+    public Vector2 EntityPosition = default;
 
     // I want to use a Dictionary based system in the future with strings as keys and different possible data types,
     // but this will suffice for now

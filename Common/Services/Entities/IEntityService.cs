@@ -5,8 +5,6 @@ namespace Common.Services.Entities;
 
 public interface IEntityService : IService
 {
-    public event Action<Entity>? EventOnEntitySpawn;
-    public event Action<Entity>? EventOnEntityDespawn;
-    
+    // TODO: just make this a service on it's on? Or inject into systems
     public Arch.Core.World Entities { get; }
 }

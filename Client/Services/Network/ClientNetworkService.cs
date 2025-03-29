@@ -1,4 +1,5 @@
 ﻿using Common.Core;
+using Common.Services.Events;
 using Common.Services.Logging;
 using Common.Services.Network;
 using Common.Services.Players;
@@ -6,27 +7,28 @@ using Lidgren.Network;
 
 namespace Client.Services.Network;
 
-public class ClientNetworkService : IClientNetworkService
+public class ClientNetworkService: NetworkService
 {
-    public Dictionary<int, Type> Messages { get; } = [];
-    public Dictionary<Type, List<Delegate>> MessageHandles { get; } = [];
-    public NetPeer NetPeer => _client;
-    
+    public override NetPeer NetPeer => _client;
+
     public event Action? EventOnConnect;
     public event Action? EventOnDisconnect;
     
     private readonly NetClient _client;
     private readonly IContainer _container;
     private readonly ILoggingService _logger;
+    private readonly EventService _eventService;
     
     private NetConnection? _connection;
     private float _connectionAttemptTime;
     
-    public ClientNetworkService(IContainer container, ILoggingService logger)
+    public ClientNetworkService(IContainer container, ILoggingService logger, EventService eventService) : base(logger)
     {
         _container = container;
         _logger = logger;
-        (this as INetworkService).RegisterMessageTypes(_logger);
+        _eventService = eventService;
+        // TODO: pass to NetworkService constructor?
+        eventService.Network = this;
         
         var config = new NetPeerConfiguration("Ages of Automation") { 
             PingInterval = 1f,
@@ -59,7 +61,7 @@ public class ClientNetworkService : IClientNetworkService
         Thread.Sleep(100);
     }
 
-    public void Update(float deltaTime)
+    public override void Update(float deltaTime)
     {
         while (_client.ReadMessage() is { } incomingMsg)
         {
@@ -85,7 +87,8 @@ public class ClientNetworkService : IClientNetworkService
 
                     break;
                 case NetIncomingMessageType.Data:
-                    OnData(incomingMsg); 
+                    var e = OnData(incomingMsg);
+                    if (e != null) _eventService.EmitIncoming(e);
                     break; 
             }
         }
@@ -101,40 +104,13 @@ public class ClientNetworkService : IClientNetworkService
         Disconnect();
     }
 
-    public void SendToServer(INetworkMessage message)
+    public override void Send(INetworkEvent e)
     {
-        (this as INetworkService).SendMessage(_connection!, message);
-    }
-
-    private void OnData(NetIncomingMessage message)
-    {
-        var messageId = message.ReadInt32();
-
-        if (!Messages.TryGetValue(messageId, out var messageType))
-        {
-            _logger.Error($"The server attempted to send an invalid message with the ID ${messageId}.");
-            return;
-        }
-
-        if (!MessageHandles.TryGetValue(messageType, out var handlers))
-        {
-            _logger.Error(
-                $"The server attempted to send an message with the ID ${messageId} that has no valid handles.");
-            return;
-        }
+        // f (e.Sender == null) return; // This is a server only action
         
-        var castedMessage = (INetworkMessage) Activator.CreateInstance(messageType)!;
-        castedMessage.Deserialize(message);
+        // trying to emit server message that client just got  
         
-        foreach (var handler in handlers)
-        {
-            var handlerType = handler.GetType();
-            var delegateType = typeof(OnMessage<>).MakeGenericType(messageType);
-
-            if (!handlerType.IsAssignableFrom(delegateType)) return;
-            
-            handler.DynamicInvoke(castedMessage, null);
-        }
+        SendMessage(_connection!, e);
     }
     
     private void OnStatusChange(NetConnectionStatus newStatus, string reason)

@@ -9,6 +9,7 @@ using Common.Components;
 using Common.Core;
 using Common.Mathematics;
 using Common.Services.Entities;
+using Common.Services.Entities.Messages;
 using Common.Services.Events;
 using Common.Services.Players;
 using Common.Services.Resource;
@@ -28,38 +29,27 @@ public class EntityRenderSystem: ISystem, IDrawable
     private Entity? _playerEntity;
     private readonly Rectangle _textureSource = new(32, 112, 20, 16);
     
-    private readonly EventService _eventService;
-    
     public EntityRenderSystem(IEntityService entityService, IPlayerService playerService, IResourceService resourceService, EventService eventService)
     {
         _entityService = entityService;
         _playerService = playerService;
         _resourceService = resourceService;
-        _eventService = eventService;
-        entityService.EventOnEntitySpawn += OnEntitySpawn;
-        entityService.EventOnEntityDespawn += OnEntityDespawn;
         
-        eventService.Handle<TestEvent>(OnTestEvent);
-    }
-
-    private void OnTestEvent(TestEvent e)
-    {
-        Console.WriteLine($"Got test event:{e.Foo}");
-    }
-
-    private void OnEntitySpawn(Entity entity)
-    {
-        _eventService.Emit(new TestEvent {Foo = "Hello World"});
-        
-        if (!entity.Has<Networked, Player>()) return;
-        var networked = entity.Get<Networked>();
-        if (networked.OwnerId == _playerService.PlayerId) _playerEntity = entity;
+        eventService.Handle<EntityCreatedEvent>(OnEntityCreated);
+        eventService.Handle<EntityDestroyedEvent>(OnEntityDestroyed);
     }
     
-    private void OnEntityDespawn(Entity entity)
+    private void OnEntityCreated(EntityCreatedEvent e)
     {
-        if (!entity.Has<Networked, Player>()) return;
-        var networked = entity.Get<Networked>();
+        if (!e.Entity.Has<Networked, Player>()) return;
+        var networked = e.Entity.Get<Networked>();
+        if (networked.OwnerId == _playerService.PlayerId) _playerEntity = e.Entity;
+    }
+    
+    private void OnEntityDestroyed(EntityDestroyedEvent e)
+    {
+        if (!e.Entity.Has<Networked, Player>()) return;
+        var networked = e.Entity.Get<Networked>();
         if (networked.OwnerId == _playerService.PlayerId) _playerEntity = null;       
     }
     
@@ -80,14 +70,12 @@ public class EntityRenderSystem: ISystem, IDrawable
             var renderPosition = (position.Current.Modulus(worldSize) -  player.Current + new Vector2(worldSize / 2f)).Modulus(worldSize) - new Vector2(worldSize / 2f) + player.Current;
             
             // Debug draw for showing network positions vs render position (not world wrapping atm)
-            // if (entity.EntityType == 0 && entity.QueuedMovements.Count > 1)
-            // { // this is a player
-            //     var firstMovement = entity.QueuedMovements.ToArray()[0];
-            //     _rendererService.DrawTexture(_texture, _textureSource, new RectangleF(firstMovement.Position.X, firstMovement.Position.Y, 1.25f, 1), Color.Green);
-            //     
-            //     var secondMovement = entity.QueuedMovements.ToArray()[1];
-            //     _rendererService.DrawTexture(_texture, _textureSource, new RectangleF(secondMovement.Position.X, secondMovement.Position.Y, 1.25f, 1), Color.Red);
-            // }
+            if (position.Queued.Count > 1)
+            { // this is a player
+                var queued = position.Queued.ToArray();
+                renderer.DrawTexture(texture, _textureSource, new RectangleF(queued[0].Position.X, queued[0].Position.Y, 1.25f, 1), Color.Green);
+                renderer.DrawTexture(texture, _textureSource, new RectangleF(queued[1].Position.X, queued[1].Position.Y, 1.25f, 1), Color.Red);
+            }
             
             renderer.DrawTexture(texture, _textureSource, new RectangleF(renderPosition.X, renderPosition.Y, 1.25f, 1), Color.White);
         });
