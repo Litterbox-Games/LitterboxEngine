@@ -1,8 +1,6 @@
 ﻿using Client.Services.Resource;
 using Common.Services.Logging;
-using Silk.NET.Input;
 using Silk.NET.Vulkan;
-using Silk.NET.Vulkan.Extensions.ImGui;
 
 namespace Client.Graphics.GHAL.Vulkan;
 
@@ -26,7 +24,7 @@ public sealed class VulkanGraphicsDevice : IGraphicsDevice, IDisposable
     {
         Vk = Vk.GetApi();
         _window = window;
-        _instance = new VulkanInstance(Vk, _window.Title, true, logger);
+        _instance = new VulkanInstance(Vk, _window.Title, logger);
         var physicalDevice = VulkanPhysicalDevice.SelectPreferredPhysicalDevice(Vk, _instance);
         LogicalDevice = new VulkanLogicalDevice(Vk, physicalDevice);
         _surface = new VulkanSurface(Vk, _instance, physicalDevice, _window);
@@ -36,7 +34,7 @@ public sealed class VulkanGraphicsDevice : IGraphicsDevice, IDisposable
         _commandPool = new VulkanCommandPool(Vk, LogicalDevice, GraphicsQueue.QueueFamilyIndex);
 
         SwapChain = new VulkanSwapChain(Vk, LogicalDevice, _surface, _renderPass, _commandPool, _window, 3,
-            false, _presentQueue, new[] {GraphicsQueue});
+            false, _presentQueue, [GraphicsQueue]);
         _descriptorPool = new VulkanDescriptorPool(Vk, LogicalDevice);
         _pipelineCache = new VulkanPipelineCache(Vk, LogicalDevice);
         _window.OnResize += WindowResized;

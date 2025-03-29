@@ -8,8 +8,8 @@ namespace Common.Services.Logging;
 /// </summary>
 public class ConsoleLoggingService : ILoggingService, IDisposable
 {
-    private readonly Logger _logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
-
+    private readonly Logger _logger = new LoggerConfiguration().MinimumLevel.Debug().WriteTo.Console().CreateLogger();
+    
     /// <inheritdoc />
     public void Debug(string message)
     {
