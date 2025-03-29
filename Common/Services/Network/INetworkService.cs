@@ -5,13 +5,40 @@ using Lidgren.Network;
 
 namespace Common.Services.Network;
 
-public abstract class NetworkService(ILoggingService logger) : IService, IUpdatable
+public abstract class NetworkService: IService, IUpdatable
 {
-    public abstract NetPeer NetPeer { get; }
+    protected abstract NetPeer NetPeer { get; }
 
-    private Dictionary<int, Type> _events = new();
+    private readonly Dictionary<int, Type> _events = new();
 
-    public abstract void Send(INetworkEvent e);
+    private readonly ILoggingService _logger;
+
+    protected NetworkService(ILoggingService logger, EventService eventService)
+    {
+        _logger = logger;
+        
+        eventService.Handle<OutgoingEvent>(OnOutgoing);
+        eventService.Handle<RegisterMessageEvent>(OnRegisterMessage);
+    }
+    
+    protected abstract void OnOutgoing(OutgoingEvent e);
+    
+    private void OnRegisterMessage(RegisterMessageEvent e) 
+    {
+        var hash = GetDeterministicHashCode(e.Type.FullName!);
+
+        _logger.Information($"Registering network event '{e.Type.Name}'");
+        if (_events.TryGetValue(hash, out var message))
+        {
+            _logger.Warning("Attempted to register network events sharing the same hash.");
+            _logger.Warning(message.FullName!);
+            _logger.Warning(e.Type.FullName!);
+
+            return;
+        }
+
+        _events[hash] = e.Type;
+    }
     
     protected void SendMessage(NetConnection connection, INetworkEvent e)
     {
@@ -38,24 +65,7 @@ public abstract class NetworkService(ILoggingService logger) : IService, IUpdata
         
         NetPeer.SendMessage(packet, connections.ToList(), e.NetworkChannel, 0);
     }
-
-    // TODO: just have INetworkService be an abstract class
-    public void RegisterMessageType(Type type)
-    {
-        var hash = GetDeterministicHashCode(type.FullName!);
-
-        logger?.Information($"Registering message '{type.Name}'");
-        if (_events.TryGetValue(hash, out var message))
-        {
-            logger?.Warning("Attempted to register messages sharing the same hash.");
-            logger?.Warning(message.FullName!);
-            logger?.Warning(type.FullName!);
-
-            return;
-        }
-
-        _events[hash] = type;
-    }
+    
     
     protected INetworkEvent? OnData(NetIncomingMessage message)
     {
@@ -63,7 +73,7 @@ public abstract class NetworkService(ILoggingService logger) : IService, IUpdata
 
         if (!_events.TryGetValue(messageId, out var messageType))
         {
-            logger.Error($"Received an invalid message with the ID {messageId}.");
+            _logger.Error($"Received an invalid message with the ID {messageId}.");
             return null;
         }
         

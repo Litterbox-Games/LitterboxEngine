@@ -9,8 +9,9 @@ namespace Client.Services.Network;
 
 public class ClientNetworkService: NetworkService
 {
-    public override NetPeer NetPeer => _client;
+    protected override NetPeer NetPeer => _client;
 
+    // TODO: replace with IEvents
     public event Action? EventOnConnect;
     public event Action? EventOnDisconnect;
     
@@ -22,15 +23,14 @@ public class ClientNetworkService: NetworkService
     private NetConnection? _connection;
     private float _connectionAttemptTime;
     
-    public ClientNetworkService(IContainer container, ILoggingService logger, EventService eventService) : base(logger)
+    public ClientNetworkService(IContainer container, ILoggingService logger, EventService eventService) : base(logger, eventService)
     {
         _container = container;
         _logger = logger;
         _eventService = eventService;
-        // TODO: pass to NetworkService constructor?
-        eventService.Network = this;
-        
-        var config = new NetPeerConfiguration("Ages of Automation") { 
+
+        var config = new NetPeerConfiguration("Ages of Automation")
+        {
             PingInterval = 1f,
             ConnectionTimeout = 5f
         };
@@ -38,6 +38,8 @@ public class ClientNetworkService: NetworkService
         _client = new NetClient(config);
         _client.Start();
     }
+    
+    protected override void OnOutgoing(OutgoingEvent e) => SendMessage(_connection!, e.NetworkEvent);
     
     public void Connect(string ip, ushort port)
     {
@@ -88,7 +90,7 @@ public class ClientNetworkService: NetworkService
                     break;
                 case NetIncomingMessageType.Data:
                     var e = OnData(incomingMsg);
-                    if (e != null) _eventService.EmitIncoming(e);
+                    if (e != null) _eventService.Incoming(e);
                     break; 
             }
         }
@@ -102,15 +104,6 @@ public class ClientNetworkService: NetworkService
         }
 
         Disconnect();
-    }
-
-    public override void Send(INetworkEvent e)
-    {
-        // f (e.Sender == null) return; // This is a server only action
-        
-        // trying to emit server message that client just got  
-        
-        SendMessage(_connection!, e);
     }
     
     private void OnStatusChange(NetConnectionStatus newStatus, string reason)

@@ -30,7 +30,6 @@ public class ClientEntityService : IEntityService
 
     private void OnEntitySpawn(EntitySpawnEvent e)
     {
-        Console.WriteLine(e.EntityOwner == _playerService.PlayerId);
         switch (e.EntityType)
         {
             // TODO: Better way to lookup entity by `EntityType` and cast to the correct entity.

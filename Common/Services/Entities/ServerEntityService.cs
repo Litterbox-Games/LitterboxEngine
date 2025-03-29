@@ -67,10 +67,6 @@ public class ServerEntityService: IEntityService
 
     private void OnPlayerConnect(PlayerConnectMessage e)
     {
-        Console.WriteLine(_playerService.PlayerId);
-        Console.WriteLine(e.NetworkPlayer!.PlayerId);
-        
-        
         var entity = Entities.Create(
             new Networked { OwnerId = e.NetworkPlayer!.PlayerId, NetworkId = (ulong) _random.Next(), EntityType = 0 },
             new Player(), 

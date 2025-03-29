@@ -8,33 +8,37 @@ using Lidgren.Network;
 
 namespace Common.Services.Network;
 
-public class ServerNetworkService: NetworkService
+public sealed class ServerNetworkService(IContainer container, ILoggingService logger, EventService eventService): NetworkService(logger, eventService)
 {
-    public override NetPeer NetPeer => _server!;
+    private NetServer? _server;
+    protected override NetPeer NetPeer => _server!;
+
+    private readonly ILoggingService _logger = logger;
+    private readonly EventService _eventService = eventService;
+    private IPlayerService? _playerService;
     
+    private readonly List<ServerPlayer> _players = [];
+    public IEnumerable<ServerPlayer> Players => _players;
+    
+    // TODO: replace with IEvents
     public event Action? EventOnStartListen;
     public event Action? EventOnStopListen;
     public event Action? EventOnPreStopListen;
-    public event Action<ServerPlayer>? EventOnPlayerConnect;
-    public event Action<ServerPlayer>? EventOnPlayerDisconnect;
-    
-    public IEnumerable<ServerPlayer> Players => _players;
 
-    private NetServer? _server;
-    private IPlayerService? _playerService;
-    private readonly List<ServerPlayer> _players = [];
-    private readonly IContainer _container;
-    private readonly ILoggingService _logger;
-    private readonly EventService _eventService;
-    
-    public ServerNetworkService(IContainer container, ILoggingService logger, EventService eventService): base(logger)
+
+    protected override void OnOutgoing(OutgoingEvent e)
     {
-        _container = container;
-        _logger = logger;
-        _eventService = eventService;
-        eventService.Network = this;
-    }
+        IEnumerable<ServerPlayer> players = _players;
+        if (e.NetworkEvent.Receivers != null)
+            players = players.Where(p => e.NetworkEvent.Receivers(p));
+        
+        var connections = players.Select(x => x.PlayerConnection).Where(x => x != null).Cast<NetConnection>().ToList();
 
+        if (connections.Count == 0) return;
+        
+        SendMessage(connections, e.NetworkEvent);
+    }
+    
     public override void Update(float deltaTime)
     {
         if (_server == null)
@@ -79,7 +83,7 @@ public class ServerNetworkService: NetworkService
                     var e = OnData(message);
                     if (e == null) break;
                     e.Sender = _players.FirstOrDefault(x => x.PlayerConnection == message.SenderConnection);
-                    _eventService.EmitIncoming(e);
+                    _eventService.Incoming(e);
                     break;
             }
         }
@@ -100,11 +104,11 @@ public class ServerNetworkService: NetworkService
         _server = new NetServer(config);
         _server.Start();
 
-        _playerService = _container.Resolve<IPlayerService>();
+        _playerService = container.Resolve<IPlayerService>();
         
         _logger.Information("Server is now listening on port 7777.");
         
-        if (_container.GameMode == EGameMode.Host || _container.GameMode == EGameMode.SinglePlayer)
+        if (container.GameMode == EGameMode.Host || container.GameMode == EGameMode.SinglePlayer)
         {
             _players.Add(new ServerPlayer(_playerService.PlayerId, $"Player {_playerService.PlayerId}", null));
         }
@@ -124,23 +128,10 @@ public class ServerNetworkService: NetworkService
 
         _server = null;
     }
-
-    public override void Send(INetworkEvent e)
-    {
-        IEnumerable<ServerPlayer> players = _players;
-        if (e.Receivers != null)
-            players = players.Where(p => e.Receivers(p));
-        
-        var connections = players.Select(x => x.PlayerConnection).Where(x => x != null).Cast<NetConnection>().ToList();
-
-        if (connections.Count == 0) return;
-        
-        SendMessage(connections, e);
-    }
     
     private bool OnConnectionRequest(NetIncomingMessage message)
     {
-        if (_container.GameMode == EGameMode.SinglePlayer)
+        if (container.GameMode == EGameMode.SinglePlayer)
             return false;
         
         try
@@ -182,13 +173,12 @@ public class ServerNetworkService: NetworkService
 
     private void OnDisconnect(NetConnection conn)
     {
-        var player =
-            _players.FirstOrDefault(x => x.PlayerConnection?.RemoteUniqueIdentifier == conn.RemoteUniqueIdentifier);
+        var player = _players.FirstOrDefault(x => x.PlayerConnection?.RemoteUniqueIdentifier == conn.RemoteUniqueIdentifier);
 
         if (player == null)
             return;
 
-        EventOnPlayerDisconnect?.Invoke(player);
+        // EventOnPlayerDisconnect?.Invoke(player);
 
         _players.Remove(player);
 

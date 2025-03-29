@@ -71,7 +71,7 @@ public class MovementSystem: ISystem, IUpdatable
         
         // Send to all players
         if (moveMessage.Entities.Count > 0)
-            _eventService.EmitOutgoing(moveMessage);
+            _eventService.Outgoing(moveMessage);
     }
     
     private void OnEntityMoveMessage(EntityMoveEvent e)
