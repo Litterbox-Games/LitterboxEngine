@@ -1,5 +1,4 @@
 ﻿using Arch.Core.Utils;
-using Client.Graphics;
 using Client.Services.Entities;
 using Client.Services.Network;
 using Client.Services.Players;
@@ -19,7 +18,7 @@ using Common.Services.Resource;
 using Common.Services.World;
 using Common.Systems;
 
-namespace Client.Core.Registrars;
+namespace Client.Host.Registrars;
 
 /// <summary>
 ///     Registers all client services.
