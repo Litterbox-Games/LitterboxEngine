@@ -70,12 +70,12 @@ public class EntityRenderSystem: ISystem, IDrawable
             var renderPosition = (position.Current.Modulus(worldSize) -  player.Current + new Vector2(worldSize / 2f)).Modulus(worldSize) - new Vector2(worldSize / 2f) + player.Current;
             
             // Debug draw for showing network positions vs render position (not world wrapping atm)
-            if (position.Queued.Count > 1)
-            { // this is a player
-                var queued = position.Queued.ToArray();
-                renderer.DrawTexture(texture, _textureSource, new RectangleF(queued[0].Position.X, queued[0].Position.Y, 1.25f, 1), Color.Green);
-                renderer.DrawTexture(texture, _textureSource, new RectangleF(queued[1].Position.X, queued[1].Position.Y, 1.25f, 1), Color.Red);
-            }
+            // if (position.Queued.Count > 1)
+            // { // this is a player
+            //     var queued = position.Queued.ToArray();
+            //     renderer.DrawTexture(texture, _textureSource, new RectangleF(queued[0].Position.X, queued[0].Position.Y, 1.25f, 1), Color.Green);
+            //     renderer.DrawTexture(texture, _textureSource, new RectangleF(queued[1].Position.X, queued[1].Position.Y, 1.25f, 1), Color.Red);
+            // }
             
             renderer.DrawTexture(texture, _textureSource, new RectangleF(renderPosition.X, renderPosition.Y, 1.25f, 1), Color.White);
         });
