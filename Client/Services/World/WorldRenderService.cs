@@ -8,7 +8,7 @@ using Common.Core;
 using Common.Core.Attributes;
 using Common.Mathematics;
 using Common.Services.Entities;
-using Common.Services.Entities.Messages;
+using Common.Services.Entities.Events;
 using Common.Services.Events;
 using Common.Services.Players;
 using Common.Services.Resource;

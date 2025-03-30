@@ -5,9 +5,9 @@ using Common.Services.Events;
 using Common.Services.Logging;
 using Common.Services.Network;
 using Common.Services.Players;
-using Common.Services.Players.Messages;
+using Common.Services.Players.Events;
+using Common.Services.World.Events;
 using Common.Services.World.Generation;
-using Common.Services.World.Messages;
 
 namespace Common.Services.World;
 
@@ -32,12 +32,12 @@ public class ServerWorldService : IWorldService
         _eventService = eventService;
         _generation = container.Resolve<IWorldGenerator>("earth");
         
-        _eventService.Handle<PlayerDisconnectMessage>(OnPlayerDisconnect);
-        _eventService.Handle<ChunkRequestMessage>(OnChunkRequest);
-        _eventService.Handle<BlockUpdateMessage>(OnBlockUpdate);
+        _eventService.Handle<PlayerDisconnectEvent>(OnPlayerDisconnect);
+        _eventService.Handle<ChunkRequestEvent>(OnChunkRequest);
+        _eventService.Handle<BlockUpdateEvent>(OnBlockUpdate);
     }
 
-    private void OnBlockUpdate(BlockUpdateMessage blockUpdate)
+    private void OnBlockUpdate(BlockUpdateEvent blockUpdate)
     { 
         var chunk = GetChunk(blockUpdate.Chunk);
 
@@ -90,15 +90,15 @@ public class ServerWorldService : IWorldService
         chunk?.Observers.Remove(_networkService.Players.FirstOrDefault(x => x.PlayerId == _playerService.PlayerId)!);
     }
 
-    private void OnChunkRequest(ChunkRequestMessage message)
+    private void OnChunkRequest(ChunkRequestEvent e)
     {
-        if (message.Sender == null) return;
+        if (e.Sender == null) return;
 
-        foreach (var pos in message.Chunks!)
+        foreach (var pos in e.Chunks!)
         {
             var chunk = GetChunk(pos);
 
-            if (message.RequestType == EChunkRequest.Load)
+            if (e.RequestType == EChunkRequest.Load)
             {
                 if (chunk == null)
                 {
@@ -107,12 +107,12 @@ public class ServerWorldService : IWorldService
                     NetworkedChunks.Add(chunk);
                 }
 
-                if (!chunk.Observers.Contains(message.Sender))
+                if (!chunk.Observers.Contains(e.Sender))
                 {
-                    chunk.Observers.Add(message.Sender);
+                    chunk.Observers.Add(e.Sender);
                 }
 
-                var dataMessage = new ChunkDataMessage
+                var dataMessage = new ChunkDataEvent
                 {
                     Position = pos,
                     GroundLayer = chunk.ChunkData.GroundArray,
@@ -126,7 +126,7 @@ public class ServerWorldService : IWorldService
             }
             else
             {
-                chunk?.Observers.Remove(message.Sender);
+                chunk?.Observers.Remove(e.Sender);
             }
         }
     }
@@ -150,7 +150,7 @@ public class ServerWorldService : IWorldService
 
             x.ChunkData.IsDirty = false;
         
-            var dataMessage = new ChunkDataMessage
+            var dataMessage = new ChunkDataEvent
             {
                 Position = x.ChunkData.Position,
                 GroundLayer = x.ChunkData.GroundArray,
@@ -170,7 +170,7 @@ public class ServerWorldService : IWorldService
         chunksToUnload.ForEach(x => NetworkedChunks.Remove(x));
     }
 
-    private void OnPlayerDisconnect(PlayerDisconnectMessage e)
+    private void OnPlayerDisconnect(PlayerDisconnectEvent e)
     {
         var removedChunk = new List<NetworkedChunk>();
 

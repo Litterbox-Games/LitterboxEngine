@@ -1,25 +1,23 @@
-﻿using Common.Services.Events;
-using Common.Services.Players;
+﻿using Common.Services.Network.Events;
 using Lidgren.Network;
 
-namespace Common.Services.Entities.Messages;
+namespace Common.Services.Players.Events;
 
-public struct EntityDespawnEvent : INetworkEvent
+public sealed class PlayerDisconnectEvent : INetworkEvent
 {
     public NetDeliveryMethod NetworkChannel => NetDeliveryMethod.ReliableUnordered;
     public ServerPlayer? Sender { get; set; }
     public Predicate<ServerPlayer>? Receivers { get; set; }
-    
 
-    public ulong EntityId;
+    public ulong PlayerId;
 
     public void Serialize(NetOutgoingMessage writer)
     {
-        writer.Write(EntityId);
+        writer.Write(PlayerId);
     }
 
     public void Deserialize(NetIncomingMessage reader)
     {
-        EntityId = reader.ReadUInt64();
+        PlayerId = reader.ReadUInt64();
     }
 }

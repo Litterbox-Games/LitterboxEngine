@@ -1,32 +1,9 @@
 ﻿using Common.Core;
 using Common.Services.Logging;
 using Common.Services.Network;
-using Common.Services.Players;
-using Lidgren.Network;
+using Common.Services.Network.Events;
 
 namespace Common.Services.Events;
-
-public interface IEvent;
-
-public interface INetworkEvent : IEvent
-{
-    public NetDeliveryMethod NetworkChannel { get; }
-    public ServerPlayer? Sender { get; set; }
-    public Predicate<ServerPlayer>? Receivers { get; set; }
-
-    public void Serialize(NetOutgoingMessage writer);
-    public void Deserialize(NetIncomingMessage reader);
-}
-
-public struct OutgoingEvent(INetworkEvent networkEvent) : IEvent
-{
-    public INetworkEvent NetworkEvent = networkEvent;
-}
-
-public struct RegisterMessageEvent(Type eventType) : IEvent
-{
-    public Type Type = eventType;
-}
 
 public delegate void OnEvent<in T>(T e) where T : IEvent;
 

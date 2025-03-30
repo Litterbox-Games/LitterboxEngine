@@ -1,10 +1,9 @@
-﻿using Common.Services.Events;
-using Common.Services.Network;
+﻿using Common.Services.Network.Events;
 using Lidgren.Network;
 
-namespace Common.Services.Players.Messages;
+namespace Common.Services.Players.Events;
 
-public sealed class PlayerConnectMessage : INetworkEvent
+public sealed class PlayerConnectEvent : INetworkEvent
 {
     public NetDeliveryMethod NetworkChannel => NetDeliveryMethod.ReliableUnordered;
     public ServerPlayer? Sender { get; set; }

@@ -4,7 +4,7 @@ using Common.Services.Events;
 using Common.Services.Network;
 using Common.Services.Players;
 using Common.Services.World;
-using Common.Services.World.Messages;
+using Common.Services.World.Events;
 
 namespace Client.Services.World;
 
@@ -18,7 +18,7 @@ public class ClientWorldService : IWorldService
     public ClientWorldService(EventService eventService)
     {
         _eventService = eventService;
-        _eventService.Handle<ChunkDataMessage>(OnChunkDataMessage);
+        _eventService.Handle<ChunkDataEvent>(OnChunkDataMessage);
     }
 
     private readonly HashSet<Vector2i> _chunksToRequestLoad = [];
@@ -28,7 +28,7 @@ public class ClientWorldService : IWorldService
     {
         if (_chunksToRequestLoad.Count != 0)
         {
-            var chunkRequestMessage = new ChunkRequestMessage()
+            var chunkRequestMessage = new ChunkRequestEvent()
             {
                 RequestType = EChunkRequest.Load,
                 Chunks = _chunksToRequestLoad.ToArray()
@@ -41,7 +41,7 @@ public class ClientWorldService : IWorldService
 
         if (_chunksToRequestUnload.Count != 0)
         {
-            var chunkRequestMessage = new ChunkRequestMessage()
+            var chunkRequestMessage = new ChunkRequestEvent()
             {
                 RequestType = EChunkRequest.Unload,
                 Chunks = _chunksToRequestUnload.ToArray()
@@ -75,22 +75,22 @@ public class ClientWorldService : IWorldService
         _chunks.Remove(chunkData);
     }
 
-    private void OnChunkDataMessage(ChunkDataMessage message)
+    private void OnChunkDataMessage(ChunkDataEvent e)
     {
-        var chunkData = _chunks.FirstOrDefault(x => x.Position == message!.Position);
+        var chunkData = _chunks.FirstOrDefault(x => x.Position == e!.Position);
 
         if (chunkData == null)
         {
-            chunkData = new ChunkData(message.Position);
+            chunkData = new ChunkData(e.Position);
             _chunks.Add(chunkData);
         }
 
-        chunkData.GroundArray = message.GroundLayer!;
-        chunkData.ObjectArray = message.ObjectLayer!;
+        chunkData.GroundArray = e.GroundLayer!;
+        chunkData.ObjectArray = e.ObjectLayer!;
 
-        chunkData.BiomeArray = message.BiomeMap!.Cast<EBiomeType>().ToArray();
-        chunkData.HeatArray = message.HeatMap!.Cast<EHeatType>().ToArray();
-        chunkData.MoistureArray = message.MoistureMap!.Cast<EMoistureType>().ToArray();
+        chunkData.BiomeArray = e.BiomeMap!.Cast<EBiomeType>().ToArray();
+        chunkData.HeatArray = e.HeatMap!.Cast<EHeatType>().ToArray();
+        chunkData.MoistureArray = e.MoistureMap!.Cast<EMoistureType>().ToArray();
     }
     
     public ChunkData? GetChunkData(Vector2i position)

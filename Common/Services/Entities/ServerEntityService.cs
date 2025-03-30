@@ -2,11 +2,11 @@
 using Arch.Core;
 using Arch.Core.Extensions;
 using Common.Components;
-using Common.Services.Entities.Messages;
+using Common.Services.Entities.Events;
 using Common.Services.Events;
 using Common.Services.Network;
 using Common.Services.Players;
-using Common.Services.Players.Messages;
+using Common.Services.Players.Events;
 
 namespace Common.Services.Entities;
 
@@ -29,8 +29,8 @@ public class ServerEntityService: IEntityService
         _eventService = eventService;
         _playerService = playerService;
         
-        _eventService.Handle<PlayerConnectMessage>(OnPlayerConnect);
-        _eventService.Handle<PlayerDisconnectMessage>(OnPlayerDisconnect);
+        _eventService.Handle<PlayerConnectEvent>(OnPlayerConnect);
+        _eventService.Handle<PlayerDisconnectEvent>(OnPlayerDisconnect);
         // _eventService.Handle<ServerStartEvent>(OnServerStart);
     }
 
@@ -65,7 +65,7 @@ public class ServerEntityService: IEntityService
         // _eventService.Emit(new EntityDestroyedEvent { Entity = entity });
     }
 
-    private void OnPlayerConnect(PlayerConnectMessage e)
+    private void OnPlayerConnect(PlayerConnectEvent e)
     {
         var entity = Entities.Create(
             new Networked { OwnerId = e.NetworkPlayer!.PlayerId, NetworkId = (ulong) _random.Next(), EntityType = 0 },
@@ -93,7 +93,7 @@ public class ServerEntityService: IEntityService
         });
     }
 
-    private void OnPlayerDisconnect(PlayerDisconnectMessage e)
+    private void OnPlayerDisconnect(PlayerDisconnectEvent e)
     {
         Entities.Query(_networkEntities,( 
             Entity entity, 

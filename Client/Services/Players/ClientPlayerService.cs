@@ -2,7 +2,7 @@
 using Common.Services.Events;
 using Common.Services.Network;
 using Common.Services.Players;
-using Common.Services.Players.Messages;
+using Common.Services.Players.Events;
 
 namespace Client.Services.Players;
 
@@ -18,24 +18,24 @@ public class ClientPlayerService : IPlayerService
     {
         PlayerId = (ulong) new Random(DateTime.Now.Millisecond).Next();
         
-        eventService.Handle<PlayerConnectMessage>(OnPlayerConnectMessage);
-        eventService.Handle<PlayerDisconnectMessage>(OnPlayerDisconnectMessage);
-        eventService.Handle<PlayerListSyncMessage>(OnPlayerListSyncMessage);
+        eventService.Handle<PlayerConnectEvent>(OnPlayerConnectMessage);
+        eventService.Handle<PlayerDisconnectEvent>(OnPlayerDisconnectMessage);
+        eventService.Handle<PlayerListSyncEvent>(OnPlayerListSyncMessage);
     }
 
-    private void OnPlayerConnectMessage(PlayerConnectMessage message)
+    private void OnPlayerConnectMessage(PlayerConnectEvent e)
     {
-        _players.Add(message.NetworkPlayer!);
+        _players.Add(e.NetworkPlayer!);
     }
 
-    private void OnPlayerDisconnectMessage(PlayerDisconnectMessage message)
+    private void OnPlayerDisconnectMessage(PlayerDisconnectEvent e)
     {
-        _players.Remove(_players.First(x => x.PlayerId == message.PlayerId));
+        _players.Remove(_players.First(x => x.PlayerId == e.PlayerId));
     }
 
-    private void OnPlayerListSyncMessage(PlayerListSyncMessage message)
+    private void OnPlayerListSyncMessage(PlayerListSyncEvent e)
     {
         _players.Clear();
-        _players.AddRange(message.Players);
+        _players.AddRange(e.Players);
     }
 }

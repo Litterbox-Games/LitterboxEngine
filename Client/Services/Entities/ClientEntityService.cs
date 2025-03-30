@@ -4,7 +4,7 @@ using Client.Components;
 using Client.Services.Network;
 using Common.Components;
 using Common.Services.Entities;
-using Common.Services.Entities.Messages;
+using Common.Services.Entities.Events;
 using Common.Services.Events;
 using Common.Services.Players;
 

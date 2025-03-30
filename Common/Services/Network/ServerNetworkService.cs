@@ -2,8 +2,9 @@
 using Common.Host;
 using Common.Services.Events;
 using Common.Services.Logging;
+using Common.Services.Network.Events;
 using Common.Services.Players;
-using Common.Services.Players.Messages;
+using Common.Services.Players.Events;
 using Lidgren.Network;
 
 namespace Common.Services.Network;
@@ -164,7 +165,7 @@ public sealed class ServerNetworkService(IContainer container, ILoggingService l
         }
 
         // EventOnPlayerConnect?.Invoke(player);
-        _eventService.Emit(new PlayerConnectMessage { NetworkPlayer = player, Receivers = serverPlayer => serverPlayer != player });
+        _eventService.Emit(new PlayerConnectEvent { NetworkPlayer = player, Receivers = serverPlayer => serverPlayer != player });
 
         _logger.Information($"{player.PlayerName} has connected!");
 

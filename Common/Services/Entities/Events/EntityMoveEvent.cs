@@ -1,11 +1,9 @@
 ﻿using System.Numerics;
-using Common.Services.Events;
-using Common.Services.Network;
+using Common.Services.Network.Events;
 using Common.Services.Players;
 using Lidgren.Network;
-using MoreLinq;
 
-namespace Common.Services.Entities.Messages;
+namespace Common.Services.Entities.Events;
 
 public record EntityMovement
 {

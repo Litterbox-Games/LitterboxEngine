@@ -1,12 +1,11 @@
 ﻿using Common.Mathematics;
-using Common.Services.Events;
-using Common.Services.Network;
+using Common.Services.Network.Events;
 using Common.Services.Players;
 using Lidgren.Network;
 
-namespace Common.Services.World.Messages;
+namespace Common.Services.World.Events;
 
-public struct ChunkRequestMessage : INetworkEvent
+public struct ChunkRequestEvent : INetworkEvent
 {
     public NetDeliveryMethod NetworkChannel => NetDeliveryMethod.ReliableOrdered;
     public ServerPlayer? Sender { get; set; }

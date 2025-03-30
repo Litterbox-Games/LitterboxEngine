@@ -1,16 +1,15 @@
-﻿using Common.Services.Events;
-using Common.Services.Network;
+﻿using Common.Services.Network.Events;
 using Lidgren.Network;
 
-namespace Common.Services.Players.Messages;
+namespace Common.Services.Players.Events;
 
-public sealed class PlayerListSyncMessage : INetworkEvent
+public sealed class PlayerListSyncEvent : INetworkEvent
 {
     public NetDeliveryMethod NetworkChannel => NetDeliveryMethod.ReliableUnordered;
     public ServerPlayer? Sender { get; set; }
     public Predicate<ServerPlayer>? Receivers { get; set; }
 
-    public readonly List<NetworkPlayer> Players = new();
+    public readonly List<NetworkPlayer> Players = [];
 
     public void Serialize(NetOutgoingMessage writer)
     {

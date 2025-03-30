@@ -2,6 +2,7 @@
 using Common.Services.Events;
 using Common.Services.Logging;
 using Common.Services.Network;
+using Common.Services.Network.Events;
 using Common.Services.Players;
 using Lidgren.Network;
 

@@ -2,7 +2,7 @@
 using Common.Host;
 using Common.Services.Events;
 using Common.Services.Network;
-using Common.Services.Players.Messages;
+using Common.Services.Players.Events;
 
 namespace Common.Services.Players;
 
@@ -23,13 +23,13 @@ public sealed class ServerPlayerService : IPlayerService
         _network = networkService;
         _eventService = eventService;
         
-        eventService.Handle<PlayerConnectMessage>(OnPlayerConnect);
-        eventService.Handle<PlayerDisconnectMessage>(OnPlayerDisconnect);
+        eventService.Handle<PlayerConnectEvent>(OnPlayerConnect);
+        eventService.Handle<PlayerDisconnectEvent>(OnPlayerDisconnect);
     }
 
-    private void OnPlayerConnect(PlayerConnectMessage e)
+    private void OnPlayerConnect(PlayerConnectEvent e)
     {
-        var syncMessage = new PlayerListSyncMessage();
+        var syncMessage = new PlayerListSyncEvent();
 
         foreach (var p in Players)
         {
@@ -53,12 +53,12 @@ public sealed class ServerPlayerService : IPlayerService
         // _eventService.Emit(connectMessage);
     }
 
-    private void OnPlayerDisconnect(PlayerDisconnectMessage e)
+    private void OnPlayerDisconnect(PlayerDisconnectEvent e)
     {
         if (!Players.Any() || Players.Count() == 2 && _container.GameMode == EGameMode.Host)
             return;
 
-        var disconnectMessage = new PlayerDisconnectMessage
+        var disconnectMessage = new PlayerDisconnectEvent
         {
             PlayerId = e.PlayerId,
             Receivers = serverPlayer => serverPlayer != e.Sender
