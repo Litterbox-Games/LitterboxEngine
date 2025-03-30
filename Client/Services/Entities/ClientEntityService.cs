@@ -66,12 +66,12 @@ public class ClientEntityService : IEntityService
     private void OnEntityDespawn(EntityDespawnEvent e)
     {
         Entities.Query(_networkEntities,( 
-            ref Entity entity, 
+            Entity entity, 
             ref Networked network 
         ) => { 
             if (network.NetworkId != e.EntityId) return;
-            Entities.Destroy(entity);
             _eventService.Emit(new EntityDestroyedEvent{ Entity = entity });
+            Entities.Destroy(entity);
         });
     }
 }

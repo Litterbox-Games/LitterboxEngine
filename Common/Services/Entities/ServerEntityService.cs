@@ -48,12 +48,11 @@ public class ServerEntityService: IEntityService
             EntityOwner = network.OwnerId,
             EntityPosition = position.Current
         });
-        // _eventService.Emit(new EntityCreatedEvent { Entity = entity });
     }
 
     public void DespawnEntity(Entity entity)
     {
-        if (!entity.Has<Networked>())
+        if (!entity.TryGet(out Networked networked))
         {
             Entities.Destroy(entity);
             return;
@@ -61,8 +60,7 @@ public class ServerEntityService: IEntityService
         
         Entities.Destroy(entity);
         
-        _eventService.Emit(new EntityDespawnEvent { EntityId = entity.Get<Networked>().NetworkId });
-        // _eventService.Emit(new EntityDestroyedEvent { Entity = entity });
+        _eventService.Emit(new EntityDespawnEvent { EntityId = networked.NetworkId });
     }
 
     private void OnPlayerConnect(PlayerConnectEvent e)

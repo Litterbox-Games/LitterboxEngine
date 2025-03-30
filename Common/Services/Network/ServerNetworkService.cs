@@ -21,12 +21,6 @@ public sealed class ServerNetworkService(IContainer container, ILoggingService l
     private readonly List<ServerPlayer> _players = [];
     public IEnumerable<ServerPlayer> Players => _players;
     
-    // TODO: replace with IEvents
-    public event Action? EventOnStartListen;
-    public event Action? EventOnStopListen;
-    public event Action? EventOnPreStopListen;
-
-
     protected override void OnOutgoing(OutgoingEvent e)
     {
         IEnumerable<ServerPlayer> players = _players;
@@ -114,18 +108,16 @@ public sealed class ServerNetworkService(IContainer container, ILoggingService l
             _players.Add(new ServerPlayer(_playerService.PlayerId, $"Player {_playerService.PlayerId}", null));
         }
         
-        EventOnStartListen?.Invoke();
+        _eventService.Emit(new StartEvent());
     }
 
     public void StopListening()
     {
         if (_server == null) return;
-
-        EventOnPreStopListen?.Invoke();
+        
+        _eventService.Emit(new StopEvent());
 
         _server.Shutdown("Server has been shutdown by host.");
-
-        EventOnStopListen?.Invoke();
 
         _server = null;
     }
@@ -179,11 +171,17 @@ public sealed class ServerNetworkService(IContainer container, ILoggingService l
         if (player == null)
             return;
 
-        // EventOnPlayerDisconnect?.Invoke(player);
-
         _players.Remove(player);
 
         _logger.Information($"{player.PlayerName} has disconnected!");
+        
+        var disconnectMessage = new PlayerDisconnectEvent
+        {
+            PlayerId = player.PlayerId,
+            Receivers = serverPlayer => serverPlayer != player
+        };
+
+        _eventService.Emit(disconnectMessage);
     }
     
     private void OnStatusChange(NetConnectionStatus newStatus, string reason)
