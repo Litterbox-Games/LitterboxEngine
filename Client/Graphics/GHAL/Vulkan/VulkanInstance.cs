@@ -112,12 +112,12 @@ public class VulkanInstance: IDisposable
         
         var result = _vk.EnumerateInstanceExtensionProperties((string)null!, ref layersCount, null);
         if (result != Result.Success)
-            throw new Exception($"Failed to enumerate instance extension properties with error: ${result.ToString()}");
+            throw new Exception($"Failed to enumerate instance extension properties with error: {result.ToString()}");
         
         Span<ExtensionProperties> extensions = new ExtensionProperties[layersCount];
         result = _vk.EnumerateInstanceExtensionProperties((string)null!, &layersCount, extensions); 
         if (result != Result.Success)
-            throw new Exception($"Failed to enumerate instance extension properties with error: ${result.ToString()}");
+            throw new Exception($"Failed to enumerate instance extension properties with error: {result.ToString()}");
 
         return extensions.ToArray()
             .Select(ext =>
@@ -135,12 +135,12 @@ public class VulkanInstance: IDisposable
         
         var result = _vk.EnumerateInstanceLayerProperties(ref layersCount, null);
         if (result != Result.Success)
-            throw new Exception($"Failed to enumerate instance layer properties with error: ${result.ToString()}");
+            throw new Exception($"Failed to enumerate instance layer properties with error: {result.ToString()}");
 
         Span<LayerProperties> layers = new LayerProperties[layersCount];
         result = _vk.EnumerateInstanceLayerProperties(&layersCount, layers); 
         if (result != Result.Success)
-            throw new Exception($"Failed to enumerate instance layer properties with error: ${result.ToString()}");
+            throw new Exception($"Failed to enumerate instance layer properties with error: {result.ToString()}");
 
         return layers.ToArray()
             .Select(p =>

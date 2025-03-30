@@ -73,7 +73,7 @@ public class VulkanSwapChain: IDisposable
         }
         
         if (result != Result.Success && result != Result.SuboptimalKhr)
-            throw new Exception($"Failed to acquire swap chain image with error: ${result.ToString()}");
+            throw new Exception($"Failed to acquire swap chain image with error: {result.ToString()}");
     }
 
     public unsafe void PresentImage(VulkanQueue queue)
@@ -105,7 +105,7 @@ public class VulkanSwapChain: IDisposable
         }
         
         if (result != Result.Success && result != Result.SuboptimalKhr)
-            throw new Exception($"Failed to present KHR with error: ${result.ToString()}");
+            throw new Exception($"Failed to present KHR with error: {result.ToString()}");
     }
     
     public void WaitForFence()
