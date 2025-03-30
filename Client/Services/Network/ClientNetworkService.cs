@@ -39,8 +39,13 @@ public class ClientNetworkService: NetworkService
         _client = new NetClient(config);
         _client.Start();
     }
-    
-    protected override void OnOutgoing(OutgoingEvent e) => SendMessage(_connection!, e.NetworkEvent);
+
+    protected override void OnOutgoing(OutgoingEvent e)
+    {
+        // Check if this is a server only event
+        if (e.NetworkEvent.Receivers != null) return;
+        SendMessage(_connection!, e.NetworkEvent);
+    }
     
     public void Connect(string ip, ushort port)
     {

@@ -69,7 +69,6 @@ public class MovementSystem: ISystem, IUpdatable
             }
         });
         
-        // Send to all players
         if (moveMessage.Entities.Count > 0)
             _eventService.Outgoing(moveMessage);
     }
@@ -98,8 +97,8 @@ public class MovementSystem: ISystem, IUpdatable
         });
 
         // Forward this packet to all players but sender
-        // e.Receivers = networkPlayer => networkPlayer != e.Sender; 
-        // _eventService.Emit(e);
+        e.Receivers = networkPlayer => networkPlayer != e.Sender; 
+        _eventService.Outgoing(e);
     }
 }
 
