@@ -1,4 +1,5 @@
-﻿using Common.Registry;
+﻿using Common.Mathematics;
+using Common.Registry;
 
 namespace Common.Services.Block;
 
@@ -8,4 +9,7 @@ public interface IBlock : IRegisterable
     // uint Hardness { get; }
     // string PreferredToolType { get; }
     // IItemStack[] GenerateDrops (bool isPreferredTool);
+    
+    string? TexturePath { get; }
+    Vector2i? TextureOffset { get; }
 }

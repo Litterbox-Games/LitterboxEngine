@@ -2,10 +2,10 @@
 
 namespace Common.Services.Block.Blocks;
 
-public class DeepWaterBlock : IBlock
+public class BorealGrassBlock : IBlock
 {
-    public string Id => "deep_water";
+    public string Id => "boreal_grass";
     public ushort MappedId { get; set; }
     public string? TexturePath => "Aseprites/BiomePalette.aseprite";
-    public Vector2i? TextureOffset => new Vector2i(1, 3);
+    public Vector2i? TextureOffset => new Vector2i(1, 0);
 }

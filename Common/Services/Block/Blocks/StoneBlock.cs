@@ -1,7 +1,0 @@
-﻿namespace Common.Services.Block.Blocks;
-
-public class StoneBlock : IBlock
-{
-    public string Id => "stone";
-    public ushort MappedId { get; set; }
-}

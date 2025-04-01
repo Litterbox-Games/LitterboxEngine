@@ -8,11 +8,21 @@ public class BlockRegistry : IRegistry<IBlock>
     public BlockRegistry()
     {
         this.Register(new EmptyBlock());
+        
         this.Register(new GrassBlock());
-        this.Register(new SnowBlock());
-        this.Register(new StoneBlock());
+        this.Register(new TundraGrassBlock());
+        this.Register(new BorealGrassBlock());
+        this.Register(new WoodlandGrassBlock());
+        this.Register(new SeasonalGrassBlock());
+        this.Register(new SavannaGrassBlock());
+        this.Register(new TemperateGrassBlock());
+        this.Register(new TropicalGrassBlock());
+        
+        this.Register(new SandBlock());
+        
         this.Register(new WaterBlock());
         this.Register(new DeepWaterBlock());
+        this.Register(new IceBlock());
     }
     
     public IDictionary<ushort, IBlock> ObjectMapping { get; } = new Dictionary<ushort, IBlock>();
