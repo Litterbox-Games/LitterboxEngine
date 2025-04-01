@@ -90,6 +90,9 @@ public static class RegistryExtensions
             var id = Encoding.UTF8.GetString(idBuffer, 0, 32).Trim('\0');
             
             registry.IdMapping[id] = mappedId;
+
+            if (mappedId <= IdCounter[typeof(T)])
+                IdCounter[typeof(T)] += 1;
         }
     }
     
