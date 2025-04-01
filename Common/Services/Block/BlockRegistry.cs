@@ -1,6 +1,7 @@
-﻿using Common.Registry;
+﻿using Common.Block;
+using Common.Registry;
 
-namespace Common.Block;
+namespace Common.Services.Block;
 
 public class BlockRegistry : IRegistry<IBlock>
 {
