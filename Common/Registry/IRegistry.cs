@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using Common.Core;
-using MoreLinq;
 
 namespace Common.Registry;
 
