@@ -50,16 +50,17 @@ public static class RegistryExtensions
     {
         using var stream = new MemoryStream();
         
-        var count = registry.IdMapping.Count;
-        
-        stream.Write(BitConverter.GetBytes(count), 0, sizeof(int));
+        stream.Write(BitConverter.GetBytes(registry.IdMapping.Count), 0, sizeof(int));
         
         foreach (var mapping in registry.IdMapping)
         {
             stream.Write(BitConverter.GetBytes(mapping.Value), 0, sizeof(uint));
             
             // Max of 32 chars is probably overkill.
-            stream.Write(Encoding.UTF8.GetBytes(mapping.Key), 0, 32);
+            var stringBuffer = new byte[32];
+            Encoding.UTF8.GetBytes(mapping.Key).CopyTo(stringBuffer, 0);
+            
+            stream.Write(stringBuffer, 0, 32);
         }
         
         return stream.ToArray();
@@ -67,7 +68,26 @@ public static class RegistryExtensions
     
     public static void LoadSerializedMappings<T>(this IRegistry<T> registry, byte[] serializedMappings) where T : class, IRegisterable
     {
-        throw new NotImplementedException();
+        using var memoryStream = new MemoryStream(serializedMappings);
+        
+        var countBuffer = new byte[sizeof(int)];
+        memoryStream.ReadExactly(countBuffer, 0, sizeof(int));
+        
+        var count = BitConverter.ToInt32(countBuffer, 0);
+        
+        var idBuffer = new byte[32];
+        var mappedIdBuffer = new byte[sizeof(uint)];
+        
+        for (var i = 0; i < count; i++)
+        {
+            memoryStream.ReadExactly(mappedIdBuffer, 0, sizeof(uint));
+            memoryStream.ReadExactly(idBuffer, 0, 32);
+            
+            var mappedId = BitConverter.ToUInt32(mappedIdBuffer, 0);
+            var id = Encoding.UTF8.GetString(idBuffer, 0, 32).Trim('\0');
+            
+            registry.IdMapping[id] = mappedId;
+        }
     }
     
     // Fixes id mappings with no corresponding object after registering is complete.
