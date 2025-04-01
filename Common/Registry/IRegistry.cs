@@ -93,10 +93,10 @@ public static class RegistryExtensions
         }
     }
     
-    // Fixes id mappings with no corresponding object after registering is complete.
     // This will allow us to assume an object exists if its id mapping exists after this function is called.
-    public static void FixMappings<T>(this IRegistry<T> registry) where T : class, IRegisterable
+    public static void EnforceMappings<T>(this IRegistry<T> registry) where T : class, IRegisterable
     {
-        throw new NotImplementedException();
+        if (registry.IdMapping.Count != registry.ObjectMapping.Count)
+            throw new Exception($"Registry of type {registry.GetType().FullName} loaded invalid mappings from a file.");
     }
 }
