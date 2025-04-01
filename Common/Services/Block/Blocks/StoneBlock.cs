@@ -1,4 +1,4 @@
-﻿namespace Common.Block.Blocks;
+﻿namespace Common.Services.Block.Blocks;
 
 public class StoneBlock : IBlock
 {

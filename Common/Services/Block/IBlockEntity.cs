@@ -1,6 +1,6 @@
 ﻿using Common.Archetypes;
 
-namespace Common.Block;
+namespace Common.Services.Block;
 
 public interface IBlockEntity : IBlock
 {

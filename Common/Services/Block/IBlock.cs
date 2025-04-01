@@ -1,6 +1,6 @@
 ﻿using Common.Registry;
 
-namespace Common.Block;
+namespace Common.Services.Block;
 
 public interface IBlock : IRegisterable
 {
