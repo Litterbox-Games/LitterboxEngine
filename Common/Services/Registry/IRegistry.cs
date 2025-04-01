@@ -91,7 +91,7 @@ public static class RegistryExtensions
             
             registry.IdMapping[id] = mappedId;
 
-            if (mappedId <= IdCounter[typeof(T)])
+            if (mappedId >= IdCounter[typeof(T)])
                 IdCounter[typeof(T)] += 1;
         }
     }
