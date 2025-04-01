@@ -62,7 +62,7 @@ public static class RegistryExtensions
             
             // Max of 32 chars is probably overkill.
             // ReSharper disable once AccessToDisposedClosure
-            stream.Write(Encoding.UTF8.GetBytes(x.Value.ToString()), 0, 32);
+            stream.Write(Encoding.UTF8.GetBytes(x.Key), 0, 32);
         });
         
         return stream.ToArray();
