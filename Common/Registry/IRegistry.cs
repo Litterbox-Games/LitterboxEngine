@@ -22,6 +22,9 @@ public static class RegistryExtensions
     {
         var type = registerable.GetType();
 
+        if (registerable.Id.Length > 32)
+            throw new ArgumentException($"ID must be less than 32 characters. Culprit: {type}");
+        
         // Mapping has been loaded or an object is already registered.
         // Note: You CANNOT assume that an object is already registered even if the mapping exists.
         if (registry.IdMapping.TryGetValue(registerable.Id, out var value))
