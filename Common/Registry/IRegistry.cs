@@ -55,15 +55,13 @@ public static class RegistryExtensions
         
         stream.Write(BitConverter.GetBytes(count), 0, sizeof(int));
         
-        registry.IdMapping.ForEach(x =>
+        foreach (var mapping in registry.IdMapping)
         {
-            // ReSharper disable once AccessToDisposedClosure
-            stream.Write(BitConverter.GetBytes(x.Value), 0, sizeof(uint));
+            stream.Write(BitConverter.GetBytes(mapping.Value), 0, sizeof(uint));
             
             // Max of 32 chars is probably overkill.
-            // ReSharper disable once AccessToDisposedClosure
-            stream.Write(Encoding.UTF8.GetBytes(x.Key), 0, 32);
-        });
+            stream.Write(Encoding.UTF8.GetBytes(mapping.Key), 0, 32);
+        }
         
         return stream.ToArray();
     }
