@@ -1,7 +1,7 @@
 ﻿namespace Common.Services.Block.Blocks;
 
-public class StoneBlock : IBlock
+public class EmptyBlock : IBlock
 {
-    public string Id => "stone";
+    public string Id => "air";
     public ushort MappedId { get; set; }
 }

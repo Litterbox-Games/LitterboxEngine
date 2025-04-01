@@ -3,5 +3,5 @@
 public interface IRegisterable
 {
     string Id { get; }
-    uint MappedId { get; internal set; }
+    ushort MappedId { get; internal set; }
 }

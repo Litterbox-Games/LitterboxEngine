@@ -5,13 +5,13 @@ namespace Common.Registry;
 
 public interface IRegistry<T> : IService where T : IRegisterable
 {
-    IDictionary<uint, T> ObjectMapping { get; }
-    IDictionary<string, uint> IdMapping { get; }
+    IDictionary<ushort, T> ObjectMapping { get; }
+    IDictionary<string, ushort> IdMapping { get; }
 }
 
 public static class RegistryExtensions
 {
-    private static readonly Dictionary<Type, uint> IdCounter = new();
+    private static readonly Dictionary<Type, ushort> IdCounter = new();
     
     public static T Resolve<T>(this IRegistry<T> registry, string id) where T : class, IRegisterable
     {
@@ -57,7 +57,7 @@ public static class RegistryExtensions
         
         foreach (var mapping in registry.IdMapping)
         {
-            stream.Write(BitConverter.GetBytes(mapping.Value), 0, sizeof(uint));
+            stream.Write(BitConverter.GetBytes(mapping.Value), 0, sizeof(ushort));
             
             // Max of 32 chars is probably overkill.
             var stringBuffer = new byte[32];
@@ -79,14 +79,14 @@ public static class RegistryExtensions
         var count = BitConverter.ToInt32(countBuffer, 0);
         
         var idBuffer = new byte[32];
-        var mappedIdBuffer = new byte[sizeof(uint)];
+        var mappedIdBuffer = new byte[sizeof(ushort)];
         
         for (var i = 0; i < count; i++)
         {
-            memoryStream.ReadExactly(mappedIdBuffer, 0, sizeof(uint));
+            memoryStream.ReadExactly(mappedIdBuffer, 0, sizeof(ushort));
             memoryStream.ReadExactly(idBuffer, 0, 32);
             
-            var mappedId = BitConverter.ToUInt32(mappedIdBuffer, 0);
+            var mappedId = BitConverter.ToUInt16(mappedIdBuffer, 0);
             var id = Encoding.UTF8.GetString(idBuffer, 0, 32).Trim('\0');
             
             registry.IdMapping[id] = mappedId;
