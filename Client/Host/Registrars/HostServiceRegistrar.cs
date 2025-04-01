@@ -7,6 +7,7 @@ using Common.Core;
 using Common.Core.Attributes;
 using Common.Host;
 using Common.Services.Entities;
+using Common.Services.Events;
 using Common.Services.Logging;
 using Common.Services.Network;
 using Common.Services.Players;
@@ -31,6 +32,8 @@ public class HostServiceRegistrar : IServiceRegistrar
         
         // Services
         container.RegisterSingleton<ILoggingService, ConsoleLoggingService>("console");
+        
+        container.RegisterSingleton<EventService, EventService>();
         
         container.RegisterSingleton<IResourceService, ClientResourceService>();
         

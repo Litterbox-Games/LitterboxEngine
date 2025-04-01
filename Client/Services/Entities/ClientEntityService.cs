@@ -1,6 +1,5 @@
 ﻿using Arch.Core;
 using Arch.Core.Extensions;
-using Client.Components;
 using Client.Services.Network;
 using Common.Components;
 using Common.Services.Entities;
@@ -37,12 +36,13 @@ public class ClientEntityService : IEntityService
             {
                 var entity = Entities.Create(
                     new Networked { OwnerId = e.EntityOwner, NetworkId = e.EntityId, EntityType = e.EntityType },
-                    new Velocity(),
+                    
                     new Player(),
                     new Position(e.EntityPosition));
 
                 if (e.EntityOwner == _playerService.PlayerId)
                 {
+                    entity.Add<Velocity>();
                     entity.Add<PlayerControls>();
                     entity.Add<CameraFollow>();
                 }

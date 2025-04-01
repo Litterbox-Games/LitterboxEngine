@@ -5,6 +5,7 @@ using Common.Components;
 using Common.Services.Entities.Events;
 using Common.Services.Events;
 using Common.Services.Network;
+using Common.Services.Network.Events;
 using Common.Services.Players;
 using Common.Services.Players.Events;
 
@@ -31,7 +32,7 @@ public class ServerEntityService: IEntityService
         
         _eventService.Handle<PlayerConnectEvent>(OnPlayerConnect);
         _eventService.Handle<PlayerDisconnectEvent>(OnPlayerDisconnect);
-        // _eventService.Handle<ServerStartEvent>(OnServerStart);
+        _eventService.Handle<StartEvent>(OnStart); 
     }
 
     public void SpawnEntity(Entity entity)
@@ -48,6 +49,8 @@ public class ServerEntityService: IEntityService
             EntityOwner = network.OwnerId,
             EntityPosition = position.Current
         });
+        
+        _eventService.Emit(new EntityCreatedEvent { Entity = entity });
     }
 
     public void DespawnEntity(Entity entity)
@@ -69,6 +72,14 @@ public class ServerEntityService: IEntityService
             new Networked { OwnerId = e.NetworkPlayer!.PlayerId, NetworkId = (ulong) _random.Next(), EntityType = 0 },
             new Player(), 
             new Position(Vector2.Zero));
+        
+        // Local player
+        if (e.NetworkPlayer.PlayerId == _playerService.PlayerId)
+        {
+            entity.Add<Velocity>();
+            entity.Add<PlayerControls>();
+            entity.Add<CameraFollow>();
+        }
         
         SpawnEntity(entity);
         
@@ -103,10 +114,11 @@ public class ServerEntityService: IEntityService
     }
 
     // If player is hosting, spawn them an entity as if they just connected to a server.
-    // TODO: just handle in ClientEntityService
-    // private void OnServerStart(ServerStartEvent _)
-    // {
-    //     if (!_playerService.Players.Any()) return;
-    //     OnPlayerConnect(_playerService.Players.First(x => x.PlayerId == _playerService.PlayerId));
-    // }
+    private void OnStart(StartEvent _)
+    {
+        Console.WriteLine(_playerService.Players.Count());
+        if (!_playerService.Players.Any()) return;
+        _eventService.Incoming(new PlayerConnectEvent { NetworkPlayer = _playerService.Players.First(x => x.PlayerId == _playerService.PlayerId)});
+        // OnPlayerConnect();
+    }
 }

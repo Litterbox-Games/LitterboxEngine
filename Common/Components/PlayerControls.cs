@@ -1,3 +1,3 @@
-﻿namespace Client.Components;
+﻿namespace Common.Components;
 
 public struct PlayerControls {}

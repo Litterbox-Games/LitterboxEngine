@@ -1,6 +1,5 @@
 ﻿using System.Numerics;
 using Arch.Core;
-using Client.Components;
 using Client.Graphics;
 using Common.Components;
 using Common.Core;

@@ -28,12 +28,7 @@ public class EventService(ILoggingService logger) : IService
     {
         var eventType = e.GetType();
         
-        if (!_handlers.TryGetValue(eventType, out var handlers))
-        {
-            if (e is not INetworkEvent) // May want to send network events you don't handle
-                logger.Warning($"Attempted to emit an event {eventType.FullName} that has no valid handlers.");
-            return;
-        }
+        if (!_handlers.TryGetValue(eventType, out var handlers)) return;
         
         // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
         foreach (var handler in handlers)
