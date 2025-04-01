@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
-using Common.Logging;
-using Common.Resource;
+using Common.Host;
 using Server.Host;
 
 namespace Server;
@@ -9,7 +8,7 @@ internal static class Program
 {
     private static void Main()
     {
-        using var host = new ServerHost();
+        using IServerHost host = new ServerHost();
 
         var stopWatch = new Stopwatch();
 

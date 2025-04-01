@@ -1,32 +1,27 @@
-﻿using System.Numerics;
-using Common.Entity;
+﻿using Common.Core;
 using Common.Host;
-using Common.Network;
 
 namespace Server.Host;
 
 /// <summary>
 ///     The host for dedicated servers without a local client.
 /// </summary>
-public class ServerHost : AbstractHost
+public class ServerHost : IServerHost
 {
-    /// <inheritdoc />
-    public ServerHost() : base(EGameMode.Dedicated)
+    public List<(EPriority, IUpdatable)> Updatables { get; } = [];
+    public IContainer Container { get; }
+    
+    public ServerHost()
     {
-        RegisterServices();
-        
-        var networking = Resolve<ServerNetworkService>();
+        Container = new Container(EGameMode.Dedicated);
+        Container.RegisterServices();
+        (this as IHost).RegisterUpdatables();
+        (this as IServerHost).StartServer(7777);
+    }
 
-        const ushort port = 7777;
-        
-        networking.Listen(port);
-
-        for (var x = 0; x < 30; x++)
-        {
-            for (var y = 0; y < 30; y++)
-            {
-                Resolve<MobControllerService>().SpawnMobEntity(new Vector2(x * 2, y * 2));
-            }    
-        }
+    public void Dispose()
+    {
+        Container.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

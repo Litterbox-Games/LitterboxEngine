@@ -1,25 +1,40 @@
-﻿using Client.Network;
+﻿using Client.Graphics;
+using Client.Services.Network;
+using Common.Core;
 using Common.Host;
-using Common.Network;
-using Common.Player;
+using Common.Services.Players;
 
 namespace Client.Host;
 
 /// <summary>
-///     the host used to represent the client game state.
+///     The host used to represent the client game state.
 /// </summary>
-public class ClientHost : AbstractHost
+public class ClientHost : IClientHost
 {
-    /// <inheritdoc />
-    public ClientHost() : base(EGameMode.Client)
+    public IContainer Container { get; } = new Container(EGameMode.Client);
+    public List<IInputable> Inputables { get; } = [];
+    public List<(EPriority, IUpdatable)> Updatables { get; } = [];
+    public List<IDrawable> Drawables { get; } = [];
+    
+    public ClientHost()
     {
-        RegisterServices();
-
-        var networkService = Resolve<ClientNetworkService>();
+        Container.RegisterServices();
+        (this as IHost).RegisterUpdatables();
+        (this as IClientHost).RegisterInputables();
+        (this as IClientHost).RegisterDrawables();
         
         // Warm Service Singletons
-        Resolve<IPlayerService>();
+        Container.Resolve<IPlayerService>();
         
+        var networkService = Container.Resolve<ClientNetworkService>();
         networkService.Connect("127.0.0.1", 7777);
     }
+
+    public void Dispose()
+    {
+        Container.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
+    
 }

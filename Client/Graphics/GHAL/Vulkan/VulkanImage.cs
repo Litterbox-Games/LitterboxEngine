@@ -108,7 +108,7 @@ public class VulkanImage: IDisposable
         }
         else
         {
-            throw new Exception($"Unsupported layout transition: old: ${oldLayout} new: ${newLayout}");
+            throw new Exception($"Unsupported layout transition: old: {oldLayout} new: {newLayout}");
         }
 
         _vk.CmdPipelineBarrier(commandBuffer.VkCommandBuffer, sourceStage, destinationStage, 0, 0, null, 0, null, 1, in barrier);
