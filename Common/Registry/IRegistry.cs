@@ -20,7 +20,7 @@ public static class RegistryExtensions
 
     public static bool Register<T>(this IRegistry<T> registry, T registerable, bool overrideIfExists = false) where T : class, IRegisterable
     {
-        var type = registerable.GetType();
+        var type = registry.GetType();
 
         if (registerable.Id.Length > 32)
             throw new ArgumentException($"ID must be less than 32 characters. Culprit: {type}");
@@ -35,11 +35,11 @@ public static class RegistryExtensions
         {
             // TryAdd should only return true if no mappings are loaded from save data, such as a new registry after an update or a new game.
             IdCounter.TryAdd(type, 0);
-            IdCounter[type] = ++IdCounter[type];
             
             registerable.MappedId = IdCounter[type];
-            
             registry.IdMapping[registerable.Id] = registerable.MappedId;
+            
+            IdCounter[type] += 1;
         }
         
         if (!overrideIfExists && registry.ObjectMapping.ContainsKey(registerable.MappedId))
