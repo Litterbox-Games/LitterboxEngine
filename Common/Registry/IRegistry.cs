@@ -4,9 +4,9 @@ namespace Common.Registry;
 
 public interface IRegistry<T> : IService where T : IRegisterable
 {
-    IRegisterable Resolve(string id);
-    IRegisterable Resolve(uint id);
+    T Resolve(string id);
+    T Resolve(uint id);
     
     // Passes in an unregistered IRegisterable and returns it with its 'MappedId' set.
-    IRegisterable Register(IRegisterable registerable, bool overrideIfExists = false);
+    T Register(T registerable, bool overrideIfExists = false);
 }
