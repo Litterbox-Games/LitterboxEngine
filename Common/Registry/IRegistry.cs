@@ -1,4 +1,5 @@
-﻿using Common.Core;
+﻿using System.Text;
+using Common.Core;
 using MoreLinq;
 
 namespace Common.Registry;
@@ -46,19 +47,29 @@ public static class RegistryExtensions
         return true;
     }
 
-    public static void LoadSerializedMappings<T>(this IRegistry<T> registry, byte[] serializedMappings) where T : class, IRegisterable
-    {
-        
-    }
-
     public static byte[] SerializeMappings<T>(this IRegistry<T> registry) where T : class, IRegisterable
     {
         using var stream = new MemoryStream();
         
-        var count = registry.ObjectMapping.Count;
+        var count = registry.IdMapping.Count;
         
         stream.Write(BitConverter.GetBytes(count), 0, sizeof(int));
         
+        registry.IdMapping.ForEach(x =>
+        {
+            // ReSharper disable once AccessToDisposedClosure
+            stream.Write(BitConverter.GetBytes(x.Value), 0, sizeof(uint));
+            
+            // Max of 32 chars is probably overkill.
+            // ReSharper disable once AccessToDisposedClosure
+            stream.Write(Encoding.UTF8.GetBytes(x.Value.ToString()), 0, 32);
+        });
+        
+        return stream.ToArray();
+    }
+    
+    public static void LoadSerializedMappings<T>(this IRegistry<T> registry, byte[] serializedMappings) where T : class, IRegisterable
+    {
         throw new NotImplementedException();
     }
     
