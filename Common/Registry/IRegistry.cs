@@ -9,4 +9,6 @@ public interface IRegistry<T> : IService where T : IRegisterable
     
     // Passes in an unregistered IRegisterable and returns it with its 'MappedId' set.
     T Register(T registerable, bool overrideIfExists = false);
+
+    byte[] GenerateMappingData();
 }
