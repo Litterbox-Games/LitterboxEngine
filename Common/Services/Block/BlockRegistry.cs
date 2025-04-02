@@ -1,9 +1,30 @@
-﻿using Common.Registry;
+﻿using Common.Services.Block.Blocks;
+using Common.Services.Registry;
 
 namespace Common.Services.Block;
 
 public class BlockRegistry : IRegistry<IBlock>
 {
-    public IDictionary<uint, IBlock> ObjectMapping { get; } = new Dictionary<uint, IBlock>();
-    public IDictionary<string, uint> IdMapping { get; } = new Dictionary<string, uint>();
+    public void RegisterDefaultBlocks()
+    {
+        this.Register(new EmptyBlock());
+        
+        this.Register(new GrassBlock());
+        this.Register(new TundraGrassBlock());
+        this.Register(new BorealGrassBlock());
+        this.Register(new WoodlandGrassBlock());
+        this.Register(new SeasonalGrassBlock());
+        this.Register(new SavannaGrassBlock());
+        this.Register(new TemperateGrassBlock());
+        this.Register(new TropicalGrassBlock());
+        
+        this.Register(new SandBlock());
+        
+        this.Register(new WaterBlock());
+        this.Register(new DeepWaterBlock());
+        this.Register(new IceBlock());
+    }
+    
+    public IDictionary<ushort, IBlock> ObjectMapping { get; } = new Dictionary<ushort, IBlock>();
+    public IDictionary<string, ushort> IdMapping { get; } = new Dictionary<string, ushort>();
 }

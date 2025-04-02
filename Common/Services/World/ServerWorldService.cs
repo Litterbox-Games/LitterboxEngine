@@ -1,6 +1,7 @@
 ﻿using Common.Core;
 using Common.Host;
 using Common.Mathematics;
+using Common.Services.Block;
 using Common.Services.Events;
 using Common.Services.Logging;
 using Common.Services.Network;
@@ -23,7 +24,7 @@ public class ServerWorldService : IWorldService
     private readonly EventService _eventService;
     private readonly IWorldGenerator _generation;
 
-    public ServerWorldService(IContainer container, ServerNetworkService networkService, IPlayerService playerService, ILoggingService logger, EventService eventService)
+    public ServerWorldService(IContainer container, ServerNetworkService networkService, IPlayerService playerService, ILoggingService logger, EventService eventService, BlockRegistry blockRegistry)
     {
         _container = container;
         _networkService = networkService;
@@ -31,6 +32,9 @@ public class ServerWorldService : IWorldService
         _logger = logger;
         _eventService = eventService;
         _generation = container.Resolve<IWorldGenerator>("earth");
+        
+        // TODO: This should be initialized somewhere else, maybe a resource loading stage of program startup?
+        blockRegistry.RegisterDefaultBlocks();
         
         _eventService.Handle<PlayerDisconnectEvent>(OnPlayerDisconnect);
         _eventService.Handle<ChunkRequestEvent>(OnChunkRequest);
