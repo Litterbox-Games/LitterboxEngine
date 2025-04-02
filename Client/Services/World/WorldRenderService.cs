@@ -38,8 +38,6 @@ public class WorldRenderService : IService, IDrawable
 
         eventService.Handle<EntityCreatedEvent>(OnEntityCreated);
         eventService.Handle<EntityDestroyedEvent>(OnEntityDestroyed);
-        
-        _blockRegistry.RegisterDefaultBlocks();
     }
     
     private void OnEntityCreated(EntityCreatedEvent e)
