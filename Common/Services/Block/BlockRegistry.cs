@@ -1,11 +1,11 @@
-﻿using Common.Registry;
-using Common.Services.Block.Blocks;
+﻿using Common.Services.Block.Blocks;
+using Common.Services.Registry;
 
 namespace Common.Services.Block;
 
 public class BlockRegistry : IRegistry<IBlock>
 {
-    public BlockRegistry()
+    public void RegisterDefaultBlocks()
     {
         this.Register(new EmptyBlock());
         

@@ -1,5 +1,5 @@
 ﻿using Common.Mathematics;
-using Common.Registry;
+using Common.Services.Registry;
 
 namespace Common.Services.Block;
 

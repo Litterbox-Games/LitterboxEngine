@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using Common.Core;
 
-namespace Common.Registry;
+namespace Common.Services.Registry;
 
 public interface IRegistry<T> : IService where T : IRegisterable
 {

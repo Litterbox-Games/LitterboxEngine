@@ -7,7 +7,7 @@ using Common.Components;
 using Common.Core;
 using Common.Core.Attributes;
 using Common.Mathematics;
-using Common.Services.Entities;
+using Common.Services.Block;
 using Common.Services.Entities.Events;
 using Common.Services.Events;
 using Common.Services.Players;
@@ -17,24 +17,29 @@ using ImGuiNET;
 
 namespace Client.Services.World;
 
-
 [UpdatablePriority(EPriority.High)]
 public class WorldRenderService : IService, IDrawable
 {
     private readonly IWorldService _worldService;
     private readonly IPlayerService _playerService;
     private readonly IResourceService _resourceService;
+    private readonly BlockRegistry _blockRegistry;
     
     private Entity? _playerEntity;
+
+    private Dictionary<ushort, (Texture, Vector2i)> _textureCache = new();
     
-    public WorldRenderService(IPlayerService playerService, IResourceService resourceService, IWorldService worldService, EventService eventService)
+    public WorldRenderService(IPlayerService playerService, IResourceService resourceService, IWorldService worldService, EventService eventService, BlockRegistry blockRegistry)
     {
         _playerService = playerService;
         _worldService = worldService;
         _resourceService = resourceService;
+        _blockRegistry = blockRegistry;
 
         eventService.Handle<EntityCreatedEvent>(OnEntityCreated);
         eventService.Handle<EntityDestroyedEvent>(OnEntityDestroyed);
+        
+        _blockRegistry.RegisterDefaultBlocks();
     }
     
     private void OnEntityCreated(EntityCreatedEvent e)
@@ -75,8 +80,6 @@ public class WorldRenderService : IService, IDrawable
         
         ImGui.Text($"{playerChunkX}, {playerChunkY}");
         
-        
-        
         foreach (var chunk in chunks)
         {
             var chunkX = (chunk.Position.X - playerChunkX + IWorldService.WorldSize / 2).Modulus(IWorldService.WorldSize) - IWorldService.WorldSize / 2 + playerChunkX;
@@ -84,8 +87,6 @@ public class WorldRenderService : IService, IDrawable
             
             ImGui.Text($"({chunk.Position.X}, {chunk.Position.Y})\t\t({chunkX}, {chunkY})");
 
-            var texture = _resourceService.Get<Aseprite>("Aseprites/BiomePalette.aseprite").Texture;
-            
             for (var x = 0; x < 16; x++)
             {
                 for (var y = 0; y < 16; y++)
@@ -93,26 +94,26 @@ public class WorldRenderService : IService, IDrawable
                     // Ground Layer
                     var groundId = chunk.GroundArray[ChunkData.GetIndexFromLocalPositionFast(new Vector2i(x, y))];
 
-                    var sourceRectangle = ((EBiomeType)groundId) switch
+                    if (groundId == 0)
+                        continue;
+                    
+                    if (!_textureCache.TryGetValue(groundId, out var texMap))
                     {
-                        EBiomeType.Ice => texture.GetSourceRectangle(0, 0),
-                        EBiomeType.BorealForest => texture.GetSourceRectangle(1, 0),
-                        EBiomeType.Desert => texture.GetSourceRectangle(2, 0),
-                        EBiomeType.Grassland => texture.GetSourceRectangle(0, 1),
-                        EBiomeType.SeasonalForest => texture.GetSourceRectangle(1, 1),
-                        EBiomeType.Tundra => texture.GetSourceRectangle(2, 1),
-                        EBiomeType.Savanna => texture.GetSourceRectangle(0, 2),
-                        EBiomeType.TemperateRainforest => texture.GetSourceRectangle(1, 2),
-                        EBiomeType.TropicalRainforest => texture.GetSourceRectangle(2, 2),
-                        EBiomeType.Woodland => texture.GetSourceRectangle(0, 3),
-                        EBiomeType.DeepOcean => texture.GetSourceRectangle(1, 3),
-                        EBiomeType.Ocean => texture.GetSourceRectangle(2, 3),
-                        _ => texture.GetSourceRectangle(0, 4)
-                    };
+                        var block = _blockRegistry.ObjectMapping[groundId];
+                        var path = block.TexturePath;
+                        
+                        if (path == null)
+                            continue;
+
+                        texMap = (_resourceService.Get<Aseprite>(path).Texture, block.TextureOffset!.Value);
+                        _textureCache[groundId] = texMap;
+                    }
+
+                    var (texture, offset) = texMap;
                     
-                    renderer.DrawTexture(texture, sourceRectangle, new RectangleF(chunkX * 16 + x, chunkY * 16 + y, 1,
+                    renderer.DrawTexture(texture, texture.GetSourceRectangle(offset.X, offset.Y) , new RectangleF(chunkX * 16 + x, chunkY * 16 + y, 1,
                         1), Color.White);
-                    
+                    /*
                     // Object Layer
                     var objectId = chunk.ObjectArray[ChunkData.GetIndexFromLocalPositionFast(new Vector2i(x, y))];
 
@@ -121,6 +122,7 @@ public class WorldRenderService : IService, IDrawable
                         renderer.DrawTexture(texture, texture.GetSourceRectangle(0, 4), new RectangleF(chunkX * 16 + x, chunkY * 16 + y, 1,
                             1), Color.White);
                     }
+                    */
                 }
             }
         }

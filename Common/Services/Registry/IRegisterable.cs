@@ -1,4 +1,4 @@
-﻿namespace Common.Registry;
+﻿namespace Common.Services.Registry;
 
 public interface IRegisterable
 {

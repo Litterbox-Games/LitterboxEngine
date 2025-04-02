@@ -29,6 +29,9 @@ public class EarthGenerator : IWorldGenerator
         _moistureNoise = GenerateMoistureNoise();
         
         _blockRegistry = blockRegistry;
+        
+        // TODO: This should be initialized somewhere else, maybe a resource loading stage of program startup?
+        blockRegistry.RegisterDefaultBlocks();
     }
         
     public ChunkData GenerateChunkAtPosition(Vector2i position)
