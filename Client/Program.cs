@@ -11,12 +11,41 @@ namespace Client;
 
 internal static class Program
 {
+    private static IClientHost MainMenu()
+    {
+        IClientHost? host = null;
+
+        while (host == null)
+        {
+            Console.WriteLine("""
+            Type letter to start associated client:
+            'S' - Single-player
+            'L' - Localhost
+            'C' - Client
+            """);
+            var userInput = Console.ReadLine();
+
+            if (userInput == null) continue;
+
+            host = userInput.ToUpper()[0] switch
+            {
+                'S' => new LocalHost(true),
+                'L' => new LocalHost(false),
+                'C' => new ClientHost(),
+                _ => host
+            };
+        }
+
+        return host;
+    }
+    
     private static void Main()
     {
-        // Game Initialization
-        // TODO: this will eventually be the code called when a player starts/joins a world
-        using IClientHost host = new ClientHost();
+        // Engine Initialization
+        var host = MainMenu();
         
+        // Game Initialization
+        // TODO: everything under this should be condensed to a single GameStartEvent or something similar
         var logger = host.Container.Resolve<ILoggingService>();
         
         using var window = new Window();

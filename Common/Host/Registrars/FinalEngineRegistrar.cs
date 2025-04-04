@@ -5,10 +5,10 @@ using Common.Services.Logging;
 namespace Common.Host.Registrars;
 
 /// <summary>
-///     Registers an services that must be loaded last.
+///     Registers any engine services that must be loaded last.
 /// </summary>
 [RegistrarPriority(EPriority.VeryLow)]
-public class FinalServiceRegistrar : IServiceRegistrar
+public class FinalEngineRegistrar : IServiceRegistrar
 {
     /// <inheritdoc />
     public void RegisterServices(IContainer container)
