@@ -19,5 +19,4 @@ public class FirstEngineRegistrar: IServiceRegistrar
         container.RegisterSingleton<ILoggingService, ConsoleLoggingService>("console");
         container.RegisterSingleton<EventService, EventService>();   
     }    
-    
 }
