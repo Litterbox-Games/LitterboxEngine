@@ -25,7 +25,7 @@ internal static class Program
             """);
             var userInput = Console.ReadLine();
 
-            if (userInput == null) continue;
+            if (string.IsNullOrEmpty(userInput)) continue;
 
             host = userInput.ToUpper()[0] switch
             {
