@@ -54,11 +54,10 @@ public class Aseprite : IResource, IGraphicsResource, IReloadable, IDisposable
         var index = 0;
         foreach (var pixel in frame)
         {
-            // Assuming 'pixel' is a struct with R, G, B, A properties (each byte representing the color channels)
-            data[index++] = pixel.R; // Red
-            data[index++] = pixel.G; // Green
-            data[index++] = pixel.B; // Blue
-            data[index++] = pixel.A; // Alpha
+            data[index++] = pixel.R;
+            data[index++] = pixel.G;
+            data[index++] = pixel.B;
+            data[index++] = pixel.A;
         }
         
         var texture = Texture.FromData((uint)size.Width, (uint)size.Height, data);

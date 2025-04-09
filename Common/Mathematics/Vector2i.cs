@@ -24,6 +24,8 @@ public struct Vector2i: IEquatable<Vector2i>
         return new Vector2(X, Y);
     }
     
+    public static Vector2i Zero => default;
+
     public static bool operator == (Vector2i a, Vector2i b)
     {
         return a.Equals(b);
