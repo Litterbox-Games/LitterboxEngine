@@ -1,0 +1,11 @@
+﻿using Common.Mathematics;
+
+namespace Common.Services.Block.Blocks;
+
+public class SandBlock : IBlock
+{
+    public string Id => "sand";
+    public ushort MappedId { get; set; }
+    public string? TexturePath => "Aseprites/BiomePalette.aseprite";
+    public Vector2i? TextureOffset => new Vector2i(2, 0);
+}

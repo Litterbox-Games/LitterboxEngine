@@ -1,4 +1,5 @@
 ﻿using Common.Mathematics;
+using Common.Services.Block;
 using MoreLinq;
 
 namespace Common.Services.World.Generation;
@@ -18,12 +19,15 @@ public class EarthGenerator : IWorldGenerator
     private readonly FastNoise _heightNoise;
     private readonly FastNoise _heatNoise;
     private readonly FastNoise _moistureNoise;
+    
+    private readonly BlockRegistry _blockRegistry;
 
-    public EarthGenerator()
+    public EarthGenerator(BlockRegistry blockRegistry)
     {
         _heightNoise = GenerateHeightNoise();
         _heatNoise = GenerateHeatNoise();
         _moistureNoise = GenerateMoistureNoise();
+        _blockRegistry = blockRegistry;
     }
         
     public ChunkData GenerateChunkAtPosition(Vector2i position)
@@ -45,43 +49,39 @@ public class EarthGenerator : IWorldGenerator
             MoistureArray = moistureTypes.Flatten().Cast<EMoistureType>().ToArray()
         };
 
+        var ice = _blockRegistry.IdMapping["ice"];
+        var borealGrass = _blockRegistry.IdMapping["boreal_grass"];
+        var sand = _blockRegistry.IdMapping["sand"];
+        var grass = _blockRegistry.IdMapping["grass"];
+        var seasonalGrass = _blockRegistry.IdMapping["seasonal_grass"];
+        var tundraGrass = _blockRegistry.IdMapping["tundra_grass"];
+        var savannaGrass = _blockRegistry.IdMapping["savanna_grass"];
+        var temperateGrass = _blockRegistry.IdMapping["temperate_grass"];
+        var tropicalGrass = _blockRegistry.IdMapping["tropical_grass"];
+        var woodlandGrass = _blockRegistry.IdMapping["woodland_grass"];
+        var water = _blockRegistry.IdMapping["water"];
+        var deepWater = _blockRegistry.IdMapping["deep_water"];
+
         // set tiles based on above data
 
         for (var x = 0; x < ChunkData.ChunkSize; x++)
         {
             for (var y = 0; y < ChunkData.ChunkSize; y++)
             {
-                /*ushort value = biomeTypes[x, y] switch
-                {
-                    EBiomeType.Ice => _worldService.BlockMapping["ice"],
-                    EBiomeType.BorealForest => _worldService.BlockMapping["boreal_forest"],
-                    EBiomeType.Desert => _worldService.BlockMapping["desert"],
-                    EBiomeType.Grassland => _worldService.BlockMapping["grassland"],
-                    EBiomeType.SeasonalForest => _worldService.BlockMapping["seasonal_rainforest"],
-                    EBiomeType.Tundra => _worldService.BlockMapping["tundra"],
-                    EBiomeType.Savanna => _worldService.BlockMapping["savanna"],
-                    EBiomeType.TemperateRainforest => _worldService.BlockMapping["temperate_rainforest"],
-                    EBiomeType.TropicalRainforest => _worldService.BlockMapping["tropical_rainforest"],
-                    EBiomeType.Woodland => _worldService.BlockMapping["woodland"],
-                    EBiomeType.DeepOcean => _worldService.BlockMapping["deep_ocean"],
-                    EBiomeType.Ocean => _worldService.BlockMapping["ocean"],
-                    _ => 0
-                };*/
-                
                 ushort value = biomeTypes[x, y] switch
                 {
-                    EBiomeType.Ice => 1,
-                    EBiomeType.BorealForest => 2,
-                    EBiomeType.Desert => 3,
-                    EBiomeType.Grassland => 4,
-                    EBiomeType.SeasonalForest => 5,
-                    EBiomeType.Tundra => 6,
-                    EBiomeType.Savanna => 7,
-                    EBiomeType.TemperateRainforest => 8,
-                    EBiomeType.TropicalRainforest => 9,
-                    EBiomeType.Woodland => 10,
-                    EBiomeType.DeepOcean => 11,
-                    EBiomeType.Ocean => 12,
+                    EBiomeType.Ice => ice,
+                    EBiomeType.BorealForest => borealGrass,
+                    EBiomeType.Desert => sand,
+                    EBiomeType.Grassland => grass,
+                    EBiomeType.SeasonalForest => seasonalGrass,
+                    EBiomeType.Tundra => tundraGrass,
+                    EBiomeType.Savanna => savannaGrass,
+                    EBiomeType.TemperateRainforest => temperateGrass,
+                    EBiomeType.TropicalRainforest => tropicalGrass,
+                    EBiomeType.Woodland => woodlandGrass,
+                    EBiomeType.DeepOcean => deepWater,
+                    EBiomeType.Ocean => water,
                     _ => 0
                 };
 

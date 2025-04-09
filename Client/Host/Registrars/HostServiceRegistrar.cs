@@ -6,6 +6,7 @@ using Common.Components;
 using Common.Core;
 using Common.Core.Attributes;
 using Common.Host;
+using Common.Services.Block;
 using Common.Services.Entities;
 using Common.Services.Events;
 using Common.Services.Logging;
@@ -31,6 +32,8 @@ public class HostServiceRegistrar : IServiceRegistrar
         ComponentRegistry.Add<Position>();
         
         // Services
+        container.RegisterSingleton<BlockRegistry, BlockRegistry>();
+        
         container.RegisterSingleton<ILoggingService, ConsoleLoggingService>("console");
         
         container.RegisterSingleton<EventService, EventService>();

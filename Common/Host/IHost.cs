@@ -1,5 +1,8 @@
-﻿using Common.Core;
+﻿using System.Runtime.CompilerServices;
+using Common.Core;
 using Common.Core.Attributes;
+
+[assembly: InternalsVisibleTo("Client")]
 
 namespace Common.Host;
 

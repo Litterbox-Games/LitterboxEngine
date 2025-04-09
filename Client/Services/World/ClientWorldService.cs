@@ -1,5 +1,6 @@
 ﻿using Client.Services.Network;
 using Common.Mathematics;
+using Common.Services.Block;
 using Common.Services.Events;
 using Common.Services.Network;
 using Common.Services.Players;
@@ -15,10 +16,13 @@ public class ClientWorldService : IWorldService
 
     public IEnumerable<ChunkData> Chunks => _chunks;
 
-    public ClientWorldService(EventService eventService)
+    public ClientWorldService(EventService eventService, BlockRegistry blockRegistry)
     {
         _eventService = eventService;
         _eventService.Handle<ChunkDataEvent>(OnChunkDataMessage);
+        
+        // TODO: This should be initialized somewhere else, maybe a resource loading stage of program startup?
+        blockRegistry.RegisterDefaultBlocks();
     }
 
     private readonly HashSet<Vector2i> _chunksToRequestLoad = [];
