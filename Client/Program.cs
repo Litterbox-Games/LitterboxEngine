@@ -1,4 +1,6 @@
-﻿using Client.Graphics;
+﻿using System.Drawing;
+using System.Numerics;
+using Client.Graphics;
 using Client.Graphics.GHAL.Vulkan;
 using Client.Graphics.ImGui;
 using Client.Host;
@@ -34,7 +36,9 @@ internal static class Program
         
         using var renderer = new Renderer(resourceService, graphicsDevice);
         using var imGui = new ImGuiRenderer(window, graphicsDevice);
-        
+
+
+        var font = resourceService.Get<Font>("Fonts/dogica.otf");
         
         // Game Loop
         // TODO: turn this into a while (!window.ShouldClose()) loop instead of using lambda
@@ -52,6 +56,9 @@ internal static class Program
             renderer.BeginDrawing(cameraService.Camera.ViewMatrix);
             
             host.Draw(renderer);
+            
+            renderer.DrawText("Hello, World!", font, Vector2.Zero, 0.125f, 0.125f, Color.Crimson, 1);
+            
             renderer.EndDrawing();
             imGui.Draw();
             renderer.EndFrame();   

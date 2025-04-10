@@ -23,7 +23,9 @@
       <PackageReference Include="Silk.NET.SPIRV.Cross" Version="2.22.0" />
       <PackageReference Include="Silk.NET.Vulkan" Version="2.22.0" />
       <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.22.0" />
+      <PackageReference Include="SixLabors.Fonts" Version="2.1.2" />
       <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
+      <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.5" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -43,11 +45,9 @@
         <None Update="Resources\Aseprites\BiomePalette.aseprite">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Components\" />
-      <Folder Include="Services\" />
+        <None Update="Resources\Fonts\dogica.otf">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
     <Target Name="BuildVulkanShader" AfterTargets="Build">

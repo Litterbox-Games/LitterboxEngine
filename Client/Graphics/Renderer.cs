@@ -197,6 +197,22 @@ public class Renderer: IDisposable
         _quadCount++;
     }
 
+    public void DrawText(string text, Font font, Vector2 position, float spacing, float scale,  Color color, float depth = 0.0f)
+    {
+        foreach (var c in text)
+        {
+            if (!font.Glyphs.TryGetValue(c, out var glyph))
+            {
+                // TODO: Handle chars we are missing better
+                continue;
+            }
+
+            var destination = new RectangleF(position.X, position.Y, scale * glyph.Source.Width, scale * glyph.Source.Height); 
+            DrawTexture(font.Texture, glyph.Source, destination, color, depth);
+            position += new Vector2(destination.Width + spacing, 0);
+        }
+    }
+
     public void Dispose()
     {
         _whiteTexture.Dispose();
