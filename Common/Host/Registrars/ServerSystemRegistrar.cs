@@ -1,14 +1,13 @@
 ﻿using Common.Core;
 using Common.Core.Attributes;
-using Common.Host;
 using Common.Systems;
 
-namespace Server.Host.Registrars;
+namespace Common.Host.Registrars;
 
 /// <summary>
 ///     Registers any game systems for the dedicated host only.
 /// </summary>
-[RegistrarMode(EGameMode.Dedicated)]
+[RegistrarMode(EGameMode.Dedicated | EGameMode.Host | EGameMode.SinglePlayer)]
 [RegistrarLifetime(ELifetime.Game)]
 [RegistrarPriority(EPriority.Low)]
 public class ServerSystemRegistrar : IServiceRegistrar

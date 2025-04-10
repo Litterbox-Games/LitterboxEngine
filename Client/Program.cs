@@ -47,7 +47,6 @@ internal static class Program
         
         // Game Initialization
         // TODO: everything under this should be condensed to a single GameStartEvent or something similar
-        var logger = host.Container.Resolve<ILoggingService>();
         var window = host.Container.Resolve<WindowService>();
         var input = host.Container.Resolve<InputService>();
         var graphicsDevice = host.Container.Resolve<VulkanGraphicsDeviceService>();
@@ -61,6 +60,7 @@ internal static class Program
         var cameraService = host.Container.Resolve<CameraSystem>();
         cameraService.SetWindow(window);
         
+        // TODO: convert this to use IGraphicsDevice
         using var imGui = new ImGuiRenderer(window, graphicsDevice);
         
         
