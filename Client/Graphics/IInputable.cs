@@ -5,5 +5,5 @@ public interface IInputable
     /// <summary>
     ///     Called every game input tick.
     /// </summary>
-    public void Input(Input input);
+    public void Input(InputService input);
 }

@@ -24,12 +24,12 @@ public interface IClientHost: IHost
         });
     }
 
-    public void Input(Input input)
+    public void Input(InputService input)
     {
         Inputables.ForEach(inputable => inputable.Input(input));
     }
     
-    public void Draw(Renderer renderer)
+    public void Draw(RendererService renderer)
     {
         Drawables.ForEach(drawable => drawable.Draw(renderer));
     }

@@ -3,13 +3,14 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using Client.Graphics.GHAL;
 using Client.Services.Resource;
+using Common.Core;
 using Common.Services.Resource;
 using ImGuiNET;
 using Buffer = Client.Graphics.GHAL.Buffer;
 
 namespace Client.Graphics;
 
-public class Renderer: IDisposable
+public class RendererService: IService, IDisposable
 {
     private const int MaxQuads = 100000;
     private const int MaxTextures = 8;
@@ -21,7 +22,7 @@ public class Renderer: IDisposable
     
     private int _textureCount = 1;
 
-    private readonly IGraphicsDevice _graphicsDevice;
+    private readonly IGraphicsDeviceService _graphicsDevice;
     private readonly Pipeline _pipeline;
     private readonly CommandList _commandList;
 
@@ -42,14 +43,14 @@ public class Renderer: IDisposable
     
     public Color ClearColor { get; set; } = Color.Black;
     
-    public unsafe Renderer(IResourceService resourceService, IGraphicsDevice graphicsDevice)
+    public unsafe RendererService(IGraphicsDeviceService graphicsDevice)
     {
         _graphicsDevice = graphicsDevice;
 
         _quads = new Quad[MaxQuads];
         
-        var vertexShaderDesc = resourceService.Get<Shader>("Shaders/default.vert").ShaderDescription;
-        var fragmentShaderDesc = resourceService.Get<Shader>("Shaders/default.frag").ShaderDescription;
+        var vertexShaderDesc = (Shader.LoadFromFile("Resources/Shaders/default.vert") as Shader)!.ShaderDescription;
+        var fragmentShaderDesc = (Shader.LoadFromFile("Resources/Shaders/default.frag") as Shader)!.ShaderDescription;
 
         using var shaderProgram = _graphicsDevice.CreateShaderProgram(vertexShaderDesc, fragmentShaderDesc);
 

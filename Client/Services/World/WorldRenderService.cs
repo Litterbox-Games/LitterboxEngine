@@ -54,7 +54,7 @@ public class WorldRenderService : IService, IDrawable
         if (networked.OwnerId == _playerService.PlayerId) _playerEntity = null;       
     }
 
-    public void Draw(Renderer renderer)
+    public void Draw(RendererService renderer)
     {
         if (_playerEntity == null) return;
 

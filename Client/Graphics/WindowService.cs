@@ -1,11 +1,12 @@
-﻿using Common.Mathematics;
+﻿using Common.Core;
+using Common.Mathematics;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 
 namespace Client.Graphics;
 
-public class Window: IDisposable
+public class WindowService: IService, IDisposable
 {
     public string Title { get; }
     public int Width { get; private set; }
@@ -18,7 +19,7 @@ public class Window: IDisposable
     public readonly IWindow InternalWindow;
     public readonly IInputContext Input;
     
-    public Window()
+    public WindowService()
     {
         Title = "Litterbox Engine";
         Width = 1920;
@@ -32,7 +33,7 @@ public class Window: IDisposable
             UpdatesPerSecond = 60
         };
         
-        InternalWindow = Silk.NET.Windowing.Window.Create(options); 
+        InternalWindow = Window.Create(options); 
         InternalWindow.Initialize();
         
         InternalWindow.FramebufferResize += Resize;

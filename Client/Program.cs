@@ -1,4 +1,5 @@
 ﻿using Client.Graphics;
+using Client.Graphics.GHAL;
 using Client.Graphics.GHAL.Vulkan;
 using Client.Graphics.ImGui;
 using Client.Host;
@@ -47,11 +48,10 @@ internal static class Program
         // Game Initialization
         // TODO: everything under this should be condensed to a single GameStartEvent or something similar
         var logger = host.Container.Resolve<ILoggingService>();
-        
-        using var window = new Window();
-        using var graphicsDevice = new VulkanGraphicsDevice(window, logger);
-        
-        var input = new Input(window);
+        var window = host.Container.Resolve<WindowService>();
+        var input = host.Container.Resolve<InputService>();
+        var graphicsDevice = host.Container.Resolve<VulkanGraphicsDeviceService>();
+        var renderer = host.Container.Resolve<RendererService>();
         
         // TODO: this feels hacky, we should probably restructure the ResourceService design
         var resourceService = host.Container.Resolve<ClientResourceService>();
@@ -61,7 +61,6 @@ internal static class Program
         var cameraService = host.Container.Resolve<CameraSystem>();
         cameraService.SetWindow(window);
         
-        using var renderer = new Renderer(resourceService, graphicsDevice);
         using var imGui = new ImGuiRenderer(window, graphicsDevice);
         
         

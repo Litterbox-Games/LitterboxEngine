@@ -1,4 +1,7 @@
-﻿using Common.Core;
+﻿using Client.Graphics;
+using Client.Graphics.GHAL;
+using Client.Graphics.GHAL.Vulkan;
+using Common.Core;
 using Common.Core.Attributes;
 using Common.Host;
 using Client.Services.Resource;
@@ -19,9 +22,10 @@ public class ClientEngineRegistrar : IServiceRegistrar
     {
         container.RegisterSingleton<IResourceService, ClientResourceService>();
         
-        // container.RegisterSingleton<WindowService, WindowService>();
-        // container.RegisterSingleton<IGraphicsDeviceService, VulkanGraphicsDeviceService>();
-        // container.RegisterSingleton<RendererService, RendererService>();
-        // container.RegisterSingleton<InputService, InputService>();
+        container.RegisterSingleton<WindowService, WindowService>();
+        container.RegisterSingleton<InputService, InputService>();
+        container.RegisterSingleton<IGraphicsDeviceService, VulkanGraphicsDeviceService>();
+        container.RegisterSingleton<RendererService, RendererService>();
+        
     }                                                                 
 }
