@@ -31,7 +31,8 @@ public class Font(Dictionary<char, Glyph> glyphs, Texture texture) : IResource, 
     
     public static IResource LoadFromFile(string path)
     {
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()_+{}[]<>?:/\\~";
+        // TODO: make these available through a JSON file?
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()_+{}[]<>?:/\\~ ";
         const int fontSize = 8;
         
         var font = new FontCollection().Add(path).CreateFont(fontSize);
@@ -43,40 +44,38 @@ public class Font(Dictionary<char, Glyph> glyphs, Texture texture) : IResource, 
             HorizontalAlignment = HorizontalAlignment.Left,
         };
         
+        // Create glyphs and calculate texture atlas size
         var glyphs = new Dictionary<char, Glyph>();
-        var size = chars.Aggregate(Vector2i.Zero, (size, c) =>
+        var size = chars.Aggregate(Vector2i.Zero, (cursor, c) =>
         {
-            var charSize = TextMeasurer.MeasureAdvance(c.ToString(), textOptions);
-            var glyphWidth = (int)Math.Ceiling(charSize.Width);
-            var glyphHeight = (int)Math.Ceiling(charSize.Height + charSize.X);
+            var bounds = TextMeasurer.MeasureBounds(c.ToString(), textOptions);
+            var glyphWidth = (int)Math.Ceiling(bounds.Width + bounds.X);
+            var glyphHeight = (int)Math.Ceiling(bounds.Height + bounds.Y);
             
             glyphs[c] = new Glyph
             {
                 Character = c,
-                Source = new Rectangle(size.X, 0, glyphWidth, glyphHeight),
+                Source = new Rectangle(cursor.X, 0, glyphWidth, glyphHeight),
             };
 
-            return new Vector2i(size.X + glyphWidth, Math.Max(size.Y, glyphHeight));
+            return new Vector2i(cursor.X + glyphWidth, Math.Max(cursor.Y, glyphHeight));
         });
         
-        var image = new Image<Rgba32>(size.X, 8);
+        var image = new Image<Rgba32>(size.X, size.Y);
         
+        // Draw texture atlas
         var graphicsOptions = new GraphicsOptions { Antialias = false };
         var drawingOptions = new DrawingOptions { GraphicsOptions = graphicsOptions };
+        
         glyphs.Values.ForEach(glyph => image.Mutate(ctx =>
             {
-                // var cursor = new Point(glyph.Source.X, glyph.Source.Y);
                 var cursor = new Point(glyph.Source.X, glyph.Source.Y);
                 ctx.DrawText(drawingOptions, glyph.Character.ToString(), font, Color.White, cursor);
-                // ctx.DrawText(drawingOptions, textOptions, "q", new SolidBrush(Color.White), null);
-                // ctx.DrawText(drawingOptions, textOptions, chars, new SolidBrush(Color.White), null);
             })
         );
         
+        // Copy image data to texture resource
         var sizeInBytes = image.Width * image.Height * image.PixelType.BitsPerPixel / 8;
-        
-        image.Save("dogica.png");
-        
         var data = new byte[sizeInBytes];
         image.CopyPixelDataTo(data);
         

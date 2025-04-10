@@ -57,7 +57,7 @@ internal static class Program
             
             host.Draw(renderer);
             
-            renderer.DrawText("GRAY IS SMELLY!", font, 10, 1, Vector2.Zero, Color.Crimson, 1);
+            renderer.DrawText("Hello, World!", font, Vector2.Zero, 0.125f, 0.125f, Color.Crimson, 1);
             
             renderer.EndDrawing();
             imGui.Draw();

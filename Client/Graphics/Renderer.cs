@@ -197,7 +197,7 @@ public class Renderer: IDisposable
         _quadCount++;
     }
 
-    public void DrawText(string text, Font font, int spacing, float scale, Vector2 position, Color color, float depth = 0.0f)
+    public void DrawText(string text, Font font, Vector2 position, float spacing, float scale,  Color color, float depth = 0.0f)
     {
         // DrawTexture(font.Texture, new RectangleF(position.X, position.Y, font.Texture.Width, font.Texture.Height), color, depth);
 
