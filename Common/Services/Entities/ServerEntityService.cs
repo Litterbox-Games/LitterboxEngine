@@ -116,7 +116,6 @@ public class ServerEntityService: IEntityService
     // If player is hosting, spawn them an entity as if they just connected to a server.
     private void OnStart(StartEvent _)
     {
-        Console.WriteLine(_playerService.Players.Count());
         if (!_playerService.Players.Any()) return;
         _eventService.Incoming(new PlayerConnectEvent { NetworkPlayer = _playerService.Players.First(x => x.PlayerId == _playerService.PlayerId)});
         // OnPlayerConnect();
