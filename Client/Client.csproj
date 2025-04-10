@@ -50,11 +50,6 @@
         </None>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Components\" />
-      <Folder Include="Services\" />
-    </ItemGroup>
-
     <Target Name="BuildVulkanShader" AfterTargets="Build">
         <Message Text="VulkanBinPath: $(VulkanBinPath)" Importance="high" />
         <Message Text="ShaderOutputPath: $(OutputPath)\$(ShaderOutputPath)" Importance="high" />
