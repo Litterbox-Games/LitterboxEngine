@@ -199,8 +199,6 @@ public class Renderer: IDisposable
 
     public void DrawText(string text, Font font, Vector2 position, float spacing, float scale,  Color color, float depth = 0.0f)
     {
-        // DrawTexture(font.Texture, new RectangleF(position.X, position.Y, font.Texture.Width, font.Texture.Height), color, depth);
-
         foreach (var c in text)
         {
             if (!font.Glyphs.TryGetValue(c, out var glyph))
