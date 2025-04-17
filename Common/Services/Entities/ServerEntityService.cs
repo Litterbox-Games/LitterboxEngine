@@ -118,6 +118,5 @@ public class ServerEntityService: IEntityService
     {
         if (!_playerService.Players.Any()) return;
         _eventService.Incoming(new PlayerConnectEvent { NetworkPlayer = _playerService.Players.First(x => x.PlayerId == _playerService.PlayerId)});
-        // OnPlayerConnect();
     }
 }

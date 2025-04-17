@@ -1,8 +1,9 @@
 ﻿using Client.Services.Resource;
+using Common.Core;
 
 namespace Client.Graphics.GHAL;
 
-public interface IGraphicsDevice
+public interface IGraphicsDeviceService: IService
 {
     public Buffer CreateBuffer(BufferDescription description);
     public void UpdateBuffer(Buffer buffer, uint offset, uint[] data);

@@ -8,14 +8,14 @@ public class ImGuiRenderer: IDisposable
     private readonly ImGuiController _imGuiController;
     private readonly VulkanSwapChain _swapChain;
     
-    public ImGuiRenderer(Window window, VulkanGraphicsDevice graphicsDevice)
+    public ImGuiRenderer(WindowService windowService, VulkanGraphicsDeviceService graphicsDevice)
     {
         _swapChain = graphicsDevice.SwapChain;
         
         _imGuiController = new ImGuiController(
             graphicsDevice.Vk,
-            window.InternalWindow,
-            window.Input,
+            windowService.InternalWindow,
+            windowService.Input,
             graphicsDevice.LogicalDevice.PhysicalDevice.VkPhysicalDevice,
             graphicsDevice.GraphicsQueue.QueueFamilyIndex,
             _swapChain.ImageCount,

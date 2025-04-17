@@ -15,7 +15,7 @@ public class ClientResourceService: IResourceService, IUpdatable, IDisposable
     private readonly FileSystemWatcher _watcher;
     private readonly HashSet<string> _resourcesToReload = [];
 
-    private IGraphicsDevice? _graphicsDevice;
+    private IGraphicsDeviceService? _graphicsDevice;
     
     public ClientResourceService(ILoggingService logger)
     {
@@ -33,7 +33,7 @@ public class ClientResourceService: IResourceService, IUpdatable, IDisposable
         _watcher.Changed += OnFileChanged;
     }
 
-    public void SetGraphicsDevice(IGraphicsDevice graphicsDevice)
+    public void SetGraphicsDevice(IGraphicsDeviceService graphicsDevice)
     {
         _graphicsDevice = graphicsDevice;
     }

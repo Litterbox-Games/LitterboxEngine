@@ -1,30 +1,57 @@
-﻿using System.Drawing;
-using System.Numerics;
+
 using Client.Graphics;
+using System.Drawing;
+using System.Numerics;
 using Client.Graphics.GHAL.Vulkan;
 using Client.Graphics.ImGui;
 using Client.Host;
 using Client.Services.Resource;
 using Client.Systems;
-using Common.Services.Logging;
 using Silk.NET.Input;
 
 namespace Client;
 
 internal static class Program
 {
+    private static IClientHost MainMenu()
+    {
+        IClientHost? host = null;
+
+        while (host == null)
+        {
+            Console.WriteLine("""
+            Type letter to start associated client:
+            'S' - Single-player
+            'L' - Localhost
+            'C' - Client
+            """);
+            var userInput = Console.ReadLine();
+
+            if (string.IsNullOrEmpty(userInput)) continue;
+
+            host = userInput.ToUpper()[0] switch
+            {
+                'S' => new LocalHost(true),
+                'L' => new LocalHost(false),
+                'C' => new ClientHost(),
+                _ => host
+            };
+        }
+
+        return host;
+    }
+    
     private static void Main()
     {
+        // Engine Initialization
+        var host = MainMenu();
+        
         // Game Initialization
-        // TODO: this will eventually be the code called when a player starts/joins a world
-        using IClientHost host = new ClientHost();
-        
-        var logger = host.Container.Resolve<ILoggingService>();
-        
-        using var window = new Window();
-        using var graphicsDevice = new VulkanGraphicsDevice(window, logger);
-        
-        var input = new Input(window);
+        // TODO: everything under this should be condensed to a single GameStartEvent or something similar
+        var window = host.Container.Resolve<WindowService>();
+        var input = host.Container.Resolve<InputService>();
+        var graphicsDevice = host.Container.Resolve<VulkanGraphicsDeviceService>();
+        var renderer = host.Container.Resolve<RendererService>();
         
         // TODO: this feels hacky, we should probably restructure the ResourceService design
         var resourceService = host.Container.Resolve<ClientResourceService>();
@@ -34,7 +61,7 @@ internal static class Program
         var cameraService = host.Container.Resolve<CameraSystem>();
         cameraService.SetWindow(window);
         
-        using var renderer = new Renderer(resourceService, graphicsDevice);
+        // TODO: convert this to use IGraphicsDevice
         using var imGui = new ImGuiRenderer(window, graphicsDevice);
 
 

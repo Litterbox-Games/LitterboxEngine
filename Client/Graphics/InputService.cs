@@ -1,11 +1,12 @@
 ﻿using System.Numerics;
+using Common.Core;
 using Silk.NET.Input;
 
 namespace Client.Graphics;
 
-public class Input(Window window)
+public class InputService(WindowService windowService): IService
 {
-    private readonly IInputContext _input = window.Input;
+    private readonly IInputContext _input = windowService.Input;
 
     // TODO: give the user the option to choose a mouse
     public Vector2 MousePosition => _input.Mice[0].Position;

@@ -12,7 +12,7 @@ public class CameraSystem : ISystem, IUpdatable
 {
     private readonly QueryDescription _target = new QueryDescription().WithAll<CameraFollow, Position>();
     
-    private Window? _window;
+    private WindowService? _window;
     
     public readonly Camera Camera;
 
@@ -51,16 +51,16 @@ public class CameraSystem : ISystem, IUpdatable
     }
 
     // Better way of feeding window here. A window resize event could work...?
-    public void SetWindow(Window window)
+    public void SetWindow(WindowService windowService)
     {
         if (_window != null)
         {
-            window.OnResize -= RecalculateCamera;
+            windowService.OnResize -= RecalculateCamera;
         }
         
-        _window = window;
-        RecalculateCamera(window.Width, window.Height);
-        window.OnResize += RecalculateCamera;   
+        _window = windowService;
+        RecalculateCamera(windowService.Width, windowService.Height);
+        windowService.OnResize += RecalculateCamera;   
     }
     
     public Vector2 ScreenToWorldPosition(Vector2 position)

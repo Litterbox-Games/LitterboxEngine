@@ -35,7 +35,7 @@ public class PlayerControlSystem : ISystem, IInputable, IUpdatable, IDrawable
         _playerService = playerService;
     }
 
-    public void Input(Input input)
+    public void Input(InputService input)
     {
         _entityService.Entities.Query(in _playerControlled, ( 
             ref Velocity velocity
@@ -145,7 +145,7 @@ public class PlayerControlSystem : ISystem, IInputable, IUpdatable, IDrawable
     }
     
     /// <inheritdoc />
-    public void Draw(Renderer renderer)
+    public void Draw(RendererService renderer)
     {
         ImGui.Begin("Debug");
 

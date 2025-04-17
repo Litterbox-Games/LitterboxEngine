@@ -52,7 +52,7 @@
 
     <Target Name="BuildVulkanShader" AfterTargets="Build">
         <Message Text="VulkanBinPath: $(VulkanBinPath)" Importance="high" />
-        <Message Text="ShaderOutputPath: $(OutputPath)\$(ShaderOutputPath)" Importance="high" />
+        <Message Text="ShaderOutputPath: $(OutputPath)$(ShaderOutputPath)" Importance="high" />
         <Message Text="VertexShader: @(VertexShader)" Importance="high" />
         <Message Text="FragmentShader: @(FragmentShader)" Importance="high" />
         <MakeDir Directories="$(TargetDir)$(ShaderOutputPath)" Condition="!Exists('$(TargetDir)$(ShaderOutputPath)')" />
