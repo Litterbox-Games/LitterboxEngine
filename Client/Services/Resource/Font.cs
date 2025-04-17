@@ -22,8 +22,10 @@ public class Font(Dictionary<char, Glyph> glyphs, Texture texture) : IResource, 
     public readonly Dictionary<char , Glyph> Glyphs = glyphs;
     public readonly Texture Texture = texture;
 
-    public IResource UploadToGraphicsDevice(IGraphicsDevice graphicsDevice)
+    public IResource UploadToGraphicsDevice(IGraphicsDeviceService graphicsDevice)
     {
+        Console.WriteLine(Texture.Data.Length);
+        
         // So fucking hacky, we gotta change how the client loads resources
         var texture = graphicsDevice.CreateTexture(Texture.Width, Texture.Width, Texture.Data);
         return new Font(Glyphs, texture);
