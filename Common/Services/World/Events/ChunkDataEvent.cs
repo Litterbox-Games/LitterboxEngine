@@ -8,8 +8,8 @@ namespace Common.Services.World.Events;
 public struct ChunkDataEvent : INetworkEvent
 {
     public NetDeliveryMethod NetworkChannel => NetDeliveryMethod.ReliableOrdered;
-    public ServerPlayer? Sender { get; set; }
-    public Predicate<ServerPlayer>? Receivers { get; set; }
+    public NetworkPlayer? Sender { get; set; }
+    public Predicate<NetworkPlayer>? Receivers { get; set; }
 
     public Vector2i Position;
     public ushort[]? GroundLayer;

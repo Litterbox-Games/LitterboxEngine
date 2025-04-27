@@ -7,8 +7,8 @@ namespace Common.Services.Network.Events;
 public interface INetworkEvent : IEvent
 {
     public NetDeliveryMethod NetworkChannel { get; }
-    public ServerPlayer? Sender { get; set; }
-    public Predicate<ServerPlayer>? Receivers { get; set; }
+    public NetworkPlayer? Sender { get; set; }
+    public Predicate<NetworkPlayer>? Receivers { get; set; }
 
     public void Serialize(NetOutgoingMessage writer);
     public void Deserialize(NetIncomingMessage reader);

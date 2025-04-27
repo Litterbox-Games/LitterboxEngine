@@ -8,9 +8,9 @@ namespace Common.Services.Entities.Events;
 public struct EntitySpawnEvent() : INetworkEvent
 {
     public NetDeliveryMethod NetworkChannel => NetDeliveryMethod.ReliableUnordered;
-    public ServerPlayer? Sender { get; set; } = null;
+    public NetworkPlayer? Sender { get; set; } = null;
 
-    public Predicate<ServerPlayer>? Receivers { get; set; } = null;
+    public Predicate<NetworkPlayer>? Receivers { get; set; } = null;
 
     public ulong EntityId = 0;
     public ulong EntityOwner = 0;

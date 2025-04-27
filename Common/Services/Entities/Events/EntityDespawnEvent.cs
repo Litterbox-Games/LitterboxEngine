@@ -7,8 +7,8 @@ namespace Common.Services.Entities.Events;
 public struct EntityDespawnEvent : INetworkEvent
 {
     public NetDeliveryMethod NetworkChannel => NetDeliveryMethod.ReliableUnordered;
-    public ServerPlayer? Sender { get; set; }
-    public Predicate<ServerPlayer>? Receivers { get; set; }
+    public NetworkPlayer? Sender { get; set; }
+    public Predicate<NetworkPlayer>? Receivers { get; set; }
     
 
     public ulong EntityId;

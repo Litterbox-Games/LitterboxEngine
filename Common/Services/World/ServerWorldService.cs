@@ -208,5 +208,5 @@ public class ServerWorldService : IWorldService
 public sealed class NetworkedChunk(ChunkData data)
 {
     public readonly ChunkData ChunkData = data;
-    public readonly List<ServerPlayer> Observers = [];
+    public readonly List<NetworkPlayer> Observers = [];
 }

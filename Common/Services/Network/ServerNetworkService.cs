@@ -18,16 +18,16 @@ public sealed class ServerNetworkService(IContainer container, ILoggingService l
     private readonly EventService _eventService = eventService;
     private IPlayerService? _playerService;
     
-    private readonly List<ServerPlayer> _players = [];
-    public IEnumerable<ServerPlayer> Players => _players;
+    private readonly Dictionary<NetworkPlayer, NetConnection?> _connections = new();
+    public IEnumerable<NetworkPlayer> Players => _connections.Keys;
     
     protected override void OnOutgoing(OutgoingEvent e)
     {
-        IEnumerable<ServerPlayer> players = _players;
+        IEnumerable<NetworkPlayer> players = _connections.Keys;
         if (e.NetworkEvent.Receivers != null)
             players = players.Where(p => e.NetworkEvent.Receivers(p));
         
-        var connections = players.Select(x => x.PlayerConnection).Where(x => x != null).Cast<NetConnection>().ToList();
+        var connections = players.Select(p => _connections[p]).Where(c => c != null).Cast<NetConnection>().ToList();
 
         if (connections.Count == 0) return;
         
@@ -65,8 +65,8 @@ public sealed class ServerNetworkService(IContainer container, ILoggingService l
 
                     break;
                 case NetIncomingMessageType.ConnectionApproval:
-                    var approve = OnConnectionRequest(message);
-
+                    var approve = OnConnectionRequest(message); 
+                    
                     if (approve)
                         message.SenderConnection.Approve();
                     else
@@ -77,7 +77,7 @@ public sealed class ServerNetworkService(IContainer container, ILoggingService l
                 case NetIncomingMessageType.Data:
                     var e = OnData(message);
                     if (e == null) break;
-                    e.Sender = _players.FirstOrDefault(x => x.PlayerConnection == message.SenderConnection);
+                    e.Sender = _connections.FirstOrDefault(x => x.Value?.RemoteUniqueIdentifier == message.SenderConnection.RemoteUniqueIdentifier).Key;
                     _eventService.Incoming(e);
                     break;
             }
@@ -103,9 +103,10 @@ public sealed class ServerNetworkService(IContainer container, ILoggingService l
         
         _logger.Information("Server is now listening on port 7777.");
         
-        if (container.GameMode == EGameMode.Host || container.GameMode == EGameMode.SinglePlayer)
+        if (container.GameMode is EGameMode.Host or EGameMode.SinglePlayer)
         {
-            _players.Add(new ServerPlayer(_playerService.PlayerId, $"Player {_playerService.PlayerId}", null));
+            var player = new NetworkPlayer(_playerService.PlayerId, $"Player {_playerService.PlayerId}");
+            _connections.Add(player, null);
         }
         
         _eventService.Emit(new StartEvent());
@@ -129,8 +130,8 @@ public sealed class ServerNetworkService(IContainer container, ILoggingService l
         
         try
         {
-            var player = new ServerPlayer(message.ReadUInt64(), message.ReadString(), message.SenderConnection);
-            _players.Add(player);
+            var player = new NetworkPlayer(message.ReadUInt64(), message.ReadString());
+            _connections.Add(player, message.SenderConnection);
         }
         catch (Exception e)
         {
@@ -146,42 +147,34 @@ public sealed class ServerNetworkService(IContainer container, ILoggingService l
 
     private void OnConnect(NetConnection conn)
     {
-        var player =
-            _players.FirstOrDefault(x => x.PlayerConnection?.RemoteUniqueIdentifier == conn.RemoteUniqueIdentifier);
+        var player = _connections.FirstOrDefault(x => x.Value?.RemoteUniqueIdentifier == conn.RemoteUniqueIdentifier).Key;
 
         if (player == null)
         {
             conn.Disconnect("Authentication failed or wasn't performed.");
-
             return;
         }
 
-        // EventOnPlayerConnect?.Invoke(player);
-        _eventService.Emit(new PlayerConnectEvent { NetworkPlayer = player, Receivers = serverPlayer => serverPlayer != player });
-
         _logger.Information($"{player.PlayerName} has connected!");
-
-        // Synchronize client and server state
+        _eventService.Emit(new PlayerConnectEvent { NetworkPlayer = player, Receivers = serverPlayer => serverPlayer != player });
     }
 
     private void OnDisconnect(NetConnection conn)
     {
-        var player = _players.FirstOrDefault(x => x.PlayerConnection?.RemoteUniqueIdentifier == conn.RemoteUniqueIdentifier);
-
+        var player = _connections.FirstOrDefault(x => x.Value?.RemoteUniqueIdentifier == conn.RemoteUniqueIdentifier).Key;
+        
         if (player == null)
             return;
 
-        _players.Remove(player);
+        _connections.Remove(player);
 
         _logger.Information($"{player.PlayerName} has disconnected!");
         
-        var disconnectMessage = new PlayerDisconnectEvent
+        _eventService.Emit(new PlayerDisconnectEvent
         {
             PlayerId = player.PlayerId,
             Receivers = serverPlayer => serverPlayer != player
-        };
-
-        _eventService.Emit(disconnectMessage);
+        });
     }
     
     private void OnStatusChange(NetConnectionStatus newStatus, string reason)

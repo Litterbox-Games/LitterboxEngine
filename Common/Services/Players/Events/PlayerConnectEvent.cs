@@ -6,8 +6,8 @@ namespace Common.Services.Players.Events;
 public sealed class PlayerConnectEvent : INetworkEvent
 {
     public NetDeliveryMethod NetworkChannel => NetDeliveryMethod.ReliableUnordered;
-    public ServerPlayer? Sender { get; set; }
-    public Predicate<ServerPlayer>? Receivers { get; set; }
+    public NetworkPlayer? Sender { get; set; }
+    public Predicate<NetworkPlayer>? Receivers { get; set; }
     
 
     public NetworkPlayer? NetworkPlayer;

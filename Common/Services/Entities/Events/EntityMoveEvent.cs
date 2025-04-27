@@ -16,8 +16,8 @@ public record EntityMovement
 public struct EntityMoveEvent() : INetworkEvent
 {
     public NetDeliveryMethod NetworkChannel => NetDeliveryMethod.UnreliableSequenced;
-    public ServerPlayer? Sender { get; set; } = null;
-    public Predicate<ServerPlayer>? Receivers { get; set; } = null;
+    public NetworkPlayer? Sender { get; set; } = null;
+    public Predicate<NetworkPlayer>? Receivers { get; set; } = null;
 
     public List<EntityMovement> Entities = [];
 
