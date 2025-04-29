@@ -13,7 +13,7 @@ public struct ChunkRequestEvent : INetworkEvent
     
 
     public EChunkRequest RequestType;
-    public Vector2i[]? Chunks;
+    public Vector2i[] Chunks;
 
     public void Serialize(NetOutgoingMessage writer)
     {

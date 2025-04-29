@@ -58,18 +58,6 @@ public class WorldRenderService : IService, IDrawable
     {
         if (_playerEntity == null) return;
 
-        IEnumerable<ChunkData> chunks;
-
-        if (_worldService is ServerWorldService serverWorld)
-        {
-            chunks = serverWorld.NetworkedChunks.Where(x => x.Observers.Any(y => y.PlayerId == _playerService.PlayerId))
-                .Select(x => x.ChunkData);
-        }
-        else
-        {
-            chunks = _worldService.Chunks;
-        }
-
         var playerPosition = _playerEntity.Value.Get<Position>();
         var playerChunkX = (int)Math.Floor(playerPosition.Current.X / ChunkData.ChunkSize);
         var playerChunkY = (int)Math.Floor(playerPosition.Current.Y / ChunkData.ChunkSize);
@@ -78,7 +66,7 @@ public class WorldRenderService : IService, IDrawable
         
         ImGui.Text($"{playerChunkX}, {playerChunkY}");
         
-        foreach (var chunk in chunks)
+        foreach (var chunk in _worldService.Chunks)
         {
             var chunkX = (chunk.Position.X - playerChunkX + IWorldService.WorldSize / 2).Modulus(IWorldService.WorldSize) - IWorldService.WorldSize / 2 + playerChunkX;
             var chunkY = (chunk.Position.Y - playerChunkY + IWorldService.WorldSize / 2).Modulus(IWorldService.WorldSize) - IWorldService.WorldSize / 2 + playerChunkY;

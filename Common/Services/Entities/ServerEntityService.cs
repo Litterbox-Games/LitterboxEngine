@@ -32,7 +32,6 @@ public class ServerEntityService: IEntityService
         
         _eventService.Handle<PlayerConnectEvent>(OnPlayerConnect);
         _eventService.Handle<PlayerDisconnectEvent>(OnPlayerDisconnect);
-        _eventService.Handle<StartEvent>(OnStart); 
     }
 
     public void SpawnEntity(Entity entity)
@@ -111,12 +110,5 @@ public class ServerEntityService: IEntityService
             if (network.OwnerId != e.PlayerId) return;
             DespawnEntity(entity);
         });
-    }
-
-    // If player is hosting, spawn them an entity as if they just connected to a server.
-    private void OnStart(StartEvent _)
-    {
-        if (!_playerService.Players.Any()) return;
-        _eventService.Incoming(new PlayerConnectEvent { NetworkPlayer = _playerService.Players.First(x => x.PlayerId == _playerService.PlayerId)});
     }
 }

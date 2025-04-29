@@ -9,8 +9,7 @@ public sealed class PlayerConnectEvent : INetworkEvent
     public NetworkPlayer? Sender { get; set; }
     public Predicate<NetworkPlayer>? Receivers { get; set; }
     
-
-    public NetworkPlayer? NetworkPlayer;
+    public required NetworkPlayer NetworkPlayer;
 
     public void Serialize(NetOutgoingMessage writer)
     {

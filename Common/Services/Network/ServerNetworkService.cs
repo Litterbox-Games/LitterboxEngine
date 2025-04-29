@@ -19,7 +19,6 @@ public sealed class ServerNetworkService(IContainer container, ILoggingService l
     private IPlayerService? _playerService;
     
     private readonly Dictionary<NetworkPlayer, NetConnection?> _connections = new();
-    public IEnumerable<NetworkPlayer> Players => _connections.Keys;
     
     protected override void OnOutgoing(OutgoingEvent e)
     {
@@ -107,6 +106,12 @@ public sealed class ServerNetworkService(IContainer container, ILoggingService l
         {
             var player = new NetworkPlayer(_playerService.PlayerId, $"Player {_playerService.PlayerId}");
             _connections.Add(player, null);
+            
+            _eventService.Emit(new PlayerConnectEvent 
+            { 
+                NetworkPlayer = player, 
+                Receivers = serverPlayer => serverPlayer != player 
+            });
         }
         
         _eventService.Emit(new StartEvent());
@@ -156,7 +161,12 @@ public sealed class ServerNetworkService(IContainer container, ILoggingService l
         }
 
         _logger.Information($"{player.PlayerName} has connected!");
-        _eventService.Emit(new PlayerConnectEvent { NetworkPlayer = player, Receivers = serverPlayer => serverPlayer != player });
+        
+        _eventService.Emit(new PlayerConnectEvent 
+        { 
+            NetworkPlayer = player, 
+            Receivers = serverPlayer => serverPlayer != player 
+        });
     }
 
     private void OnDisconnect(NetConnection conn)

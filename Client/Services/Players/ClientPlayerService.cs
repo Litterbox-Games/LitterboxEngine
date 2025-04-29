@@ -25,7 +25,7 @@ public class ClientPlayerService : IPlayerService
 
     private void OnPlayerConnectMessage(PlayerConnectEvent e)
     {
-        _players.Add(e.NetworkPlayer!);
+        _players.Add(e.NetworkPlayer);
     }
 
     private void OnPlayerDisconnectMessage(PlayerDisconnectEvent e)

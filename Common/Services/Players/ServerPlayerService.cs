@@ -1,7 +1,4 @@
-﻿using Common.Core;
-using Common.Host;
-using Common.Services.Events;
-using Common.Services.Network;
+﻿using Common.Services.Events;
 using Common.Services.Players.Events;
 
 namespace Common.Services.Players;
@@ -9,19 +6,20 @@ namespace Common.Services.Players;
 public sealed class ServerPlayerService : IPlayerService
 {
     public ulong PlayerId { get; }
-    public IEnumerable<NetworkPlayer> Players => _network.Players;
+    public IEnumerable<NetworkPlayer> Players => _players;
 
-    private readonly ServerNetworkService _network;
+    private readonly List<NetworkPlayer> _players = [];
+    
     private readonly EventService _eventService;
 
-    public ServerPlayerService(ServerNetworkService networkService, EventService eventService)
+    public ServerPlayerService(EventService eventService)
     {
         PlayerId = (ulong) new Random(DateTime.Now.Millisecond).Next();
         
-        _network = networkService;
         _eventService = eventService;
         
         eventService.Handle<PlayerConnectEvent>(OnPlayerConnect);
+        eventService.Handle<PlayerDisconnectEvent>(OnPlayerDisconnectMessage);
     }
 
     private void OnPlayerConnect(PlayerConnectEvent e)
@@ -35,5 +33,12 @@ public sealed class ServerPlayerService : IPlayerService
 
         syncMessage.Receivers = serverPlayer => serverPlayer == e.NetworkPlayer; 
         _eventService.Emit(syncMessage);
+        
+        _players.Add(e.NetworkPlayer);
+    }
+    
+    private void OnPlayerDisconnectMessage(PlayerDisconnectEvent e)
+    {
+        _players.Remove(_players.First(x => x.PlayerId == e.PlayerId));
     }
 }

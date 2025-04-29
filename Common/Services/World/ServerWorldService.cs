@@ -1,5 +1,4 @@
 ﻿using Common.Core;
-using Common.Host;
 using Common.Mathematics;
 using Common.Services.Block;
 using Common.Services.Events;
@@ -12,24 +11,21 @@ using Common.Services.World.Generation;
 
 namespace Common.Services.World;
 
-public class ServerWorldService : IWorldService
+public class ServerWorldService : IWorldService, IUpdatable
 {
-    public readonly List<NetworkedChunk> NetworkedChunks = [];
-    public IEnumerable<ChunkData> Chunks => NetworkedChunks.Select(x => x.ChunkData);
+    public IEnumerable<ChunkData> Chunks => _networkedChunks
+        .Where(x => x.Observers.Any(y => y.PlayerId == _playerService.PlayerId))
+        .Select(x => x.ChunkData);
 
-    private readonly IContainer _container;
-    private readonly ServerNetworkService _networkService;
+    private readonly List<NetworkedChunk> _networkedChunks = [];
+    
     private readonly IPlayerService _playerService;
-    private readonly ILoggingService _logger;
     private readonly EventService _eventService;
     private readonly IWorldGenerator _generation;
 
-    public ServerWorldService(IContainer container, ServerNetworkService networkService, IPlayerService playerService, ILoggingService logger, EventService eventService, BlockRegistry blockRegistry)
+    public ServerWorldService(IContainer container, IPlayerService playerService, EventService eventService, BlockRegistry blockRegistry)
     {
-        _container = container;
-        _networkService = networkService;
         _playerService = playerService;
-        _logger = logger;
         _eventService = eventService;
         _generation = container.Resolve<IWorldGenerator>("earth");
         
@@ -41,9 +37,9 @@ public class ServerWorldService : IWorldService
         _eventService.Handle<BlockUpdateEvent>(OnBlockUpdate);
     }
 
-    private void OnBlockUpdate(BlockUpdateEvent blockUpdate)
+    private void OnBlockUpdate(BlockUpdateEvent e)
     { 
-        var chunk = GetChunk(blockUpdate.Chunk);
+        var chunk = GetChunk(e.Chunk);
 
         if (chunk == null)
         {
@@ -51,86 +47,48 @@ public class ServerWorldService : IWorldService
             throw new InvalidOperationException("Player tried to update a block in an unloaded chunk");
         }
         
-        chunk.ChunkData.SetBlockAtLocalPosition(blockUpdate.Id, blockUpdate.Position, blockUpdate.BlockType);
-    }
-
-    public void RequestChunk(Vector2i position)
-    {
-        if (_container.GameMode == EGameMode.Dedicated)
-        {
-            throw new InvalidOperationException("Invalid use of method. This may only be called when the server acts as a host.");
-        }
-
-        if (position.X is >= IWorldService.WorldSize or < 0 || position.Y is >= IWorldService.WorldSize or < 0)
-        {
-            _logger.Warning($"Invalid chunk request. Chunk position: {position}");
-            return;
-        }
-
-        var player = _networkService.Players.First(x => x.PlayerId == _playerService.PlayerId);
-        
-        var chunk = GetChunk(position);
-
-        if (chunk == null)
-        {
-            chunk = new NetworkedChunk(_generation.GenerateChunkAtPosition(position));
-
-            NetworkedChunks.Add(chunk);
-        }
-
-        chunk.Observers.Add(player);
-    }
-
-    public void RequestUnloadChunk(Vector2i position)
-    {
-        if (_container.GameMode == EGameMode.Dedicated)
-        {
-            throw new InvalidOperationException(
-                "Invalid use of method. This may only be called when the server acts as a host.");
-        }
-
-        var chunk = NetworkedChunks.FirstOrDefault(x => x.ChunkData.Position == position);
-
-        chunk?.Observers.Remove(_networkService.Players.FirstOrDefault(x => x.PlayerId == _playerService.PlayerId)!);
+        chunk.ChunkData.SetBlockAtLocalPosition(e.Id, e.Position, e.BlockType);
     }
 
     private void OnChunkRequest(ChunkRequestEvent e)
     {
-        if (e.Sender == null) return;
+        // TODO: a better way of grabbing the current player? Maybe we should add IPlayerService.Player?
+        var player = e.Sender ?? _playerService.Players.FirstOrDefault(player => player.PlayerId == _playerService.PlayerId);
 
-        foreach (var pos in e.Chunks!)
+        if (player == null) return;
+        
+        foreach (var position in e.Chunks)
         {
-            var chunk = GetChunk(pos);
+            var chunk = GetChunk(position);
 
             if (e.RequestType == EChunkRequest.Load)
             {
                 if (chunk == null)
                 {
-                    chunk = new NetworkedChunk(_generation.GenerateChunkAtPosition(pos));
+                    chunk = new NetworkedChunk(_generation.GenerateChunkAtPosition(position));
 
-                    NetworkedChunks.Add(chunk);
+                    _networkedChunks.Add(chunk);
                 }
 
-                if (!chunk.Observers.Contains(e.Sender))
+                if (!chunk.Observers.Contains(player))
                 {
-                    chunk.Observers.Add(e.Sender);
+                    chunk.Observers.Add(player);
                 }
-
-                var dataMessage = new ChunkDataEvent
+                
+                _eventService.Emit(new ChunkDataEvent
                 {
-                    Position = pos,
+                    Position = position,
                     GroundLayer = chunk.ChunkData.GroundArray,
                     ObjectLayer = chunk.ChunkData.ObjectArray,
                     BiomeMap = chunk.ChunkData.BiomeArray.Cast<byte>().ToArray(),
                     HeatMap = chunk.ChunkData.HeatArray.Cast<byte>().ToArray(),
-                    MoistureMap = chunk.ChunkData.MoistureArray.Cast<byte>().ToArray()
-                };
-
-                _eventService.Emit(dataMessage);
+                    MoistureMap = chunk.ChunkData.MoistureArray.Cast<byte>().ToArray(),
+                    Receivers = serverPlayer => serverPlayer == player
+                });
             }
             else
             {
-                chunk?.Observers.Remove(e.Sender);
+                chunk?.Observers.Remove(player);
             }
         }
     }
@@ -139,7 +97,7 @@ public class ServerWorldService : IWorldService
     {
         var chunksToUnload = new List<NetworkedChunk>();
 
-        NetworkedChunks.ForEach(x =>
+        _networkedChunks.ForEach(x =>
         {
             if (x.Observers.Count == 0)
             {
@@ -171,14 +129,14 @@ public class ServerWorldService : IWorldService
             _eventService.Emit(dataMessage);
         });
 
-        chunksToUnload.ForEach(x => NetworkedChunks.Remove(x));
+        chunksToUnload.ForEach(x => _networkedChunks.Remove(x));
     }
 
     private void OnPlayerDisconnect(PlayerDisconnectEvent e)
     {
         var removedChunk = new List<NetworkedChunk>();
 
-        NetworkedChunks.ForEach(x =>
+        _networkedChunks.ForEach(x =>
         {
             if (x.Observers.Contains(e.Sender!))
             {
@@ -190,13 +148,13 @@ public class ServerWorldService : IWorldService
         {
             x.Observers.Remove(e.Sender!);
             if (x.Observers.Count == 0)
-                NetworkedChunks.Remove(x);
+                _networkedChunks.Remove(x);
         });
     }
 
     private NetworkedChunk? GetChunk(Vector2i position)
     {
-        return NetworkedChunks.FirstOrDefault(x => x.ChunkData.Position == position);
+        return _networkedChunks.FirstOrDefault(x => x.ChunkData.Position == position);
     }
     
     public ChunkData? GetChunkData(Vector2i position)

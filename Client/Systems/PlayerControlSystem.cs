@@ -6,8 +6,10 @@ using Common.Core;
 using Common.Core.Attributes;
 using Common.Mathematics;
 using Common.Services.Entities;
+using Common.Services.Events;
 using Common.Services.Players;
 using Common.Services.World;
+using Common.Services.World.Events;
 using ImGuiNET;
 using Silk.NET.Input;
 
@@ -22,17 +24,19 @@ public class PlayerControlSystem : ISystem, IInputable, IUpdatable, IDrawable
     private readonly CameraSystem _cameraSystem;
     private readonly IEntityService _entityService;
     private readonly IPlayerService _playerService;
+    private readonly EventService _eventService;
     
     private Vector2i _chunkPosition;
 
     private readonly Queue<float> _fpsRecordings = new();
     
-    public PlayerControlSystem(IEntityService entityService, IWorldService worldService, CameraSystem cameraSystem, IPlayerService playerService)
+    public PlayerControlSystem(IEntityService entityService, IWorldService worldService, CameraSystem cameraSystem, IPlayerService playerService, EventService eventService)
     {
         _worldService = worldService;
         _cameraSystem = cameraSystem;
         _entityService = entityService;
         _playerService = playerService;
+        _eventService = eventService;
     }
 
     public void Input(InputService input)
@@ -111,6 +115,9 @@ public class PlayerControlSystem : ISystem, IInputable, IUpdatable, IDrawable
         // TODO: turn into user setting - can expose through ImGui first
         const int chunkRadius = 2;
         
+        List<Vector2i> chunksToRequestLoad = [];
+        List<Vector2i> chunksToRequestUnload = [];
+        
         _entityService.Entities.Query(in _playerControlled, ( 
             ref Position position
         ) =>
@@ -123,25 +130,57 @@ public class PlayerControlSystem : ISystem, IInputable, IUpdatable, IDrawable
             {
                 for (var dy = -chunkRadius - 1; dy <= chunkRadius + 1; dy++)
                 {
-                    var chunk = new Vector2i(
+                    var chunkPosition = new Vector2i(
                         (_chunkPosition.X + dx).Modulus(IWorldService.WorldSize),
                         (_chunkPosition.Y + dy).Modulus(IWorldService.WorldSize)
                     );
             
+                    // TODO: store Chunks in a dictionary to prevent costly look ups
+                    var chunk = _worldService.Chunks.FirstOrDefault(x => x.Position == chunkPosition);
+                    
                     var squareDistance = dx * dx + dy * dy;
-            
+                    
                     switch (squareDistance)
                     {
                         case <= chunkRadius * chunkRadius:
-                            _worldService.RequestChunk(chunk);
+                        {
+                            if (chunk == null)
+                                chunksToRequestLoad.Add(chunkPosition);
                             break;
+                        }
                         case <= (chunkRadius + 1) * (chunkRadius + 1):
-                            _worldService.RequestUnloadChunk(chunk);
+                        {
+                            if (chunk != null)
+                                chunksToRequestUnload.Add(chunkPosition);
                             break;
+                        }
+                            
                     }
                 }
             }
         });
+        
+        if (chunksToRequestLoad.Count != 0)
+        {
+            var chunkRequestMessage = new ChunkRequestEvent
+            {
+                RequestType = EChunkRequest.Load,
+                Chunks = chunksToRequestLoad.ToArray()
+            };
+
+            _eventService.Emit(chunkRequestMessage);
+        }
+
+        if (chunksToRequestUnload.Count != 0)
+        {
+            var chunkRequestMessage = new ChunkRequestEvent
+            {
+                RequestType = EChunkRequest.Unload,
+                Chunks = chunksToRequestUnload.ToArray()
+            };
+
+            _eventService.Emit(chunkRequestMessage);
+        }
     }
     
     /// <inheritdoc />

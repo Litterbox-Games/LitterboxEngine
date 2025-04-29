@@ -42,7 +42,7 @@ public class EventService(ILoggingService logger) : IService
         }
     }
     
-    public void Handle<T>(OnEvent<T> handler) where T : IEvent, new()
+    public void Handle<T>(OnEvent<T> handler) where T : IEvent
     {
         if (_handlers.ContainsKey(typeof(T)))
         {
