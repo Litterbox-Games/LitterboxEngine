@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using Common.Services.Network;
+using Common.Services.Players;
 using Common.Systems;
 
 namespace Common.Host;
@@ -9,7 +10,6 @@ public interface IServerHost: IHost
     public void StartServer(ushort port)
     {
         var networking = Container.Resolve<ServerNetworkService>();
-        
         networking.Listen(port);
 
         var mobController = Container.Resolve<MobControllerSystem>();
@@ -20,5 +20,11 @@ public interface IServerHost: IHost
                 mobController.SpawnMobEntity(new Vector2(x * 2, y * 2));
             }    
         }
+    }
+
+    public void SpawnServerPlayer()
+    {
+        var playerService = Container.Resolve<ServerPlayerService>();
+        playerService.SpawnServerPlayer();
     }
 }

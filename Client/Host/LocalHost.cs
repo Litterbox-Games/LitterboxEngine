@@ -27,6 +27,7 @@ public class LocalHost : IClientHost, IServerHost
         Container.Resolve<IPlayerService>();
 
         (this as IServerHost).StartServer(7777);
+        (this as IServerHost).SpawnServerPlayer();
     }
 
     public void Dispose()
