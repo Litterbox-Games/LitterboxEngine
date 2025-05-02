@@ -16,7 +16,6 @@ public sealed class ServerNetworkService(IContainer container, ILoggingService l
 
     private readonly ILoggingService _logger = logger;
     private readonly EventService _eventService = eventService;
-    private IPlayerService? _playerService;
     
     private readonly Dictionary<NetworkPlayer, NetConnection> _connections = new();
     
@@ -97,7 +96,6 @@ public sealed class ServerNetworkService(IContainer container, ILoggingService l
         
         _server = new NetServer(config);
         _server.Start();
-
         
         _logger.Information("Server is now listening on port 7777.");
     }
