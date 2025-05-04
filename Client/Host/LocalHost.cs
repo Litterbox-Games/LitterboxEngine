@@ -17,8 +17,8 @@ public class LocalHost : IClientHost, IServerHost
     
     public LocalHost(bool singlePlayer)
     {
-        Container = new Container(singlePlayer ? EGameMode.SinglePlayer : EGameMode.Host);
-        Container.RegisterServices();
+        Container = new Container();
+        Container.RegisterServices(singlePlayer ? EGameMode.SinglePlayer : EGameMode.Host, ELifetime.Engine | ELifetime.Game);
         (this as IHost).RegisterUpdatables();
         (this as IClientHost).RegisterInputables();
         (this as IClientHost).RegisterDrawables();

@@ -7,12 +7,7 @@ namespace Common.Core;
 /// </summary>
 public interface IContainer : IService, IDisposable
 {
-    /// <summary>
-    ///     The current game mode of the host.
-    /// </summary>
-    EGameMode GameMode { get; }
-
-    public void RegisterServices();
+    public void RegisterServices(EGameMode mode, ELifetime lifetime);
     
     public IContainer CreateChildContainer();
     

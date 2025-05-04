@@ -11,14 +11,14 @@ namespace Client.Host;
 /// </summary>
 public class ClientHost : IClientHost
 {
-    public IContainer Container { get; } = new Container(EGameMode.Client);
+    public IContainer Container { get; } = new Container();
     public List<IInputable> Inputables { get; } = [];
     public List<(EPriority, IUpdatable)> Updatables { get; } = [];
     public List<IDrawable> Drawables { get; } = [];
     
     public ClientHost()
     {
-        Container.RegisterServices();
+        Container.RegisterServices(EGameMode.Client, ELifetime.Engine | ELifetime.Game);
         (this as IHost).RegisterUpdatables();
         (this as IClientHost).RegisterInputables();
         (this as IClientHost).RegisterDrawables();

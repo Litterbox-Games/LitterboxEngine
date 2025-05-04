@@ -6,13 +6,11 @@ using Unity;
 
 namespace Common.Core;
 
-public sealed class Container(EGameMode gameMode, IUnityContainer? container = null): IContainer
+public sealed class Container(IUnityContainer? container = null): IContainer
 {
-    public EGameMode GameMode { get; } = gameMode;
- 
     private readonly IUnityContainer _container = container ?? new UnityContainer();
     
-    public void RegisterServices()
+    public void RegisterServices(EGameMode gameMode, ELifetime lifetime)
     {
         RegisterSingleton<IContainer, Container>(this, false);
         
@@ -44,7 +42,7 @@ public sealed class Container(EGameMode gameMode, IUnityContainer? container = n
                 {
                     var registrarMode = (EGameMode)x.ConstructorArguments[0].Value!;
 
-                    if (!registrarMode.HasFlag(GameMode))
+                    if (!registrarMode.HasFlag(gameMode))
                     {
                         doRegister = false;
                         return;
@@ -70,7 +68,7 @@ public sealed class Container(EGameMode gameMode, IUnityContainer? container = n
         });
     }
 
-    public IContainer CreateChildContainer() => new Container(GameMode, _container.CreateChildContainer());
+    public IContainer CreateChildContainer() => new Container(_container.CreateChildContainer());
     
     public void FilterRegistrations<T>(Action<T, Type> action)
     {

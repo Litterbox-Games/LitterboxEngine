@@ -13,8 +13,8 @@ public class ServerHost : IServerHost
     
     public ServerHost()
     {
-        Container = new Container(EGameMode.Dedicated);
-        Container.RegisterServices();
+        Container = new Container();
+        Container.RegisterServices(EGameMode.Dedicated, ELifetime.Engine | ELifetime.Game);
         (this as IHost).RegisterUpdatables();
         (this as IServerHost).StartServer(7777);
     }
