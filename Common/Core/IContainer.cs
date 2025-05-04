@@ -14,6 +14,8 @@ public interface IContainer : IService, IDisposable
 
     public void RegisterServices();
     
+    public IContainer CreateChildContainer();
+    
     public void FilterRegistrations<T>(Action<T, Type> action);
     
     /// <summary>

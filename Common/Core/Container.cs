@@ -6,11 +6,11 @@ using Unity;
 
 namespace Common.Core;
 
-public sealed class Container(EGameMode gameMode): IContainer
+public sealed class Container(EGameMode gameMode, IUnityContainer? container = null): IContainer
 {
     public EGameMode GameMode { get; } = gameMode;
  
-    private readonly UnityContainer _container = new();
+    private readonly IUnityContainer _container = container ?? new UnityContainer();
     
     public void RegisterServices()
     {
@@ -69,6 +69,8 @@ public sealed class Container(EGameMode gameMode): IContainer
             registrar.RegisterServices(this);
         });
     }
+
+    public IContainer CreateChildContainer() => new Container(GameMode, _container.CreateChildContainer());
     
     public void FilterRegistrations<T>(Action<T, Type> action)
     {
