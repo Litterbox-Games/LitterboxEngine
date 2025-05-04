@@ -111,9 +111,6 @@ public sealed class ServerNetworkService(IContainer container, ILoggingService l
     
     private bool OnConnectionRequest(NetIncomingMessage message)
     {
-        if (container.GameMode == EGameMode.SinglePlayer)
-            return false;
-        
         try
         {
             var player = new NetworkPlayer(message.ReadUInt64(), message.ReadString());
