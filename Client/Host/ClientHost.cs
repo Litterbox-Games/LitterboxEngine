@@ -23,9 +23,6 @@ public class ClientHost : IClientHost
         (this as IClientHost).RegisterInputables();
         (this as IClientHost).RegisterDrawables();
         
-        // Warm Service Singletons
-        Container.Resolve<IPlayerService>();
-        
         var networkService = Container.Resolve<ClientNetworkService>();
         networkService.Connect("127.0.0.1", 7777);
     }

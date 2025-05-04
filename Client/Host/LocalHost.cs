@@ -22,9 +22,6 @@ public class LocalHost : IClientHost, IServerHost
         (this as IHost).RegisterUpdatables();
         (this as IClientHost).RegisterInputables();
         (this as IClientHost).RegisterDrawables();
-        
-        // Warm Service Singletons
-        Container.Resolve<IPlayerService>();
 
         (this as IServerHost).StartServer(7777);
         (this as IServerHost).SpawnServerPlayer();
