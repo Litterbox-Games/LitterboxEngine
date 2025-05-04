@@ -70,7 +70,7 @@ public sealed class Container(EGameMode gameMode): IContainer
         });
     }
     
-    public void FilterRegistries<T>(Action<T, Type> action)
+    public void FilterRegistrations<T>(Action<T, Type> action)
     {
         _container.Registrations
             .Where(x => x.MappedToType.IsAssignableTo(typeof(T)))

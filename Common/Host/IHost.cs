@@ -13,7 +13,7 @@ public interface IHost: IDisposable
 
     public void RegisterUpdatables()
     {
-        Container.FilterRegistries<IUpdatable>((updatable, type) =>
+        Container.FilterRegistrations<IUpdatable>((updatable, type) =>
         {
             var tickableAttribute =
                 type.CustomAttributes.FirstOrDefault(y => y.AttributeType == typeof(UpdatablePriorityAttribute));

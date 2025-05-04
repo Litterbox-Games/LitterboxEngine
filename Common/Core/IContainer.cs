@@ -14,7 +14,7 @@ public interface IContainer : IService, IDisposable
 
     public void RegisterServices();
     
-    public void FilterRegistries<T>(Action<T, Type> action);
+    public void FilterRegistrations<T>(Action<T, Type> action);
     
     /// <summary>
     ///     Creates a singleton registration in the container.

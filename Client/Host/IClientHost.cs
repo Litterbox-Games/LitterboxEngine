@@ -10,7 +10,7 @@ public interface IClientHost: IHost
 
     internal void RegisterInputables()
     {
-        Container.FilterRegistries<IInputable>((inputable, _) =>
+        Container.FilterRegistrations<IInputable>((inputable, _) =>
         {
             Inputables.Add(inputable);
         });
@@ -18,7 +18,7 @@ public interface IClientHost: IHost
     
     internal void RegisterDrawables()
     {
-        Container.FilterRegistries<IDrawable>((drawable, _) =>
+        Container.FilterRegistrations<IDrawable>((drawable, _) =>
         {
             Drawables.Add(drawable);
         });
