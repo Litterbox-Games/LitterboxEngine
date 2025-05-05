@@ -21,6 +21,8 @@ public class FirstSystemRegistrar: IServiceRegistrar
         // TODO: better way of registering components, they should be order independent so we probably don't need to register them explicitly
         ComponentRegistry.Add<Position>(); 
         
+        Console.WriteLine("FinalSystemRegistrar");
+        
         // Systems
         container.RegisterSingleton<MovementSystem, MovementSystem>();
     }    

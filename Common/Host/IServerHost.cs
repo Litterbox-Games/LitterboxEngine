@@ -9,10 +9,16 @@ public interface IServerHost: IHost
 {
     public void StartServer(ushort port)
     {
-        var networking = Container.Resolve<ServerNetworkService>();
+        if (GameContainer == null)
+        {
+            Console.WriteLine("GameContainer is null");
+            return;
+        }
+        
+        var networking = GameContainer.Resolve<ServerNetworkService>();
         networking.Listen(port);
 
-        var mobController = Container.Resolve<MobControllerSystem>();
+        var mobController = GameContainer.Resolve<MobControllerSystem>();
         for (var x = 0; x < 30; x++)
         {
             for (var y = 0; y < 30; y++)
@@ -21,10 +27,28 @@ public interface IServerHost: IHost
             }    
         }
     }
+    
+    public void StopServer()
+    {
+        if (GameContainer == null)
+        {
+            Console.WriteLine("GameContainer is null");
+            return;
+        }
+        
+        var networking = GameContainer.Resolve<ServerNetworkService>();
+        networking.StopListening();
+    }
 
     public void SpawnServerPlayer()
     {
-        var playerService = Container.Resolve<ServerPlayerService>();
+        if (GameContainer == null)
+        {
+            Console.WriteLine("GameContainer is null");
+            return;
+        }
+        
+        var playerService = GameContainer.Resolve<ServerPlayerService>();
         playerService.SpawnServerPlayer();
     }
 }

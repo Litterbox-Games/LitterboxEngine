@@ -11,27 +11,64 @@ namespace Client.Host;
 /// </summary>
 public class ClientHost : IClientHost
 {
-    public IContainer Container { get; } = new Container();
-    public List<IInputable> Inputables { get; } = [];
-    public List<(EPriority, IUpdatable)> Updatables { get; } = [];
-    public List<IDrawable> Drawables { get; } = [];
+    // Engine
+    public IContainer EngineContainer { get; }
+    public List<(EPriority, IUpdatable)> EngineUpdatables { get; }
+    
+    // Game
+    public IContainer? GameContainer  { get; set; }
+    public List<(EPriority, IUpdatable)> GameUpdatables { get; private set; } = [];
+    public List<IDrawable> GameDrawables { get; private set; } = [];
+    public List<IInputable> GameInputables { get; private set; } = [];
     
     public ClientHost()
     {
-        Container.RegisterServices(EGameMode.Client, ELifetime.Engine | ELifetime.Game);
-        (this as IHost).RegisterUpdatables();
-        (this as IClientHost).RegisterInputables();
-        (this as IClientHost).RegisterDrawables();
+        EngineContainer = new Container();
+        EngineContainer.RegisterServices(EGameMode.Client | EGameMode.SinglePlayer | EGameMode.Host, ELifetime.Engine);
+        EngineUpdatables = (this as IHost).RegisterUpdatables(EngineContainer);
+    }
+    
+    public void Start(EGameMode gameMode)
+    {
+        GameContainer = EngineContainer.CreateChildContainer();
+        GameContainer.RegisterServices(gameMode, ELifetime.Game);
+        GameUpdatables = (this as IHost).RegisterUpdatables(GameContainer);
         
-        var networkService = Container.Resolve<ClientNetworkService>();
+        GameInputables = (this as IClientHost).RegisterInputables(GameContainer);
+        GameDrawables = (this as IClientHost).RegisterDrawables(GameContainer);
+
+        var networkService = GameContainer.Resolve<ClientNetworkService>();
         networkService.Connect("127.0.0.1", 7777);
+    }
+
+    public void Stop()
+    {
+        GameContainer?.Dispose();
+        GameContainer = null;
+        GameUpdatables = [];
+        GameInputables = [];
+        GameDrawables = [];
+    }
+    
+    public void Update(float deltaTime)
+    {
+        EngineUpdatables.ForEach(updatable => updatable.Item2.Update(deltaTime));
+        GameUpdatables.ForEach(updatable => updatable.Item2.Update(deltaTime));
+    }
+    
+    public void Input(InputService input)
+    {
+        GameInputables.ForEach(inputable => inputable.Input(input));
+    }
+    
+    public void Draw(RendererService renderer)
+    {
+        GameDrawables.ForEach(drawable => drawable.Draw(renderer));
     }
 
     public void Dispose()
     {
-        Container.Dispose();
+        EngineContainer.Dispose();
         GC.SuppressFinalize(this);
     }
-
-    
 }

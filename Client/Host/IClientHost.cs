@@ -1,36 +1,38 @@
 ﻿using Client.Graphics;
+using Common.Core;
 using Common.Host;
 
 namespace Client.Host;
 
 public interface IClientHost: IHost
 {
-    internal List<IInputable> Inputables { get; }
-    internal List<IDrawable> Drawables { get; }
+    internal List<IDrawable> GameDrawables { get; }
 
-    internal void RegisterInputables()
+    internal List<IInputable> RegisterInputables(IContainer container)
     {
-        Container.FilterRegistrations<IInputable>((inputable, _) =>
+        var inputables = new List<IInputable>();
+        
+        container.FilterRegistrations<IInputable>((inputable, _) =>
         {
-            Inputables.Add(inputable);
+            inputables.Add(inputable);
         });
+
+        return inputables;
     }
     
-    internal void RegisterDrawables()
+    internal List<IDrawable> RegisterDrawables(IContainer container)
     {
-        Container.FilterRegistrations<IDrawable>((drawable, _) =>
+        var drawables = new List<IDrawable>();
+        
+        container.FilterRegistrations<IDrawable>((drawable, _) =>
         {
-            Drawables.Add(drawable);
+            drawables.Add(drawable);
         });
+        
+        return drawables;
     }
 
-    public void Input(InputService input)
-    {
-        Inputables.ForEach(inputable => inputable.Input(input));
-    }
-    
-    public void Draw(RendererService renderer)
-    {
-        Drawables.ForEach(drawable => drawable.Draw(renderer));
-    }
+    public void Input(InputService input);
+
+    public void Draw(RendererService renderer);
 }

@@ -8,20 +8,46 @@ namespace Server.Host;
 /// </summary>
 public class ServerHost : IServerHost
 {
-    public List<(EPriority, IUpdatable)> Updatables { get; } = [];
-    public IContainer Container { get; }
+    // Engine
+    public IContainer EngineContainer { get; }
+    public List<(EPriority, IUpdatable)> EngineUpdatables { get; }
+    
+    // Game
+    public IContainer? GameContainer  { get; set; }
+    public List<(EPriority, IUpdatable)> GameUpdatables { get; private set; } = [];
     
     public ServerHost()
     {
-        Container = new Container();
-        Container.RegisterServices(EGameMode.Dedicated, ELifetime.Engine | ELifetime.Game);
-        (this as IHost).RegisterUpdatables();
+        EngineContainer = new Container();
+        EngineContainer.RegisterServices(EGameMode.Dedicated, ELifetime.Engine);
+        EngineUpdatables = (this as IHost).RegisterUpdatables(EngineContainer);
+    }
+    
+    public void Start(EGameMode gameMode)
+    {
+        GameContainer = EngineContainer.CreateChildContainer();
+        GameContainer.RegisterServices(gameMode, ELifetime.Game);
+        GameUpdatables = (this as IHost).RegisterUpdatables(GameContainer);
+        
         (this as IServerHost).StartServer(7777);
+    }
+    
+    public void Stop()
+    {
+        GameContainer?.Dispose();
+        GameContainer = null;
+        GameUpdatables = [];
+    }
+    
+    public void Update(float deltaTime)
+    {
+        EngineUpdatables.ForEach(updatable => updatable.Item2.Update(deltaTime));
+        GameUpdatables.ForEach(updatable => updatable.Item2.Update(deltaTime));
     }
 
     public void Dispose()
     {
-        Container.Dispose();
+        EngineContainer.Dispose();
         GC.SuppressFinalize(this);
     }
 }

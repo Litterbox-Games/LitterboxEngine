@@ -191,7 +191,10 @@ public class PlayerControlSystem : ISystem, IInputable, IUpdatable, IDrawable
         _entityService.Entities.Query(in _playerControlled, ( 
             ref Position position
         ) => {
-            ImGui.PlotLines("FPS", ref _fpsRecordings.ToArray()[0], _fpsRecordings.Count, 0, "", 0, 60, new Vector2(450, 150));
+            if (_fpsRecordings.Count > 0)
+            {
+                ImGui.PlotLines("FPS", ref _fpsRecordings.ToArray()[0], _fpsRecordings.Count, 0, "", 0, 60, new Vector2(450, 150));    
+            }
             ImGui.Text($"Player: {_playerService.PlayerId}");
             ImGui.Text($"Player Position: ({position.Current.X}, {position.Current.Y})");  
             ImGui.Text($"Chunk Position: ({_chunkPosition.X}, {_chunkPosition.Y})");

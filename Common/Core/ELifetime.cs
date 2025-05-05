@@ -3,6 +3,6 @@
 [Flags]
 public enum ELifetime
 {
-    Engine,
-    Game
+    Engine = 0x01,
+    Game   = 0x10
 }

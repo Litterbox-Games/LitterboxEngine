@@ -8,12 +8,17 @@ namespace Common.Host;
 
 public interface IHost: IDisposable
 {
-    public IContainer Container { get; }
-    List<(EPriority, IUpdatable)> Updatables { get; }
+    public IContainer EngineContainer { get; }
+    public IContainer? GameContainer { get; set; }
+    
+    List<(EPriority, IUpdatable)> EngineUpdatables { get; }
+    List<(EPriority, IUpdatable)> GameUpdatables { get; }
 
-    public void RegisterUpdatables()
+    public List<(EPriority, IUpdatable)> RegisterUpdatables(IContainer container)
     {
-        Container.FilterRegistrations<IUpdatable>((updatable, type) =>
+        var updatables = new List<(EPriority, IUpdatable)>(); 
+        
+        container.FilterRegistrations<IUpdatable>((updatable, type) =>
         {
             var tickableAttribute =
                 type.CustomAttributes.FirstOrDefault(y => y.AttributeType == typeof(UpdatablePriorityAttribute));
@@ -25,24 +30,27 @@ public interface IHost: IDisposable
 
             var inserted = false;
 
-            for (var i = 0; i < Updatables.Count && !inserted; i++)
+            for (var i = 0; i < updatables.Count && !inserted; i++)
             {
-                if (priority <= Updatables[i].Item1)
+                if (priority <= updatables[i].Item1)
                     continue;
 
-                Updatables.Insert(i, (priority, updatable));
+                updatables.Insert(i, (priority, updatable));
                 inserted = true;
             }
 
             if (!inserted)
             {
-                Updatables.Add((priority, updatable));
+                updatables.Add((priority, updatable));
             }
         });
+
+        return updatables;
     }
 
-    public void Update(float deltaTime)
-    {
-        Updatables.ForEach(x => x.Item2.Update(deltaTime));
-    }
+    public void Start(EGameMode gameMode);
+    
+    public void Stop();
+    
+    public void Update(float deltaTime);
 }

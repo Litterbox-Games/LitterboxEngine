@@ -38,6 +38,17 @@ public sealed class Container(IUnityContainer? container = null): IContainer
                     return;
                 }
 
+                if (x.AttributeType == typeof(RegistrarLifetimeAttribute))
+                {
+                    var registrarLifetime = (ELifetime)x.ConstructorArguments[0].Value!;
+
+                    if (!registrarLifetime.HasFlag(lifetime))
+                    {
+                        doRegister = false;
+                        return;
+                    }
+                }
+                
                 if (x.AttributeType == typeof(RegistrarModeAttribute))
                 {
                     var registrarMode = (EGameMode)x.ConstructorArguments[0].Value!;
@@ -85,7 +96,7 @@ public sealed class Container(IUnityContainer? container = null): IContainer
     public void RegisterSingleton<TContract, TInstance>(string? mapping = null) where TInstance : TContract where TContract : IService
     {
         _container.RegisterSingleton<TInstance>();
-        _container.RegisterType<TContract, TInstance>(mapping, TypeLifetime.Singleton);
+        _container.RegisterType<TContract, TInstance>(mapping, TypeLifetime.Hierarchical);
     }
     
     /// <inheritdoc />

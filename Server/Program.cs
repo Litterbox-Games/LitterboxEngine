@@ -9,6 +9,7 @@ internal static class Program
     private static void Main()
     {
         using IServerHost host = new ServerHost();
+        host.Start(EGameMode.Dedicated);
 
         var stopWatch = new Stopwatch();
 

@@ -8,11 +8,13 @@ namespace Common.Host.Registrars;
 ///     Registers any engine services that must be loaded last.
 /// </summary>
 [RegistrarPriority(EPriority.VeryLow)]
+[RegistrarLifetime(ELifetime.Engine)]
 public class FinalEngineRegistrar : IServiceRegistrar
 {
     /// <inheritdoc />
     public void RegisterServices(IContainer container)
     {
+        Console.WriteLine("FinalEngineRegistrar");
         container.RegisterSingleton<ILoggingService, RootLoggingService>();
 
         var logger = container.Resolve<ILoggingService>() as RootLoggingService;
