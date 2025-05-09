@@ -1,4 +1,5 @@
 
+using System.Diagnostics;
 using Client.Graphics;
 using System.Drawing;
 using System.Numerics;
@@ -84,12 +85,15 @@ internal static class Program
         var font = resourceService.Get<Font>("Fonts/dogica.otf");
         
         // Game Loop
-        // TODO: turn this into a while (!window.ShouldClose()) loop instead of using lambda
-
-
-        var onUpdate = (float deltaTime) =>
+        var stopWatch = new Stopwatch();
+        
+        float deltaTime = 0;
+        
+        while (!window.Closing())
         {
-            // ReSharper disable AccessToDisposedClosure
+            stopWatch.Start();
+            window.PollEvents();
+            
             host.Input(input);
 
             host.Update(deltaTime);
@@ -117,20 +121,17 @@ internal static class Program
                 
                 graphicsDevice.WaitIdle();
                 
-                var logger = host.EngineContainer.Resolve<ILoggingService>();
-                logger.Debug("UR MOM");
                 host.Start(EGameMode.SinglePlayer);
                 
                 // TODO: is there a better way to grab the camera? It would be nice if we could set the renderers camera?
                 cameraService = host.GameContainer?.Resolve<CameraSystem>();
                 cameraService?.SetWindow(window);
             }
-
-            // ReSharper enable AccessToDisposedClosure
-        };
-        
-        window.OnUpdate += onUpdate;
-        window.Run();
+            
+            stopWatch.Stop();
+            deltaTime = (float)stopWatch.Elapsed.TotalSeconds;
+            stopWatch.Reset();
+        }
         
         // Clean Up
         graphicsDevice.WaitIdle();

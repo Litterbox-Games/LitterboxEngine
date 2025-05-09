@@ -14,7 +14,6 @@ public class WindowService: IService, IDisposable
     public Vector2i Size => new(Width, Height);
     
     public event Action<int, int>? OnResize;
-    public event Action<float>? OnUpdate;
 
     public readonly IWindow InternalWindow;
     public readonly IInputContext Input;
@@ -37,7 +36,6 @@ public class WindowService: IService, IDisposable
         InternalWindow.Initialize();
         
         InternalWindow.FramebufferResize += Resize;
-        InternalWindow.Update += deltaTime => OnUpdate?.Invoke((float)deltaTime);
 
         Input = InternalWindow.CreateInput();
     }
@@ -49,15 +47,11 @@ public class WindowService: IService, IDisposable
         OnResize?.Invoke(Width, Height);
     }
 
-    public void SetShouldClose()
-    {
-        InternalWindow.Close();
-    }
+    public bool Closing() => InternalWindow.IsClosing;
+    
+    public void SetShouldClose(bool closing = true)  => InternalWindow.IsClosing = closing;
 
-    public void Run()
-    {
-        InternalWindow.Run();
-    }
+    public void PollEvents() => InternalWindow.DoEvents();
 
     public void Dispose()
     {
