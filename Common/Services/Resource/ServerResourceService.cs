@@ -4,7 +4,7 @@ using MoreLinq;
 
 namespace Common.Services.Resource;
 
-public class ServerResourceService: IResourceService, IDisposable
+public class ServerResourceService : IResourceService, IDisposable
 {
     private readonly Dictionary<string, IResource> _resources = new ();
     private readonly ILoggingService _logger;
@@ -22,7 +22,7 @@ public class ServerResourceService: IResourceService, IDisposable
     /// <returns>An instance of the loaded resource.</returns>
     /// <exception cref="ResourceFileNotFoundException">The resource file at the given path was not found.</exception>
     /// <exception cref="ResourceLoadingFailedException">The resource file was failed, but failed to load.</exception>
-    public T Get<T>(string path) where T : IResource
+    public T Get<T>(string path) where T : IResource<T>
     {
         path = path.StartsWith("Resources/") ? path : $"Resources/{path}";
 
@@ -34,9 +34,9 @@ public class ServerResourceService: IResourceService, IDisposable
         if (_resources.TryGetValue(path, out var value))
             return (T)value;
         
-        var r = (T)T.LoadFromFile(path);
-        _resources[path] = r;
-        return r;
+        var resource = T.LoadFromFile(path);
+        _resources[path] = resource;
+        return resource;
     }
 
     /// <summary>

@@ -49,8 +49,8 @@ public class RendererService: IService, IDisposable
 
         _quads = new Quad[MaxQuads];
         
-        var vertexShaderDesc = (Shader.LoadFromFile("Resources/Shaders/default.vert") as Shader)!.ShaderDescription;
-        var fragmentShaderDesc = (Shader.LoadFromFile("Resources/Shaders/default.frag") as Shader)!.ShaderDescription;
+        var vertexShaderDesc = Shader.LoadFromFile("Resources/Shaders/default.vert").ShaderDescription;
+        var fragmentShaderDesc = Shader.LoadFromFile("Resources/Shaders/default.frag").ShaderDescription;
 
         using var shaderProgram = _graphicsDevice.CreateShaderProgram(vertexShaderDesc, fragmentShaderDesc);
 

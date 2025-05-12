@@ -5,7 +5,7 @@ using Common.Services.Resource;
 
 namespace Client.Services.Resource;
 
-public class Aseprite : IResource, IGraphicsResource, IReloadable, IDisposable
+public class Aseprite : IResource<Aseprite>, IGraphicsResource, IReloadable, IDisposable
 {
     public readonly Texture Texture;
     
@@ -43,7 +43,7 @@ public class Aseprite : IResource, IGraphicsResource, IReloadable, IDisposable
         return new Aseprite(texture);
     }
     
-    public static IResource LoadFromFile(string path)
+    public static Aseprite LoadFromFile(string path)
     {
         var file = AsepriteFileLoader.FromFile(path);
         

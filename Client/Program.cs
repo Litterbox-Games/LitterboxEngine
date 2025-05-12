@@ -117,9 +117,9 @@ internal static class Program
 
             if (input.IsKeyDown(Key.X))
             {
-                host.Stop();
-                
                 graphicsDevice.WaitIdle();
+                
+                host.Stop();
                 
                 host.Start(EGameMode.SinglePlayer);
                 

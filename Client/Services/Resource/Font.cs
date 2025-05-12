@@ -17,7 +17,7 @@ public struct Glyph
     public Rectangle Source;
 }
 
-public class Font(Dictionary<char, Glyph> glyphs, Texture texture) : IResource, IGraphicsResource
+public class Font(Dictionary<char, Glyph> glyphs, Texture texture) : IResource<Font>, IGraphicsResource
 {
     public readonly Dictionary<char , Glyph> Glyphs = glyphs;
     public readonly Texture Texture = texture;
@@ -29,7 +29,7 @@ public class Font(Dictionary<char, Glyph> glyphs, Texture texture) : IResource, 
         return new Font(Glyphs, texture);
     }
     
-    public static IResource LoadFromFile(string path)
+    public static Font LoadFromFile(string path)
     {
         // TODO: make these available through a JSON file?
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()_+{}[]<>?:/\\~ ";

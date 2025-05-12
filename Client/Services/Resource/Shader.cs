@@ -3,7 +3,7 @@ using Common.Services.Resource;
 
 namespace Client.Services.Resource;
 
-public class Shader : IResource, IDisposable
+public class Shader : IResource<Shader>, IDisposable
 {
     public readonly ShaderDescription ShaderDescription;
 
@@ -12,7 +12,7 @@ public class Shader : IResource, IDisposable
         ShaderDescription = description;
     }
     
-    public static IResource LoadFromFile(string path)
+    public static Shader LoadFromFile(string path)
     {
         var shaderSource = File.ReadAllBytes(path);
         var extension = Path.GetExtension(path);

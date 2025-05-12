@@ -57,7 +57,7 @@ public class ClientResourceService: IResourceService, IUpdatable, IDisposable
     /// <returns>An instance of the loaded resource.</returns>
     /// <exception cref="ResourceFileNotFoundException">The resource file at the given path was not found.</exception>
     /// <exception cref="ResourceLoadingFailedException">The resource file was failed, but failed to load.</exception>
-    public T Get<T>(string path) where T : IResource
+    public T Get<T>(string path) where T : IResource<T>
     {
         path = path.StartsWith("Resources/") ? path : $"Resources/{path}";
 
@@ -69,7 +69,7 @@ public class ClientResourceService: IResourceService, IUpdatable, IDisposable
         
         _logger.Information($"Loading resource '{path}'...");
 
-        var resource = (T)T.LoadFromFile(path);
+        var resource = T.LoadFromFile(path);
 
         if (resource is IGraphicsResource graphicsResource && _graphicsDevice != null)
             resource = (T)graphicsResource.UploadToGraphicsDevice(_graphicsDevice);
@@ -88,13 +88,13 @@ public class ClientResourceService: IResourceService, IUpdatable, IDisposable
             if (!_resources.TryGetValue(path, out var oldResource)) return;
 
             // Don't reload a resource that isn't reloadable
-            if (oldResource is not IReloadable reloadableResource) return;
+            if (oldResource is not IReloadable) return;
             
             _logger.Information($"Reloading resource '{path}'...");
             
             File.Copy(resourceToReload, path, true);
-
-            var resource = reloadableResource.Reload(path);
+            
+            var resource = oldResource.LoadFromFile(path);
             
             if (resource is IGraphicsResource graphicsResource && _graphicsDevice != null) {
                 _graphicsDevice.WaitIdle();

@@ -5,7 +5,7 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace Client.Services.Resource;
 
-public class Texture : IResource, IGraphicsResource, IReloadable, IDisposable
+public class Texture : IResource<Texture>, IGraphicsResource, IReloadable, IDisposable
 {
     public readonly uint Width;
     public readonly uint Height;
@@ -31,7 +31,7 @@ public class Texture : IResource, IGraphicsResource, IReloadable, IDisposable
         return graphicsDevice.CreateTexture(Width, Height, Data);
     }
     
-    public static IResource LoadFromFile(string path)
+    public static Texture LoadFromFile(string path)
     {
         using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(path);
 

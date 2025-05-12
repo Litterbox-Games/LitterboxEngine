@@ -4,5 +4,5 @@ namespace Common.Services.Resource;
 
 public interface IResourceService : IService
 {
-    public T Get<T>(string path) where T : IResource;
+    public T Get<T>(string path) where T : IResource<T>;
 }
