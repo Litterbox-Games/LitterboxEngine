@@ -10,15 +10,15 @@ namespace Client.Services.Resource;
 public class ClientResourceService: IResourceService, IUpdatable, IDisposable
 {
     private readonly Dictionary<string, IResource> _resources = new ();
+    private readonly IGraphicsDeviceService _graphicsDevice;
     private readonly ILoggingService _logger;
     
     private readonly FileSystemWatcher _watcher;
     private readonly HashSet<string> _resourcesToReload = [];
-
-    private IGraphicsDeviceService? _graphicsDevice;
     
-    public ClientResourceService(ILoggingService logger)
+    public ClientResourceService(IGraphicsDeviceService graphicsDevice, ILoggingService logger)
     {
+        _graphicsDevice = graphicsDevice;
         _logger = logger;
 
         _watcher = new FileSystemWatcher
@@ -31,11 +31,6 @@ public class ClientResourceService: IResourceService, IUpdatable, IDisposable
         };
 
         _watcher.Changed += OnFileChanged;
-    }
-
-    public void SetGraphicsDevice(IGraphicsDeviceService graphicsDevice)
-    {
-        _graphicsDevice = graphicsDevice;
     }
     
     private void OnFileChanged(object sender, FileSystemEventArgs e)
@@ -71,7 +66,7 @@ public class ClientResourceService: IResourceService, IUpdatable, IDisposable
 
         var resource = T.LoadFromFile(path);
 
-        if (resource is IGraphicsResource graphicsResource && _graphicsDevice != null)
+        if (resource is IGraphicsResource graphicsResource)
             resource = (T)graphicsResource.UploadToGraphicsDevice(_graphicsDevice);
 
         _resources[path] = resource;
@@ -96,7 +91,7 @@ public class ClientResourceService: IResourceService, IUpdatable, IDisposable
             
             var resource = oldResource.LoadFromFile(path);
             
-            if (resource is IGraphicsResource graphicsResource && _graphicsDevice != null) {
+            if (resource is IGraphicsResource graphicsResource) {
                 _graphicsDevice.WaitIdle();
                 
                 if (oldResource is IDisposable disposableResource) {

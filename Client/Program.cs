@@ -69,10 +69,7 @@ internal static class Program
         var input = host.EngineContainer.Resolve<InputService>();
         var graphicsDevice = host.EngineContainer.Resolve<VulkanGraphicsDeviceService>();
         var renderer = host.EngineContainer.Resolve<RendererService>();
-        
-        // TODO: this feels hacky, we should probably restructure the ResourceService design
         var resourceService = host.EngineContainer.Resolve<ClientResourceService>();
-        resourceService.SetGraphicsDevice(graphicsDevice);
         
         // TODO: is there a better way to grab the camera? It would be nice if we could set the renderers camera?
         var cameraService = host.GameContainer?.Resolve<CameraSystem>();

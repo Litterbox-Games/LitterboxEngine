@@ -20,13 +20,10 @@ public class ClientEngineRegistrar : IServiceRegistrar
     /// <inheritdoc />
     public void RegisterServices(IContainer container)
     {
-        Console.WriteLine("ClientEngineRegistrar");
-        container.RegisterSingleton<IResourceService, ClientResourceService>();
-        
         container.RegisterSingleton<WindowService, WindowService>();
         container.RegisterSingleton<InputService, InputService>();
         container.RegisterSingleton<IGraphicsDeviceService, VulkanGraphicsDeviceService>();
         container.RegisterSingleton<RendererService, RendererService>();
-        
+        container.RegisterSingleton<IResourceService, ClientResourceService>();
     }                                                                 
 }
