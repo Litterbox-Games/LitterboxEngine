@@ -14,7 +14,6 @@ public class FinalEngineRegistrar : IServiceRegistrar
     /// <inheritdoc />
     public void RegisterServices(IContainer container)
     {
-        Console.WriteLine("FinalEngineRegistrar");
         container.RegisterSingleton<ILoggingService, RootLoggingService>();
 
         var logger = container.Resolve<ILoggingService>() as RootLoggingService;
