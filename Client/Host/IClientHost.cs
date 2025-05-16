@@ -34,5 +34,5 @@ public interface IClientHost: IHost
 
     public void Input(InputService input);
 
-    public void Draw(RendererService renderer);
+    public void Draw(float deltaTime, RendererService renderer);
 }

@@ -61,9 +61,9 @@ public class ClientHost : IClientHost
         GameInputables.ForEach(inputable => inputable.Input(input));
     }
     
-    public void Draw(RendererService renderer)
+    public void Draw(float deltaTime, RendererService renderer)
     {
-        GameDrawables.ForEach(drawable => drawable.Draw(renderer));
+        GameDrawables.ForEach(drawable => drawable.Draw(deltaTime, renderer));
     }
 
     public void Dispose()

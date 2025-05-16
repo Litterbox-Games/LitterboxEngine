@@ -99,9 +99,9 @@ internal static class Program
             imGui.Update(deltaTime);
 
             renderer.BeginFrame();
-            renderer.BeginDrawing(cameraService.Camera.ViewMatrix);
+            renderer.BeginDrawing(cameraService!.Camera.ViewMatrix);
 
-            host.Draw(renderer);
+            host.Draw(deltaTime, renderer);
 
             renderer.DrawText("Hello, World!", font, Vector2.Zero, 0.125f, 0.125f, Color.Crimson, 1);
 

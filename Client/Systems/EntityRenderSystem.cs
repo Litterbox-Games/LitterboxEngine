@@ -53,7 +53,7 @@ public class EntityRenderSystem: ISystem, IDrawable
         if (networked.OwnerId == _playerService.PlayerId) _playerEntity = null;       
     }
     
-    public void Draw(RendererService renderer)
+    public void Draw(float _, RendererService renderer)
     {
         if (_playerEntity == null) return;
 

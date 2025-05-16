@@ -183,10 +183,20 @@ public class PlayerControlSystem : ISystem, IInputable, IUpdatable, IDrawable
         }
     }
     
+    private float _fpsAverage = 0;
+    private float _timeSinceAverage = 0;
+    
     /// <inheritdoc />
-    public void Draw(RendererService renderer)
+    public void Draw(float deltaTime, RendererService renderer)
     {
         ImGui.Begin("Debug");
+
+        if (_timeSinceAverage >= 1f)
+        {
+            _timeSinceAverage -= 1f;
+
+            _fpsAverage = _fpsRecordings.ToArray().Average();
+        }
 
         _entityService.Entities.Query(in _playerControlled, ( 
             ref Position position
@@ -195,6 +205,7 @@ public class PlayerControlSystem : ISystem, IInputable, IUpdatable, IDrawable
             {
                 ImGui.PlotLines("FPS", ref _fpsRecordings.ToArray()[0], _fpsRecordings.Count, 0, "", 0, 60, new Vector2(450, 150));    
             }
+            ImGui.Text($"FPS: {_fpsAverage:#.##}");
             ImGui.Text($"Player: {_playerService.PlayerId}");
             ImGui.Text($"Player Position: ({position.Current.X}, {position.Current.Y})");  
             ImGui.Text($"Chunk Position: ({_chunkPosition.X}, {_chunkPosition.Y})");
@@ -202,5 +213,7 @@ public class PlayerControlSystem : ISystem, IInputable, IUpdatable, IDrawable
         });
         
         ImGui.End();
+        
+        _timeSinceAverage += deltaTime;
     }
 }

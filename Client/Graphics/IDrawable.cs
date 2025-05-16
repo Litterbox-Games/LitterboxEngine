@@ -5,5 +5,5 @@ public interface IDrawable
     /// <summary>
     ///     Called every game draw tick.
     /// </summary>
-    void Draw(RendererService renderer);
+    void Draw(float deltaTime, RendererService renderer);
 }
