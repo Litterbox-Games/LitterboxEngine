@@ -72,7 +72,6 @@ internal static class Program
         
         // TODO: is there a better way to grab the camera? It would be nice if we could set the renderers camera?
         var cameraService = host.GameContainer?.Resolve<CameraSystem>();
-        cameraService?.SetWindow(window);
         
         // TODO: convert this to use IGraphicsDevice
         using var imGui = new ImGuiRenderer(window, graphicsDevice);
@@ -118,10 +117,6 @@ internal static class Program
                 host.Stop();
                 
                 host.Start(EGameMode.SinglePlayer);
-                
-                // TODO: is there a better way to grab the camera? It would be nice if we could set the renderers camera?
-                cameraService = host.GameContainer?.Resolve<CameraSystem>();
-                cameraService?.SetWindow(window);
             }
             
             stopWatch.Stop();

@@ -3,6 +3,7 @@ using Common.Core.Exceptions;
 using Common.Host;
 using MoreLinq.Extensions;
 using Unity;
+using Unity.Lifetime;
 
 namespace Common.Core;
 
@@ -79,8 +80,18 @@ public sealed class Container(IUnityContainer? container = null): IContainer
         });
     }
 
-    public IContainer CreateChildContainer() => new Container(_container.CreateChildContainer());
-    
+    public IContainer CreateChildContainer()
+    {
+        var child = _container.CreateChildContainer();
+        
+        FilterRegistrations<IService>((service, type) =>
+        {
+            child.RegisterInstance(type, service, new ExternallyControlledLifetimeManager());
+        });
+        
+        return new Container(child);
+    }
+
     public void FilterRegistrations<T>(Action<T, Type> action)
     {
         _container.Registrations

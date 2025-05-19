@@ -20,6 +20,7 @@ public class WindowService: IService, IDisposable
     
     public WindowService()
     {
+        Console.WriteLine("Window service initialized");
         Title = "Litterbox Engine";
         Width = 1920;
         Height = 1080;
