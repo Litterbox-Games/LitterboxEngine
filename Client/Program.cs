@@ -9,7 +9,6 @@ using Client.Host;
 using Client.Services.Resource;
 using Client.Systems;
 using Common.Host;
-using Common.Services.Logging;
 using Silk.NET.Input;
 
 namespace Client;
@@ -86,7 +85,7 @@ internal static class Program
         
         float deltaTime = 0;
         
-        while (!window.Closing())
+        while (!window.IsClosing())
         {
             stopWatch.Start();
             window.PollEvents();

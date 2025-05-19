@@ -1,4 +1,5 @@
-﻿using Client.Graphics;
+﻿using Client.Core;
+using Client.Graphics;
 using Client.Services.Network;
 using Common.Core;
 using Common.Host;
@@ -25,17 +26,17 @@ public class ClientHost : IClientHost
     {
         EngineContainer = new Container();
         EngineContainer.RegisterServices(EGameMode.Client | EGameMode.SinglePlayer | EGameMode.Host, ELifetime.Engine);
-        EngineUpdatables = (this as IHost).RegisterUpdatables(EngineContainer);
+        EngineUpdatables = EngineContainer.RegisterUpdatables();
     }
     
     public void Start(EGameMode gameMode)
     {
         GameContainer = EngineContainer.CreateChildContainer();
         GameContainer.RegisterServices(gameMode, ELifetime.Game);
-        GameUpdatables = (this as IHost).RegisterUpdatables(GameContainer);
+        GameUpdatables = GameContainer.RegisterUpdatables();
         
-        GameInputables = (this as IClientHost).RegisterInputables(GameContainer);
-        GameDrawables = (this as IClientHost).RegisterDrawables(GameContainer);
+        GameInputables = GameContainer.RegisterInputables();
+        GameDrawables = GameContainer.RegisterDrawables();
 
         var networkService = GameContainer.Resolve<ClientNetworkService>();
         networkService.Connect("127.0.0.1", 7777);

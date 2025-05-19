@@ -20,14 +20,14 @@ public class ServerHost : IServerHost
     {
         EngineContainer = new Container();
         EngineContainer.RegisterServices(EGameMode.Dedicated, ELifetime.Engine);
-        EngineUpdatables = (this as IHost).RegisterUpdatables(EngineContainer);
+        EngineUpdatables = EngineContainer.RegisterUpdatables();
     }
     
     public void Start(EGameMode gameMode)
     {
         GameContainer = EngineContainer.CreateChildContainer();
         GameContainer.RegisterServices(gameMode, ELifetime.Game);
-        GameUpdatables = (this as IHost).RegisterUpdatables(GameContainer);
+        GameUpdatables = GameContainer.RegisterUpdatables();
         
         (this as IServerHost).StartServer(7777);
     }

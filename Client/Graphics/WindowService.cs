@@ -47,11 +47,17 @@ public class WindowService: IService, IDisposable
         OnResize?.Invoke(Width, Height);
     }
 
-    public bool Closing() => InternalWindow.IsClosing;
+    public bool IsClosing() => InternalWindow.IsClosing;
     
     public void SetShouldClose(bool closing = true)  => InternalWindow.IsClosing = closing;
 
     public void PollEvents() => InternalWindow.DoEvents();
+    
+    public void Run(Action<float> gameLoop)
+    {
+        InternalWindow.Update += deltaTime => gameLoop((float)deltaTime);
+        InternalWindow.Run();
+    }
 
     public void Dispose()
     {
