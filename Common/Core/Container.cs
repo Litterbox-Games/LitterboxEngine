@@ -82,7 +82,7 @@ public sealed class Container(IUnityContainer? container = null): IContainer
 
     public IContainer CreateChildContainer()
     {
-        var child = _container.CreateChildContainer();
+        var child = new UnityContainer();
         
         FilterRegistrations<IService>((service, type) =>
         {

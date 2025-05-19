@@ -21,10 +21,6 @@ public class CameraSystem : ISystem, IUpdatable
     
     public CameraSystem(IEntityService entityService, WindowService window)
     {
-        
-        Console.WriteLine(window.Title);
-        
-        
         _entityService = entityService;
         _window = window;
         
