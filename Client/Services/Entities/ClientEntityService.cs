@@ -23,6 +23,9 @@ public class ClientEntityService : IEntityService
         _playerService = playerService;
         _eventService = eventService;
 
+            
+        Console.WriteLine("ClientEntityService");
+        
         _eventService.Handle<EntitySpawnEvent>(OnEntitySpawn);
         _eventService.Handle<EntityDespawnEvent>(OnEntityDespawn);
     }
@@ -40,6 +43,9 @@ public class ClientEntityService : IEntityService
                     new Player(),
                     new Position(e.EntityPosition));
 
+                
+                Console.WriteLine(_playerService.PlayerId);
+                
                 if (e.EntityOwner == _playerService.PlayerId)
                 {
                     entity.Add<Velocity>();

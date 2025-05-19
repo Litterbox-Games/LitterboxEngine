@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Common.Core;
 using Common.Host;
 using Server.Host;
 
@@ -8,8 +9,12 @@ internal static class Program
 {
     private static void Main()
     {
+        var engineContainer = new Container();
+        engineContainer.RegisterServices(EGameMode.Dedicated, ELifetime.Engine);
+        var engineUpdatables = engineContainer.RegisterUpdatables();
+        
         using IServerHost host = new ServerHost();
-        host.Start(EGameMode.Dedicated);
+        host.Start(engineContainer, EGameMode.Dedicated);
 
         var stopWatch = new Stopwatch();
 
@@ -19,6 +24,7 @@ internal static class Program
         {
             stopWatch.Start();
             
+            engineUpdatables.ForEach(updatable => updatable.Item2.Update(deltaTime));
             host.Update(deltaTime);
             
             // 10ms to Windows causes it to wait the minimum resolution time of the clock, being around 15ms.

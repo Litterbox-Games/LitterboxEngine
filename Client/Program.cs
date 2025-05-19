@@ -8,14 +8,16 @@ using Client.Graphics.ImGui;
 using Client.Host;
 using Client.Services.Resource;
 using Client.Systems;
+using Common.Core;
 using Common.Host;
+using ImGuiNET;
 using Silk.NET.Input;
 
 namespace Client;
 
 internal static class Program
 {
-    private static IClientHost MainMenu()
+    private static IClientHost MainMenu(IContainer engineContainer)
     {
         IClientHost? host = null;
 
@@ -36,19 +38,19 @@ internal static class Program
                 case 'S':
                 {
                     host = new LocalHost();
-                    host.Start(EGameMode.SinglePlayer);
+                    host.Start(engineContainer, EGameMode.SinglePlayer);
                     break;
                 }
                 case 'L':
                 {
                     host = new LocalHost();
-                    host.Start(EGameMode.Host);
+                    host.Start(engineContainer, EGameMode.Host);
                     break;
                 }
                 case 'C':
                 {
                     host = new ClientHost();
-                    host.Start(EGameMode.Client);
+                    host.Start(engineContainer, EGameMode.Client);
                     break;
                 }
             }
@@ -60,18 +62,24 @@ internal static class Program
     private static void Main()
     {
         // Engine Initialization
-        var host = MainMenu();
+        using var engineContainer = new Container();
+        engineContainer.RegisterServices(EGameMode.Client | EGameMode.SinglePlayer | EGameMode.Host, ELifetime.Engine);
+        var engineUpdatables = engineContainer.RegisterUpdatables();
+        
+        IClientHost? host = null;
+        
+        // var host = MainMenu(engineContainer);
         
         // Game Initialization
         // TODO: everything under this should be condensed to a single GameStartEvent or something similar
-        var window = host.EngineContainer.Resolve<WindowService>();
-        var input = host.EngineContainer.Resolve<InputService>();
-        var graphicsDevice = host.EngineContainer.Resolve<VulkanGraphicsDeviceService>();
-        var renderer = host.EngineContainer.Resolve<RendererService>();
-        var resourceService = host.EngineContainer.Resolve<ClientResourceService>();
+        var window = engineContainer.Resolve<WindowService>();
+        var input = engineContainer.Resolve<InputService>();
+        var graphicsDevice = engineContainer.Resolve<VulkanGraphicsDeviceService>();
+        var renderer = engineContainer.Resolve<RendererService>();
+        var resourceService = engineContainer.Resolve<ClientResourceService>();
         
         // TODO: is there a better way to grab the camera? It would be nice if we could set the renderers camera?
-        var cameraService = host.GameContainer?.Resolve<CameraSystem>();
+        CameraSystem? cameraService = null;
         
         // TODO: convert this to use IGraphicsDevice
         using var imGui = new ImGuiRenderer(window, graphicsDevice);
@@ -89,18 +97,52 @@ internal static class Program
             stopWatch.Start();
             window.PollEvents();
             
-            host.Input(input);
-
-            host.Update(deltaTime);
-
+            engineUpdatables.ForEach(updatable => updatable.Item2.Update(deltaTime));
+            
+            host?.Input(input);
+            
+            host?.Update(deltaTime);
+            
             // Needs to be called at the same rate as imGui.Draw()
             imGui.Update(deltaTime);
 
             renderer.BeginFrame();
-            renderer.BeginDrawing(cameraService!.Camera.ViewMatrix);
+            renderer.BeginDrawing(cameraService?.Camera.ViewMatrix);
 
-            host.Draw(deltaTime, renderer);
-
+            
+            // MainMenu
+            if (host == null)
+            {
+                ImGui.Begin("Main Menu");
+                
+                if (ImGui.Button("Single Player"))
+                {
+                    host = new LocalHost();
+                    host.Start(engineContainer, EGameMode.SinglePlayer);
+                    cameraService = host.GameContainer?.Resolve<CameraSystem>();
+                }
+                
+                if (ImGui.Button("Local Host"))
+                {
+                    host = new LocalHost();
+                    host.Start(engineContainer, EGameMode.Host);
+                    cameraService = host.GameContainer?.Resolve<CameraSystem>();
+                }
+                
+                if (ImGui.Button("Client"))
+                {
+                    host = new ClientHost();
+                    host.Start(engineContainer, EGameMode.Client);
+                    cameraService = host.GameContainer?.Resolve<CameraSystem>();
+                }
+                
+                ImGui.End();
+            }
+            
+            
+            
+            host?.Draw(deltaTime, renderer);
+            
             renderer.DrawText("Hello, World!", font, Vector2.Zero, 0.125f, 0.125f, Color.Crimson, 1);
 
             renderer.EndDrawing();
@@ -110,13 +152,13 @@ internal static class Program
             if (input.IsKeyDown(Key.Escape))
                 window.SetShouldClose();
 
-            if (input.IsKeyDown(Key.X))
+            if (input.IsKeyDown(Key.X) && host != null)
             {
                 graphicsDevice.WaitIdle();
                 
                 host.Stop();
-                
-                host.Start(EGameMode.SinglePlayer);
+                host.Dispose();
+                host = null;
             }
             
             stopWatch.Stop();

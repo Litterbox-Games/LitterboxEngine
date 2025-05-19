@@ -117,9 +117,11 @@ public class ClientResourceService: IResourceService, IUpdatable, IDisposable
     {
         _watcher.Dispose();
         
-        var disposables = _resources.Select(x => x.Value).Where(x => x.GetType().IsAssignableTo(typeof(IDisposable))).Cast<IDisposable>();
-        
-        disposables.ForEach(x => x.Dispose());
+        _resources
+            .Select(x => x.Value)
+            .Where(x => x.GetType().IsAssignableTo(typeof(IDisposable)))
+            .Cast<IDisposable>()
+            .ForEach(x => x.Dispose());
         
         _resources.Clear();
         GC.SuppressFinalize(this);

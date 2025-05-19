@@ -8,13 +8,11 @@ namespace Common.Host;
 
 public interface IHost: IDisposable
 {
-    public IContainer EngineContainer { get; }
     public IContainer? GameContainer { get; set; }
     
-    List<(EPriority, IUpdatable)> EngineUpdatables { get; }
     List<(EPriority, IUpdatable)> GameUpdatables { get; }
 
-    public void Start(EGameMode gameMode);
+    public void Start(IContainer engineContainer, EGameMode gameMode);
     
     public void Stop();
     

@@ -82,12 +82,22 @@ public sealed class Container(IUnityContainer? container = null): IContainer
 
     public IContainer CreateChildContainer()
     {
-        var child = new UnityContainer();
+        IUnityContainer child = new UnityContainer();
         
-        FilterRegistrations<IService>((service, type) =>
-        {
-            child.RegisterInstance(type, service, new ExternallyControlledLifetimeManager());
-        });
+        // _container.Registrations.Where(x => x.MappedToType.IsAssignableTo(typeof(IService))).ForEach((registration) =>
+        // {
+        //     // child.RegisterInstance(registration.MappedToType, registration, new ExternallyControlledLifetimeManager());
+        // });
+        
+        _container.Registrations
+            .Where(x => x.MappedToType.IsAssignableTo(typeof(IService)) && !x.MappedToType.IsAssignableTo(typeof(IContainer)))
+            .ForEach(registration =>
+            {
+                var service = _container.Resolve(registration.MappedToType);
+                
+                child.RegisterSingleton(registration.MappedToType);
+                child.RegisterInstance(registration.RegisteredType, registration.Name, service, new ExternallyControlledLifetimeManager());
+            });
         
         return new Container(child);
     }
@@ -99,7 +109,7 @@ public sealed class Container(IUnityContainer? container = null): IContainer
             .ForEach(registration =>
             {
                 var service = (T)_container.Resolve(registration.MappedToType);
-                action(service, registration.MappedToType);
+                action(service, registration.RegisteredType);
             });
     }
     

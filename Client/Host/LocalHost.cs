@@ -2,7 +2,6 @@
 using Client.Graphics;
 using Common.Core;
 using Common.Host;
-using Common.Services.Players;
 
 namespace Client.Host;
 
@@ -11,26 +10,16 @@ namespace Client.Host;
 /// </summary>
 public class LocalHost : IClientHost, IServerHost
 {
-    // Engine
-    public IContainer EngineContainer { get; }
-    public List<(EPriority, IUpdatable)> EngineUpdatables { get; }
     
     // Game
     public IContainer? GameContainer  { get; set; }
     public List<(EPriority, IUpdatable)> GameUpdatables { get; private set; } = [];
     public List<IDrawable> GameDrawables { get; private set; } = [];
     public List<IInputable> GameInputables { get; private set; } = [];
-    
-    public LocalHost()
-    {
-        EngineContainer = new Container();
-        EngineContainer.RegisterServices(EGameMode.Client | EGameMode.SinglePlayer | EGameMode.Host, ELifetime.Engine);
-        EngineUpdatables = EngineContainer.RegisterUpdatables();
-    }
 
-    public void Start(EGameMode gameMode)
+    public void Start(IContainer engineContainer, EGameMode gameMode)
     {
-        GameContainer = EngineContainer.CreateChildContainer();
+        GameContainer = engineContainer.CreateChildContainer();
         GameContainer.RegisterServices(gameMode, ELifetime.Game);
         GameUpdatables = GameContainer.RegisterUpdatables();
         
@@ -53,7 +42,6 @@ public class LocalHost : IClientHost, IServerHost
     
     public void Update(float deltaTime)
     {
-        EngineUpdatables.ForEach(updatable => updatable.Item2.Update(deltaTime));
         GameUpdatables.ForEach(updatable => updatable.Item2.Update(deltaTime));
     }
     
@@ -70,7 +58,6 @@ public class LocalHost : IClientHost, IServerHost
 
     public void Dispose()
     { 
-        EngineContainer.Dispose();
         GC.SuppressFinalize(this);
     }
 
