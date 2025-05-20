@@ -170,6 +170,7 @@ public sealed class ServerNetworkService(IContainer container, ILoggingService l
 
     public override void Dispose()
     {
+        base.Dispose();
         GC.SuppressFinalize(this);
     }
 }

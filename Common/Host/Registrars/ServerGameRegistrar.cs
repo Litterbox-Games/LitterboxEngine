@@ -20,7 +20,7 @@ public class ServerGameRegistrar: IServiceRegistrar
 {
     public void RegisterServices(IContainer container)
     {
-        container.RegisterSingleton<EventService, EventService>();   
+        //container.RegisterSingleton<EventService, EventService>();   
         
         container.RegisterSingleton<BlockRegistry, BlockRegistry>();
         

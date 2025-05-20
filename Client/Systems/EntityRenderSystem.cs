@@ -25,6 +25,7 @@ public class EntityRenderSystem: ISystem, IDrawable
     private readonly IEntityService _entityService;
     private readonly IPlayerService _playerService;
     private readonly IResourceService _resourceService;
+    private readonly EventService _eventService;
     
     private Entity? _playerEntity;
     private readonly Rectangle _textureSource = new(32, 112, 20, 16);
@@ -34,9 +35,10 @@ public class EntityRenderSystem: ISystem, IDrawable
         _entityService = entityService;
         _playerService = playerService;
         _resourceService = resourceService;
-        
-        eventService.Handle<EntityCreatedEvent>(OnEntityCreated);
-        eventService.Handle<EntityDestroyedEvent>(OnEntityDestroyed);
+        _eventService = eventService;
+
+        _eventService.Handle<EntityCreatedEvent>(OnEntityCreated);
+        _eventService.Handle<EntityDestroyedEvent>(OnEntityDestroyed);
     }
     
     private void OnEntityCreated(EntityCreatedEvent e)
@@ -203,6 +205,9 @@ public class EntityRenderSystem: ISystem, IDrawable
     
     public void Dispose()
     {
+        _eventService.Unhandle<EntityCreatedEvent>(OnEntityCreated);
+        _eventService.Unhandle<EntityDestroyedEvent>(OnEntityDestroyed);
+        
         GC.SuppressFinalize(this);
     }
 }

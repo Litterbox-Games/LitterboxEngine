@@ -119,6 +119,8 @@ public class ClientNetworkService: NetworkService
     
     public override void Dispose()
     {
+        base.Dispose();
+        Disconnect();
         GC.SuppressFinalize(this);
     }
 }

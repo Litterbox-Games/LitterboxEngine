@@ -9,16 +9,19 @@ namespace Client.Services.World;
 public class ClientWorldService : IWorldService
 {
     private readonly List<ChunkData> _chunks = [];
-
+    private readonly EventService _eventService;
+    
     public IEnumerable<ChunkData> Chunks => _chunks;
 
     public ClientWorldService(EventService eventService, BlockRegistry blockRegistry)
     {
+        _eventService = eventService;
+        
         // TODO: This should be initialized somewhere else, maybe a resource loading stage of program startup?
         blockRegistry.RegisterDefaultBlocks();
         
-        eventService.Handle<ChunkDataEvent>(OnChunkDataMessage);
-        eventService.Handle<ChunkRequestEvent>(OnChunkRequest);
+        _eventService.Handle<ChunkDataEvent>(OnChunkDataMessage);
+        _eventService.Handle<ChunkRequestEvent>(OnChunkRequest);
     }
     private void OnChunkRequest(ChunkRequestEvent e)
     {
@@ -63,6 +66,9 @@ public class ClientWorldService : IWorldService
     
     public void Dispose()
     {
+        _eventService.Unhandle<ChunkDataEvent>(OnChunkDataMessage);
+        _eventService.Unhandle<ChunkRequestEvent>(OnChunkRequest);
+        
         GC.SuppressFinalize(this);
     }
 }

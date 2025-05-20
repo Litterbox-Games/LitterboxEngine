@@ -13,14 +13,16 @@ public class ClientPlayerService : IPlayerService
     public IEnumerable<NetworkPlayer> Players => _players;
 
     private readonly List<NetworkPlayer> _players = [];
+    private readonly EventService _eventService;
     
     public ClientPlayerService(EventService eventService)
     {
+        _eventService = eventService;
         PlayerId = (ulong) new Random(DateTime.Now.Millisecond).Next();
         
-        eventService.Handle<PlayerConnectEvent>(OnPlayerConnectMessage);
-        eventService.Handle<PlayerDisconnectEvent>(OnPlayerDisconnectMessage);
-        eventService.Handle<PlayerListSyncEvent>(OnPlayerListSyncMessage);
+        _eventService.Handle<PlayerConnectEvent>(OnPlayerConnectMessage);
+        _eventService.Handle<PlayerDisconnectEvent>(OnPlayerDisconnectMessage);
+        _eventService.Handle<PlayerListSyncEvent>(OnPlayerListSyncMessage);
     }
 
     private void OnPlayerConnectMessage(PlayerConnectEvent e)
@@ -41,6 +43,10 @@ public class ClientPlayerService : IPlayerService
     
     public void Dispose()
     {
+        _eventService.Unhandle<PlayerConnectEvent>(OnPlayerConnectMessage);
+        _eventService.Unhandle<PlayerDisconnectEvent>(OnPlayerDisconnectMessage);
+        _eventService.Unhandle<PlayerListSyncEvent>(OnPlayerListSyncMessage);
+        
         GC.SuppressFinalize(this);
     }
 }

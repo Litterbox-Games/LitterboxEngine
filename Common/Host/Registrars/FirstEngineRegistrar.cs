@@ -17,6 +17,6 @@ public class FirstEngineRegistrar: IServiceRegistrar
     public void RegisterServices(IContainer container)
     {
         container.RegisterSingleton<ILoggingService, ConsoleLoggingService>("console");
-        //container.RegisterSingleton<EventService, EventService>();   
+        container.RegisterSingleton<EventService, EventService>();   
     }    
 }

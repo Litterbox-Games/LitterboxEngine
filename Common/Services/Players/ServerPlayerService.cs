@@ -21,8 +21,8 @@ public sealed class ServerPlayerService : IPlayerService
         _eventService = eventService;
         _logger = logger;
         
-        eventService.Handle<PlayerConnectEvent>(OnPlayerConnect);
-        eventService.Handle<PlayerDisconnectEvent>(OnPlayerDisconnectMessage);
+        _eventService.Handle<PlayerConnectEvent>(OnPlayerConnect);
+        _eventService.Handle<PlayerDisconnectEvent>(OnPlayerDisconnectMessage);
     }
 
     public void SpawnServerPlayer()
@@ -61,6 +61,9 @@ public sealed class ServerPlayerService : IPlayerService
     
     public void Dispose()
     {
+        _eventService.Unhandle<PlayerConnectEvent>(OnPlayerConnect);
+        _eventService.Unhandle<PlayerDisconnectEvent>(OnPlayerDisconnectMessage);
+        
         GC.SuppressFinalize(this);
     }
 }

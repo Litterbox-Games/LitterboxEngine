@@ -25,7 +25,7 @@ public class ClientGameRegistrar : IServiceRegistrar
     /// <inheritdoc />
     public void RegisterServices(IContainer container)
     {
-        container.RegisterSingleton<EventService, EventService>();   
+        //container.RegisterSingleton<EventService, EventService>();   
         
         container.RegisterSingleton<BlockRegistry, BlockRegistry>();
         

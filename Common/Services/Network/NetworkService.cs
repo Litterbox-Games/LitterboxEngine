@@ -13,11 +13,13 @@ public abstract class NetworkService: IService, IUpdatable
     private readonly Dictionary<int, Type> _events = new();
 
     private readonly ILoggingService _logger;
-
+    private readonly EventService _eventService;
+    
     protected NetworkService(ILoggingService logger, EventService eventService)
     {
         _logger = logger;
-        
+        _eventService = eventService;
+
         eventService.Handle<OutgoingEvent>(OnOutgoing);
         eventService.Handle<RegisterMessageEvent>(OnRegisterMessage);
     }
@@ -104,6 +106,10 @@ public abstract class NetworkService: IService, IUpdatable
     }
 
     public abstract void Update(float deltaTime);
-    
-    public abstract void Dispose();
+
+    public virtual void Dispose()
+    {
+        _eventService.Unhandle<OutgoingEvent>(OnOutgoing);
+        _eventService.Unhandle<RegisterMessageEvent>(OnRegisterMessage);
+    }
 }
