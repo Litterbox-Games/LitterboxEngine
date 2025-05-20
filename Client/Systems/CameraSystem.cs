@@ -67,6 +67,7 @@ public class CameraSystem : ISystem, IUpdatable
     
     public void Dispose()
     {
+        _window.OnResize -= RecalculateCamera; 
         // GC.SuppressFinalize(this);
         Console.WriteLine("Dispose");
     }
