@@ -68,9 +68,7 @@ public class EventService(ILoggingService logger) : IService
         
         if (_handlers.TryGetValue(eventType, out var handlers))
         {
-            var count = handlers.RemoveAll(x => x.Item1 == methodName);
-            
-            Console.WriteLine($"Event unhandled: {methodName}, {count}");
+            handlers.RemoveAll(x => x.Item1 == methodName);
         }
     }
     
