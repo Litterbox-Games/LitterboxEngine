@@ -120,7 +120,7 @@ public class ClientNetworkService: NetworkService
     public override void Dispose()
     {
         base.Dispose();
-        Disconnect();
+        _client.Shutdown(new NetReason(string.Empty));
         GC.SuppressFinalize(this);
     }
 }
