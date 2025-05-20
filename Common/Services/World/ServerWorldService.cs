@@ -161,6 +161,11 @@ public class ServerWorldService : IWorldService, IUpdatable
     {
         return Chunks.FirstOrDefault(x => x.Position == position);
     }
+    
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
 }
 
 public sealed class NetworkedChunk(ChunkData data)

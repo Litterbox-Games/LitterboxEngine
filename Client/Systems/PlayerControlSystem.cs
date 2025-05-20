@@ -215,4 +215,9 @@ public class PlayerControlSystem : ISystem, IInputable, IUpdatable, IDrawable
         
         _timeSinceAverage += deltaTime;
     }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
 }

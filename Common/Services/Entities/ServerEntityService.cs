@@ -111,4 +111,9 @@ public class ServerEntityService: IEntityService
             DespawnEntity(entity);
         });
     }
+    
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
 }

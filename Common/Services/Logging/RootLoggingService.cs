@@ -59,4 +59,10 @@ public class RootLoggingService : ILoggingService
         _loggers.Clear();
         _loggers.AddRange(_container.ResolveAll<ILoggingService>().Where(x => x != this));
     }
+    
+    
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
 }

@@ -27,4 +27,9 @@ public class BlockRegistry : IRegistry<IBlock>
     
     public IDictionary<ushort, IBlock> ObjectMapping { get; } = new Dictionary<ushort, IBlock>();
     public IDictionary<string, ushort> IdMapping { get; } = new Dictionary<string, ushort>();
+    
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
 }

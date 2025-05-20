@@ -14,4 +14,8 @@ public class InputService(WindowService windowService): IService
     
     public bool IsKeyDown(Key key) => _input.Keyboards[0].IsKeyPressed(key);
     
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
 }

@@ -38,4 +38,9 @@ public class ClientPlayerService : IPlayerService
         _players.Clear();
         _players.AddRange(e.Players);
     }
+    
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
 }

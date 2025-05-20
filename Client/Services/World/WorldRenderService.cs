@@ -115,4 +115,9 @@ public class WorldRenderService : IService, IDrawable
         
         ImGui.End();
     }
+    
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
 }

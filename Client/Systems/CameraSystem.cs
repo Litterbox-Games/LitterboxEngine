@@ -29,6 +29,11 @@ public class CameraSystem : ISystem, IUpdatable
         window.OnResize += RecalculateCamera;
     }
 
+    ~CameraSystem()
+    {
+        Console.WriteLine("Destructor");
+    }
+
     private void RecalculateCamera(int width, int height)
     {
         _scaleFactor = width / 20;
@@ -58,5 +63,11 @@ public class CameraSystem : ISystem, IUpdatable
         Matrix4x4.Invert(Camera.ViewMatrix, out var inverseViewMatrix);
         var worldSpace = Vector4.Transform(clipSpace, inverseViewMatrix);
         return new Vector2(worldSpace.X, worldSpace.Y);
+    }
+    
+    public void Dispose()
+    {
+        // GC.SuppressFinalize(this);
+        Console.WriteLine("Dispose");
     }
 }

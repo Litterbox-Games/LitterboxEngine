@@ -200,4 +200,9 @@ public class EntityRenderSystem: ISystem, IDrawable
             ImGui.PopID();
         }
     }
+    
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
 }

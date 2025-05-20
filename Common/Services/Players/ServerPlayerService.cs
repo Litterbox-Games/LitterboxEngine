@@ -58,4 +58,9 @@ public sealed class ServerPlayerService : IPlayerService
     {
         _players.Remove(_players.First(x => x.PlayerId == e.PlayerId));
     }
+    
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
 }

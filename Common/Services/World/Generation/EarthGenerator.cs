@@ -328,4 +328,9 @@ public class EarthGenerator : IWorldGenerator
 
         return moistureMap;
     }
+    
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
 }

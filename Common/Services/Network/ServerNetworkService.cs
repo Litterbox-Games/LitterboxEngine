@@ -167,4 +167,9 @@ public sealed class ServerNetworkService(IContainer container, ILoggingService l
     {
         _logger.Debug($"Server status changed to {newStatus} for reason: {reason}!");
     }
+
+    public override void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
 }

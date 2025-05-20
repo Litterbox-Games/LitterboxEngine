@@ -60,4 +60,9 @@ public class EventService(ILoggingService logger) : IService
         }
             
     }
+    
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
 }

@@ -100,5 +100,10 @@ public class MovementSystem: ISystem, IUpdatable
         e.Receivers = networkPlayer => networkPlayer != e.Sender; 
         _eventService.Outgoing(e);
     }
+    
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
 }
 

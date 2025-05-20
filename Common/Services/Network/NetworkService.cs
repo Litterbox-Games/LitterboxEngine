@@ -104,4 +104,6 @@ public abstract class NetworkService: IService, IUpdatable
     }
 
     public abstract void Update(float deltaTime);
+    
+    public abstract void Dispose();
 }

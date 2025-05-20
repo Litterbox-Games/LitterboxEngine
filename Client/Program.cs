@@ -107,6 +107,9 @@ internal static class Program
             imGui.Update(deltaTime);
 
             renderer.BeginFrame();
+            
+            // Console.WriteLine(cameraService == null);
+            
             renderer.BeginDrawing(cameraService?.Camera.ViewMatrix);
 
             
@@ -159,6 +162,11 @@ internal static class Program
                 host.Stop();
                 host.Dispose();
                 host = null;
+                cameraService = null;
+                
+                GC.Collect();
+                
+                Console.WriteLine("adwdadw");
             }
             
             stopWatch.Stop();

@@ -116,4 +116,9 @@ public class ClientNetworkService: NetworkService
     {
         _logger.Information($"Client status changed to {newStatus} for the reason: {reason}");
     }
+    
+    public override void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
 }

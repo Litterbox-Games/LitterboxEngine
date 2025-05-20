@@ -117,7 +117,7 @@ public sealed class Container(IUnityContainer? container = null): IContainer
     public void RegisterSingleton<TContract, TInstance>(string? mapping = null) where TInstance : TContract where TContract : IService
     {
         _container.RegisterSingleton<TInstance>();
-        _container.RegisterType<TContract, TInstance>(mapping, TypeLifetime.Hierarchical);
+        _container.RegisterType<TContract, TInstance>(mapping, TypeLifetime.Singleton);
     }
     
     /// <inheritdoc />

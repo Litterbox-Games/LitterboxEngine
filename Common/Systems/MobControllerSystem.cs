@@ -62,4 +62,9 @@ public class MobControllerSystem : ISystem, IUpdatable
             position.Current += velocity.ToVector2() * deltaTime;
         });
     }
+    
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
 }

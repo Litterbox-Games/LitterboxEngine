@@ -60,4 +60,9 @@ public class ClientWorldService : IWorldService
     {
         return Chunks.FirstOrDefault(x => x.Position == position);
     }
+    
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
 }

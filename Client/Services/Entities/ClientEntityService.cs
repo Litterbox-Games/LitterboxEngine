@@ -80,4 +80,9 @@ public class ClientEntityService : IEntityService
             Entities.Destroy(entity);
         });
     }
+    
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
 }
