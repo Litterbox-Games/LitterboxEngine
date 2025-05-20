@@ -7,6 +7,7 @@ using Client.Services.Players;
 using Client.Services.World;
 using Common.Services.Block;
 using Common.Services.Entities;
+using Common.Services.Events;
 using Common.Services.Network;
 using Common.Services.Players;
 using Common.Services.World;
@@ -24,6 +25,8 @@ public class ClientGameRegistrar : IServiceRegistrar
     /// <inheritdoc />
     public void RegisterServices(IContainer container)
     {
+        container.RegisterSingleton<EventService, EventService>();   
+        
         container.RegisterSingleton<BlockRegistry, BlockRegistry>();
         
         container.RegisterSingleton<NetworkService, ClientNetworkService>();
