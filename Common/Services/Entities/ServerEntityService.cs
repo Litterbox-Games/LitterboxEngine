@@ -114,6 +114,7 @@ public class ServerEntityService: IEntityService
     
     public void Dispose()
     {
+        Arch.Core.World.Destroy(Entities);
         GC.SuppressFinalize(this);
     }
 }
