@@ -2,6 +2,7 @@
 using Common.Core.Attributes;
 using Common.Services.Block;
 using Common.Services.Entities;
+using Common.Services.Events;
 using Common.Services.Network;
 using Common.Services.Players;
 using Common.Services.World;
@@ -19,6 +20,8 @@ public class ServerGameRegistrar: IServiceRegistrar
 {
     public void RegisterServices(IContainer container)
     {
+        //container.RegisterSingleton<EventService, EventService>();   
+        
         container.RegisterSingleton<BlockRegistry, BlockRegistry>();
         
         container.RegisterSingleton<NetworkService, ServerNetworkService>();

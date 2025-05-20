@@ -24,6 +24,7 @@ public class WorldRenderService : IService, IDrawable
     private readonly IPlayerService _playerService;
     private readonly IResourceService _resourceService;
     private readonly BlockRegistry _blockRegistry;
+    private readonly EventService _eventService;
     
     private Entity? _playerEntity;
 
@@ -33,11 +34,12 @@ public class WorldRenderService : IService, IDrawable
     {
         _playerService = playerService;
         _worldService = worldService;
+        _eventService = eventService;
         _resourceService = resourceService;
         _blockRegistry = blockRegistry;
 
-        eventService.Handle<EntityCreatedEvent>(OnEntityCreated);
-        eventService.Handle<EntityDestroyedEvent>(OnEntityDestroyed);
+        _eventService.Handle<EntityCreatedEvent>(OnEntityCreated);
+        _eventService.Handle<EntityDestroyedEvent>(OnEntityDestroyed);
     }
     
     private void OnEntityCreated(EntityCreatedEvent e)
@@ -118,6 +120,9 @@ public class WorldRenderService : IService, IDrawable
     
     public void Dispose()
     {
+        _eventService.Unhandle<EntityCreatedEvent>(OnEntityCreated);
+        _eventService.Unhandle<EntityDestroyedEvent>(OnEntityDestroyed);
+        
         GC.SuppressFinalize(this);
     }
 }

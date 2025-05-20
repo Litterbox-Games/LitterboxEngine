@@ -2,8 +2,6 @@
 using Common.Mathematics;
 using Common.Services.Block;
 using Common.Services.Events;
-using Common.Services.Logging;
-using Common.Services.Network;
 using Common.Services.Players;
 using Common.Services.Players.Events;
 using Common.Services.World.Events;
@@ -164,6 +162,10 @@ public class ServerWorldService : IWorldService, IUpdatable
     
     public void Dispose()
     {
+        _eventService.Unhandle<PlayerDisconnectEvent>(OnPlayerDisconnect);
+        _eventService.Unhandle<ChunkRequestEvent>(OnChunkRequest);
+        _eventService.Unhandle<BlockUpdateEvent>(OnBlockUpdate);
+        
         GC.SuppressFinalize(this);
     }
 }

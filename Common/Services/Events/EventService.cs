@@ -8,12 +8,11 @@ public delegate void OnEvent<in T>(T e) where T : IEvent;
 
 public class EventService(ILoggingService logger) : IService
 {
-    private readonly Dictionary<Type, List<Action<IEvent>>> _handlers = new();
+    private readonly Dictionary<Type, List<(string, Action<IEvent>)>> _handlers = new();
 
     public void Incoming(INetworkEvent e) => CallHandlers(e);
     
     public void Outgoing(INetworkEvent e) => CallHandlers(new OutgoingEvent(e));
-    
     
     public void Emit(IEvent e)
     {
@@ -29,7 +28,7 @@ public class EventService(ILoggingService logger) : IService
         
         if (!_handlers.TryGetValue(eventType, out var handlers)) return;
         
-        foreach (var handler in handlers)
+        foreach (var (_, handler) in handlers)
         {
             try
             {
@@ -47,18 +46,30 @@ public class EventService(ILoggingService logger) : IService
         var eventType = typeof(T);
         var wrapped = new Action<IEvent>(e => handler((T)e));
         
+        var methodName = handler.Method.DeclaringType!.Name + "." + handler.Method.Name;
+        
         if (_handlers.TryGetValue(eventType, out var handlers))
         {
-            handlers.Add(wrapped);
+            handlers.Add((methodName, wrapped));
         }
         else
         {
             if (eventType.IsAssignableTo(typeof(INetworkEvent)))
                 CallHandlers(new RegisterMessageEvent(eventType));
             
-            _handlers[eventType] = [wrapped];
+            _handlers[eventType] = [(methodName, wrapped)];
         }
-            
+    }
+
+    public void Unhandle<T>(OnEvent<T> handler) where T : IEvent
+    {
+        var eventType = typeof(T);
+        var methodName = handler.Method.DeclaringType!.Name + "." + handler.Method.Name;
+        
+        if (_handlers.TryGetValue(eventType, out var handlers))
+        {
+            handlers.RemoveAll(x => x.Item1 == methodName);
+        }
     }
     
     public void Dispose()

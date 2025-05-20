@@ -1,6 +1,5 @@
 ﻿using Arch.Core;
 using Arch.Core.Extensions;
-using Client.Services.Network;
 using Common.Components;
 using Common.Services.Entities;
 using Common.Services.Entities.Events;
@@ -23,9 +22,6 @@ public class ClientEntityService : IEntityService
         _playerService = playerService;
         _eventService = eventService;
 
-            
-        Console.WriteLine("ClientEntityService");
-        
         _eventService.Handle<EntitySpawnEvent>(OnEntitySpawn);
         _eventService.Handle<EntityDespawnEvent>(OnEntityDespawn);
     }
@@ -83,6 +79,9 @@ public class ClientEntityService : IEntityService
     
     public void Dispose()
     {
+        _eventService.Unhandle<EntitySpawnEvent>(OnEntitySpawn);
+        _eventService.Unhandle<EntityDespawnEvent>(OnEntityDespawn);
+        
         GC.SuppressFinalize(this);
     }
 }

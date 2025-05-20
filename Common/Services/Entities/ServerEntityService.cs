@@ -4,8 +4,6 @@ using Arch.Core.Extensions;
 using Common.Components;
 using Common.Services.Entities.Events;
 using Common.Services.Events;
-using Common.Services.Network;
-using Common.Services.Network.Events;
 using Common.Services.Players;
 using Common.Services.Players.Events;
 
@@ -114,6 +112,11 @@ public class ServerEntityService: IEntityService
     
     public void Dispose()
     {
+        Arch.Core.World.Destroy(Entities);
+        
+        _eventService.Unhandle<PlayerConnectEvent>(OnPlayerConnect);
+        _eventService.Unhandle<PlayerDisconnectEvent>(OnPlayerDisconnect);
+        
         GC.SuppressFinalize(this);
     }
 }

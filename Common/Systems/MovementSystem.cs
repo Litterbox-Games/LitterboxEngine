@@ -103,6 +103,8 @@ public class MovementSystem: ISystem, IUpdatable
     
     public void Dispose()
     {
+        _eventService.Unhandle<EntityMoveEvent>(OnEntityMoveMessage);
+        
         GC.SuppressFinalize(this);
     }
 }
