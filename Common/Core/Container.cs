@@ -82,13 +82,14 @@ public sealed class Container(IUnityContainer? container = null): IContainer
 
     public IContainer CreateChildContainer()
     {
-        IUnityContainer child = new UnityContainer();
+        var child = _container.CreateChildContainer();
         
         // _container.Registrations.Where(x => x.MappedToType.IsAssignableTo(typeof(IService))).ForEach((registration) =>
         // {
         //     // child.RegisterInstance(registration.MappedToType, registration, new ExternallyControlledLifetimeManager());
         // });
         
+        /*
         _container.Registrations
             .Where(x => x.MappedToType.IsAssignableTo(typeof(IService)) && !x.MappedToType.IsAssignableTo(typeof(IContainer)))
             .ForEach(registration =>
@@ -98,6 +99,7 @@ public sealed class Container(IUnityContainer? container = null): IContainer
                 child.RegisterSingleton(registration.MappedToType);
                 child.RegisterInstance(registration.RegisteredType, registration.Name, service, new ExternallyControlledLifetimeManager());
             });
+        */
         
         return new Container(child);
     }
@@ -117,7 +119,7 @@ public sealed class Container(IUnityContainer? container = null): IContainer
     public void RegisterSingleton<TContract, TInstance>(string? mapping = null) where TInstance : TContract where TContract : IService
     {
         _container.RegisterSingleton<TInstance>();
-        _container.RegisterType<TContract, TInstance>(mapping, TypeLifetime.Singleton);
+        _container.RegisterType<TContract, TInstance>(mapping, TypeLifetime.ContainerControlled);
     }
     
     /// <inheritdoc />
@@ -143,7 +145,7 @@ public sealed class Container(IUnityContainer? container = null): IContainer
     /// <inheritdoc />
     public void RegisterSingleton<TContract, TInstance>(TInstance instance, bool performBuildup, string? mapping = null) where TInstance : TContract where TContract : IService
     {
-        _container.RegisterSingleton<TInstance>();
+        _container.RegisterSingleton<TInstance>(mapping);
         _container.RegisterInstance<TContract>(mapping, instance);
     }
 
