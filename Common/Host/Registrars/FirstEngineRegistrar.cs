@@ -16,6 +16,7 @@ public class FirstEngineRegistrar: IServiceRegistrar
     /// <inheritdoc />
     public void RegisterServices(IContainer container)
     {
+        container.RegisterSingleton<ILoggingService, RootLoggingService>();
         container.RegisterSingleton<ILoggingService, ConsoleLoggingService>("console");
         container.RegisterSingleton<EventService, EventService>();   
     }    

@@ -1,7 +1,7 @@
 ﻿using Common.Core;
 using Common.Core.Attributes;
 using Common.Services.Logging;
-
+/*
 namespace Common.Host.Registrars;
 
 /// <summary>
@@ -21,3 +21,4 @@ public class FinalEngineRegistrar : IServiceRegistrar
         container.RegisterSingleton<ILoggingService, RootLoggingService>(logger!, false, "root");
     }
 }
+*/
