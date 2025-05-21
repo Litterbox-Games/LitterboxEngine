@@ -1,4 +1,5 @@
-﻿using Common.Core;
+﻿using Autofac;
+using Common.Core;
 using Common.Core.Attributes;
 using Common.Host;
 using Common.Services.Resource;
@@ -14,8 +15,8 @@ namespace Server.Host.Registrars;
 public class ServerEngineRegistrar: IServiceRegistrar
 {
     /// <inheritdoc />
-    public void RegisterServices(IContainer container)
+    public void RegisterServices(ContainerBuilder container)
     {
-        container.RegisterSingleton<IResourceService, ServerResourceService>();
+        container.RegisterType<ServerResourceService>().As<IResourceService>().SingleInstance();
     }    
 }

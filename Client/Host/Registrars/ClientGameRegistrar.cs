@@ -1,4 +1,6 @@
-﻿using Common.Core;
+﻿using Autofac;
+using Client.Graphics;
+using Common.Core;
 using Common.Core.Attributes;
 using Common.Host;
 using Client.Services.Entities;
@@ -7,7 +9,6 @@ using Client.Services.Players;
 using Client.Services.World;
 using Common.Services.Block;
 using Common.Services.Entities;
-using Common.Services.Events;
 using Common.Services.Network;
 using Common.Services.Players;
 using Common.Services.World;
@@ -23,17 +24,13 @@ namespace Client.Host.Registrars;
 public class ClientGameRegistrar : IServiceRegistrar
 {
     /// <inheritdoc />
-    public void RegisterServices(IContainer container)
+    public void RegisterServices(ContainerBuilder container)
     {
-        //container.RegisterSingleton<EventService, EventService>();   
+        container.RegisterType<BlockRegistry>().AsSelf().SingleInstance();
         
-        container.RegisterSingleton<BlockRegistry, BlockRegistry>();
-        
-        container.RegisterSingleton<NetworkService, ClientNetworkService>();
-        container.RegisterSingleton<IPlayerService, ClientPlayerService>();
-        
-        container.RegisterSingleton<IEntityService, ClientEntityService>();
-        
-        container.RegisterSingleton<IWorldService, ClientWorldService>();
+        container.RegisterType<ClientNetworkService>().As<NetworkService>().SingleInstance();
+        container.RegisterType<ClientPlayerService>().As<IPlayerService>().SingleInstance();
+        container.RegisterType<ClientEntityService>().As<IEntityService>().SingleInstance();
+        container.RegisterType<ClientWorldService>().As<IWorldService>().SingleInstance();
     }                                                                 
 }

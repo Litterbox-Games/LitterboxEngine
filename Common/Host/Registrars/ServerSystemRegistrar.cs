@@ -1,4 +1,5 @@
-﻿using Common.Core;
+﻿using Autofac;
+using Common.Core;
 using Common.Core.Attributes;
 using Common.Systems;
 
@@ -13,9 +14,9 @@ namespace Common.Host.Registrars;
 public class ServerSystemRegistrar : IServiceRegistrar
 {
     /// <inheritdoc />
-    public void RegisterServices(IContainer container)
+    public void RegisterServices(ContainerBuilder container)
     {
         // Systems
-        container.RegisterSingleton<MobControllerSystem, MobControllerSystem>();
+        container.RegisterType<MobControllerSystem>().AsSelf().SingleInstance();
     }                                                                 
 }

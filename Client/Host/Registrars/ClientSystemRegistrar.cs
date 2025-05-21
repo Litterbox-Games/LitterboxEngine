@@ -1,4 +1,6 @@
-﻿using Client.Services.World;
+﻿using Autofac;
+using Client.Graphics;
+using Client.Services.World;
 using Common.Core;
 using Common.Core.Attributes;
 using Common.Host;
@@ -15,14 +17,12 @@ namespace Client.Host.Registrars;
 public class ClientSystemRegistrar : IServiceRegistrar
 {
     /// <inheritdoc />
-    public void RegisterServices(IContainer container)
+    public void RegisterServices(ContainerBuilder container)
     {
-        // Services
-        container.RegisterSingleton<WorldRenderService, WorldRenderService>();
+        container.RegisterType<WorldRenderService>().AsSelf().SingleInstance();
         
-        // Systems
-        container.RegisterSingleton<CameraSystem, CameraSystem>();
-        container.RegisterSingleton<PlayerControlSystem, PlayerControlSystem>();
-        container.RegisterSingleton<EntityRenderSystem, EntityRenderSystem>();
+        container.RegisterType<CameraSystem>().AsSelf().SingleInstance();
+        container.RegisterType<PlayerControlSystem>().AsSelf().SingleInstance();
+        container.RegisterType<EntityRenderSystem>().AsSelf().SingleInstance();
     }                                                                 
 }

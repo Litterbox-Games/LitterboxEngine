@@ -1,4 +1,5 @@
 ﻿using Arch.Core.Utils;
+using Autofac;
 using Common.Components;
 using Common.Core;
 using Common.Core.Attributes;
@@ -15,13 +16,13 @@ namespace Common.Host.Registrars;
 public class FirstSystemRegistrar: IServiceRegistrar
 {
     /// <inheritdoc />
-    public void RegisterServices(IContainer container)
+    public void RegisterServices(ContainerBuilder container)
     {
         // Components
         // TODO: better way of registering components, they should be order independent so we probably don't need to register them explicitly
         ComponentRegistry.Add<Position>(); 
         
         // Systems
-        container.RegisterSingleton<MovementSystem, MovementSystem>();
+        container.RegisterType<MovementSystem>().AsSelf().SingleInstance();
     }    
 }

@@ -1,8 +1,8 @@
-﻿using Common.Core;
+﻿using Autofac;
+using Common.Core;
 using Common.Core.Attributes;
 using Common.Services.Block;
 using Common.Services.Entities;
-using Common.Services.Events;
 using Common.Services.Network;
 using Common.Services.Players;
 using Common.Services.World;
@@ -18,18 +18,14 @@ namespace Common.Host.Registrars;
 [RegistrarPriority(EPriority.High)]
 public class ServerGameRegistrar: IServiceRegistrar
 {
-    public void RegisterServices(IContainer container)
+    public void RegisterServices(ContainerBuilder container)
     {
-        //container.RegisterSingleton<EventService, EventService>();   
+        container.RegisterType<BlockRegistry>().AsSelf().SingleInstance();
         
-        container.RegisterSingleton<BlockRegistry, BlockRegistry>();
-        
-        container.RegisterSingleton<NetworkService, ServerNetworkService>();
-        container.RegisterSingleton<IPlayerService, ServerPlayerService>();
-        
-        container.RegisterSingleton<IEntityService, ServerEntityService>();
-        
-        container.RegisterSingleton<IWorldGenerator, EarthGenerator>("earth");
-        container.RegisterSingleton<IWorldService, ServerWorldService>();
+        container.RegisterType<ServerNetworkService>().As<NetworkService>().SingleInstance();
+        container.RegisterType<ServerPlayerService>().As<IPlayerService>().SingleInstance();
+        container.RegisterType<ServerEntityService>().As<IEntityService>().SingleInstance();
+        container.RegisterType<EarthGenerator>().As<IWorldGenerator>().SingleInstance();
+        container.RegisterType<ServerWorldService>().As<IWorldService>().SingleInstance();
     }
 }

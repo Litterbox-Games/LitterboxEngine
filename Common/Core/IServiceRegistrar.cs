@@ -1,4 +1,4 @@
-﻿using Autofac.Core;
+﻿using Autofac;
 
 namespace Common.Core;
 
@@ -10,5 +10,5 @@ public interface IServiceRegistrar
     /// <summary>
     ///     Registers all services for this registrar.
     /// </summary>
-    void RegisterServices(Container container);
+    void RegisterServices(ContainerBuilder container);
 }

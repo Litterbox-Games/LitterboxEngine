@@ -1,4 +1,5 @@
-﻿using Common.Core;
+﻿using Autofac;
+using Common.Core;
 using Common.Core.Attributes;
 using Common.Services.Events;
 using Common.Services.Logging;
@@ -14,10 +15,11 @@ namespace Common.Host.Registrars;
 public class FirstEngineRegistrar: IServiceRegistrar
 {
     /// <inheritdoc />
-    public void RegisterServices(IContainer container)
+    public void RegisterServices(ContainerBuilder container)
     {
-        container.RegisterSingleton<ILoggingService, RootLoggingService>();
-        container.RegisterSingleton<ILoggingService, ConsoleLoggingService>("console");
-        container.RegisterSingleton<EventService, EventService>();   
+        container.RegisterType<EventService>().AsSelf().SingleInstance();
+        
+        container.RegisterType<RootLoggingService>().As<ILoggingService>().SingleInstance();
+        container.RegisterType<ConsoleLoggingService>().As<ILoggingService>().PreserveExistingDefaults().SingleInstance();
     }    
 }
