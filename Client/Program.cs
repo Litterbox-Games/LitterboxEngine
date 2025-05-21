@@ -1,4 +1,3 @@
-
 using System.Diagnostics;
 using Client.Graphics;
 using System.Drawing;

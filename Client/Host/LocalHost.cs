@@ -1,7 +1,9 @@
 ﻿using Autofac.Core;
 using Client.Graphics;
+using Client.Host.Extensions;
 using Common.Core;
 using Common.Host;
+using Common.Host.Extensions;
 using MoreLinq;
 
 namespace Client.Host;
@@ -19,20 +21,13 @@ public class LocalHost : IClientHost, IServerHost
 
     public void Start(Container engineContainer, EGameMode gameMode)
     {
-        
-        engineContainer.ComponentRegistry.Registrations.ForEach(x =>
-        {
-            
-        });
-        
         GameContainer = engineContainer.CreateChildContainer();
         GameContainer.RegisterServices(gameMode, ELifetime.Game);
         
-        GameUpdatables = GameContainer.RegisterUpdatables();
+        this.RegisterUpdatables();
+        this.RegisterInputables();
+        this.RegisterDrawables();
         
-        GameInputables = GameContainer.RegisterInputables();
-        GameDrawables = GameContainer.RegisterDrawables();
-
         (this as IServerHost).StartServer(7777);
         (this as IServerHost).SpawnServerPlayer();
     }
@@ -61,11 +56,9 @@ public class LocalHost : IClientHost, IServerHost
     {
         GameDrawables.ForEach(drawable => drawable.Draw(deltaTime, renderer));
     }
-    
 
     public void Dispose()
     { 
         GC.SuppressFinalize(this);
     }
-
 }

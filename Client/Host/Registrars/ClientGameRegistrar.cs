@@ -1,5 +1,4 @@
 ﻿using Autofac;
-using Client.Graphics;
 using Common.Core;
 using Common.Core.Attributes;
 using Common.Host;

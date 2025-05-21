@@ -1,8 +1,11 @@
-﻿using Client.Graphics;
+﻿using Autofac;
+using Autofac.Core;
+using Client.Graphics;
+using Client.Host.Extensions;
 using Client.Services.Network;
 using Common.Core;
 using Common.Host;
-using Common.Services.Players;
+using Common.Host.Extensions;
 
 namespace Client.Host;
 
@@ -12,19 +15,19 @@ namespace Client.Host;
 public class ClientHost : IClientHost
 {
     // Game
-    public IContainer? GameContainer  { get; set; }
+    public Container? GameContainer  { get; set; }
     public List<(EPriority, IUpdatable)> GameUpdatables { get; private set; } = [];
     public List<IDrawable> GameDrawables { get; private set; } = [];
     public List<IInputable> GameInputables { get; private set; } = [];
     
-    public void Start(IContainer engineContainer, EGameMode gameMode)
+    public void Start(Container engineContainer, EGameMode gameMode)
     {
         GameContainer = engineContainer.CreateChildContainer();
         GameContainer.RegisterServices(gameMode, ELifetime.Game);
-        GameUpdatables = GameContainer.RegisterUpdatables();
-        
-        GameInputables = GameContainer.RegisterInputables();
-        GameDrawables = GameContainer.RegisterDrawables();
+
+        this.RegisterUpdatables();
+        this.RegisterInputables();
+        this.RegisterDrawables();
 
         var networkService = GameContainer.Resolve<ClientNetworkService>();
         networkService.Connect("127.0.0.1", 7777);

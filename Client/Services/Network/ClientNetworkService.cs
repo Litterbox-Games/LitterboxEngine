@@ -17,7 +17,7 @@ public class ClientNetworkService: NetworkService
     public event Action? EventOnDisconnect;
     
     private readonly NetClient _client;
-    private readonly IContainer _container;
+    //private readonly IContainer _container;
     private readonly ILoggingService _logger;
     private readonly EventService _eventService;
     

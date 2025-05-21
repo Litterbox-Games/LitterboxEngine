@@ -1,5 +1,8 @@
-﻿using Common.Core;
+﻿using Autofac;
+using Autofac.Core;
+using Common.Core;
 using Common.Host;
+using Common.Host.Extensions;
 
 namespace Server.Host;
 
@@ -9,14 +12,15 @@ namespace Server.Host;
 public class ServerHost : IServerHost
 {
     // Game
-    public IContainer? GameContainer  { get; set; }
+    public Container? GameContainer  { get; set; }
     public List<(EPriority, IUpdatable)> GameUpdatables { get; private set; } = [];
     
     public void Start(IContainer engineContainer, EGameMode gameMode)
     {
         GameContainer = engineContainer.CreateChildContainer();
         GameContainer.RegisterServices(gameMode, ELifetime.Game);
-        GameUpdatables = GameContainer.RegisterUpdatables();
+        
+        this.RegisterUpdatables();
         
         (this as IServerHost).StartServer(7777);
     }
