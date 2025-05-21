@@ -17,16 +17,16 @@ public class ClientNetworkService: NetworkService
     public event Action? EventOnDisconnect;
     
     private readonly NetClient _client;
-    //private readonly IContainer _container;
     private readonly ILoggingService _logger;
     private readonly EventService _eventService;
+    private readonly IPlayerService _playerService;
     
     private NetConnection? _connection;
     private float _connectionAttemptTime;
     
-    public ClientNetworkService(IContainer container, ILoggingService logger, EventService eventService) : base(logger, eventService)
+    public ClientNetworkService(IPlayerService playerService, ILoggingService logger, EventService eventService) : base(logger, eventService)
     {
-        _container = container;
+        _playerService = playerService;
         _logger = logger;
         _eventService = eventService;
 
@@ -52,11 +52,9 @@ public class ClientNetworkService: NetworkService
         // Create a random ID and send it in the approval request message
         var msg = _client.CreateMessage();
 
-        var playerService = _container.Resolve<IPlayerService>();
-        
-        var playerName = $"Player {playerService.PlayerId}";
+        var playerName = $"Player {_playerService.PlayerId}";
 
-        msg.Write(playerService.PlayerId);
+        msg.Write(_playerService.PlayerId);
         msg.Write(playerName);
 
         _connection = _client.Connect(ip, port, msg);

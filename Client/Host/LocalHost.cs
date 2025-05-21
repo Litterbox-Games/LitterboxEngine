@@ -1,10 +1,10 @@
-﻿using Autofac.Core;
+﻿using Autofac;
+using Autofac.Core;
+using Client.Core.Extensions;
 using Client.Graphics;
-using Client.Host.Extensions;
 using Common.Core;
+using Common.Core.Extensions;
 using Common.Host;
-using Common.Host.Extensions;
-using MoreLinq;
 
 namespace Client.Host;
 
@@ -14,19 +14,28 @@ namespace Client.Host;
 public class LocalHost : IClientHost, IServerHost
 {
     // Game
-    public Container? GameContainer { get; set; }
+    public Container GameContainer { get; set; }
     public List<(EPriority, IUpdatable)> GameUpdatables { get; private set; } = [];
     public List<IDrawable> GameDrawables { get; private set; } = [];
     public List<IInputable> GameInputables { get; private set; } = [];
 
+    private ILifetimeScope? _gameScope;
+
+    public LocalHost(Container gameContainer)
+    {
+        GameContainer = gameContainer;
+    }
+    
     public void Start(Container engineContainer, EGameMode gameMode)
     {
-        GameContainer = engineContainer.CreateChildContainer();
-        GameContainer.RegisterServices(gameMode, ELifetime.Game);
+        _gameScope = engineContainer.BeginLifetimeScope(builder =>
+        {
+            builder.RegisterServices(gameMode, ELifetime.Game);
+        });
         
-        this.RegisterUpdatables();
-        this.RegisterInputables();
-        this.RegisterDrawables();
+        GameUpdatables = engineContainer.RegisterUpdatables();
+        GameInputables = engineContainer.RegisterInputables();
+        GameDrawables = engineContainer.RegisterDrawables();
         
         (this as IServerHost).StartServer(7777);
         (this as IServerHost).SpawnServerPlayer();
@@ -35,8 +44,7 @@ public class LocalHost : IClientHost, IServerHost
     public void Stop()
     {
         (this as IServerHost).StopServer();
-        GameContainer?.Dispose();
-        GameContainer = null;
+        _gameScope?.Dispose();
         GameUpdatables = [];
         GameInputables = [];
         GameDrawables = [];

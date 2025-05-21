@@ -1,5 +1,7 @@
 using Autofac;
+using Common.Core.Attributes;
 using Common.Host;
+using MoreLinq;
 
 namespace Common.Core;
 
@@ -7,14 +9,6 @@ public static class ContainerBuildExtensions
 {
     public static void RegisterServices(this ContainerBuilder builder, EGameMode gameMode, ELifetime lifetime)
     {
-        
-    }
-    
-    /*
-    public void RegisterServices(EGameMode gameMode, ELifetime lifetime)
-    {
-        RegisterSingleton<IContainer, Container>(this, false);
-        
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
         var registrars = assemblies.SelectMany(assembly =>
@@ -76,8 +70,7 @@ public static class ContainerBuildExtensions
         sortedTypes.ForEach(x =>
         {
             var registrar = (IServiceRegistrar)Activator.CreateInstance(x.Item2)!;
-            registrar.RegisterServices(this);
+            registrar.RegisterServices(builder);
         });
     }
-    */
 }

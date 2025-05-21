@@ -1,11 +1,11 @@
 ﻿using Autofac;
 using Autofac.Core;
+using Client.Core.Extensions;
 using Client.Graphics;
-using Client.Host.Extensions;
 using Client.Services.Network;
 using Common.Core;
 using Common.Host;
-using Common.Host.Extensions;
+using Common.Core.Extensions;
 
 namespace Client.Host;
 
@@ -15,19 +15,29 @@ namespace Client.Host;
 public class ClientHost : IClientHost
 {
     // Game
-    public Container? GameContainer  { get; set; }
+    public Container GameContainer  { get; set; }
+    
     public List<(EPriority, IUpdatable)> GameUpdatables { get; private set; } = [];
     public List<IDrawable> GameDrawables { get; private set; } = [];
     public List<IInputable> GameInputables { get; private set; } = [];
     
+    private ILifetimeScope? _gameScope;
+
+    public ClientHost(Container gameContainer)
+    {
+        GameContainer = gameContainer;
+    }
+    
     public void Start(Container engineContainer, EGameMode gameMode)
     {
-        GameContainer = engineContainer.CreateChildContainer();
-        GameContainer.RegisterServices(gameMode, ELifetime.Game);
+        _gameScope = engineContainer.BeginLifetimeScope(builder =>
+        {
+            builder.RegisterServices(gameMode, ELifetime.Game);
+        });
 
-        this.RegisterUpdatables();
-        this.RegisterInputables();
-        this.RegisterDrawables();
+        GameUpdatables = engineContainer.RegisterUpdatables();
+        GameInputables = engineContainer.RegisterInputables();
+        GameDrawables = engineContainer.RegisterDrawables();
 
         var networkService = GameContainer.Resolve<ClientNetworkService>();
         networkService.Connect("127.0.0.1", 7777);
@@ -35,8 +45,7 @@ public class ClientHost : IClientHost
 
     public void Stop()
     {
-        GameContainer?.Dispose();
-        GameContainer = null;
+        _gameScope?.Dispose();
         GameUpdatables = [];
         GameInputables = [];
         GameDrawables = [];

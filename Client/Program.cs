@@ -1,7 +1,5 @@
 using System.Diagnostics;
 using Client.Graphics;
-using System.Drawing;
-using System.Numerics;
 using Autofac;
 using Autofac.Core;
 using Client.Graphics.GHAL.Vulkan;
@@ -10,6 +8,7 @@ using Client.Host;
 using Client.Services.Resource;
 using Client.Systems;
 using Common.Core;
+using Common.Core.Extensions;
 using Common.Host;
 using ImGuiNET;
 using Silk.NET.Input;
@@ -18,6 +17,8 @@ namespace Client;
 
 internal static class Program
 {
+    /*
+     
     private static IClientHost MainMenu(Container engineContainer)
     {
         IClientHost? host = null;
@@ -59,19 +60,18 @@ internal static class Program
         
         return host;
     }
+    */
     
     private static void Main()
     {
         // Engine Initialization
-        using var engineContainer = new Container();
 
         var containerBuilder = new ContainerBuilder();
+        
         containerBuilder.RegisterServices(EGameMode.Client | EGameMode.SinglePlayer | EGameMode.Host, ELifetime.Engine);
         
-        var container = containerBuilder.Build();
-        
-        var engineUpdatables = engineContainer.RegisterUpdatables();
-        
+        var engineContainer = (Container)containerBuilder.Build();
+
         IClientHost? host = null;
         
         // var host = MainMenu(engineContainer);
@@ -89,35 +89,32 @@ internal static class Program
         
         // TODO: convert this to use IGraphicsDevice
         using var imGui = new ImGuiRenderer(window, graphicsDevice);
-
-
-        var font = resourceService.Get<Font>("Fonts/dogica.otf");
         
         // Game Loop
         var stopWatch = new Stopwatch();
         
         float deltaTime = 0;
+
+        var engineUpdatables = engineContainer.RegisterUpdatables();
         
         while (!window.IsClosing())
         {
             stopWatch.Start();
             window.PollEvents();
-            
-            engineUpdatables.ForEach(updatable => updatable.Item2.Update(deltaTime));
+
+            if (host == null)
+            {
+                engineUpdatables.ForEach(x => x.Item2.Update(deltaTime));
+            }
             
             host?.Input(input);
-            
             host?.Update(deltaTime);
             
             // Needs to be called at the same rate as imGui.Draw()
             imGui.Update(deltaTime);
 
             renderer.BeginFrame();
-            
-            // Console.WriteLine(cameraService == null);
-            
             renderer.BeginDrawing(cameraService?.Camera.ViewMatrix);
-
             
             // MainMenu
             if (host == null)
@@ -126,21 +123,21 @@ internal static class Program
                 
                 if (ImGui.Button("Single Player"))
                 {
-                    host = new LocalHost();
+                    host = new LocalHost(engineContainer);
                     host.Start(engineContainer, EGameMode.SinglePlayer);
                     cameraService = host.GameContainer?.Resolve<CameraSystem>();
                 }
                 
                 if (ImGui.Button("Local Host"))
                 {
-                    host = new LocalHost();
+                    host = new LocalHost(engineContainer);
                     host.Start(engineContainer, EGameMode.Host);
                     cameraService = host.GameContainer?.Resolve<CameraSystem>();
                 }
                 
                 if (ImGui.Button("Client"))
                 {
-                    host = new ClientHost();
+                    host = new ClientHost(engineContainer);
                     host.Start(engineContainer, EGameMode.Client);
                     cameraService = host.GameContainer?.Resolve<CameraSystem>();
                 }
@@ -148,12 +145,8 @@ internal static class Program
                 ImGui.End();
             }
             
-            
-            
             host?.Draw(deltaTime, renderer);
-            
-            renderer.DrawText("Hello, World!", font, Vector2.Zero, 0.125f, 0.125f, Color.Crimson, 1);
-
+     
             renderer.EndDrawing();
             imGui.Draw();
             renderer.EndFrame();
@@ -171,8 +164,6 @@ internal static class Program
                 cameraService = null;
                 
                 GC.Collect();
-                
-                Console.WriteLine("adwdadw");
             }
             
             stopWatch.Stop();

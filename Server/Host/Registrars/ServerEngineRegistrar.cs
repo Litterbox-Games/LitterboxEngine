@@ -17,6 +17,6 @@ public class ServerEngineRegistrar: IServiceRegistrar
     /// <inheritdoc />
     public void RegisterServices(ContainerBuilder container)
     {
-        container.RegisterType<ServerResourceService>().As<IResourceService>().SingleInstance();
+        container.RegisterType<ServerResourceService>().As<IResourceService>().AsSelf().SingleInstance();
     }    
 }

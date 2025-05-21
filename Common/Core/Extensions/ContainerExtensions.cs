@@ -1,6 +1,7 @@
 using Autofac;
 using Autofac.Core;
 using Common.Core.Attributes;
+using Common.Host;
 using MoreLinq;
 
 namespace Common.Core.Extensions;
@@ -20,9 +21,9 @@ public static class ContainerExtensions
             });
     }
     
-    public static List<(EPriority, IUpdatable)> RegisterUpdatables(this IContainer container )
+    public static List<(EPriority, IUpdatable)> RegisterUpdatables(this Container container)
     {
-        var updatables = new List<(EPriority, IUpdatable)>(); 
+        var updatables = new List<(EPriority, IUpdatable)>();
         
         container.FilterRegistrations<IUpdatable>((updatable, type) =>
         {

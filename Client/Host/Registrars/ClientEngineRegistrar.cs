@@ -25,7 +25,7 @@ public class ClientEngineRegistrar : IServiceRegistrar
         container.RegisterType<InputService>().AsSelf().SingleInstance();
         container.RegisterType<RendererService>().AsSelf().SingleInstance();
         
-        container.RegisterType<VulkanGraphicsDeviceService>().As<IGraphicsDeviceService>().SingleInstance();
-        container.RegisterType<ClientResourceService>().As<IResourceService>().SingleInstance();
+        container.RegisterType<VulkanGraphicsDeviceService>().As<IGraphicsDeviceService>().AsSelf().SingleInstance();
+        container.RegisterType<ClientResourceService>().As<IResourceService>().AsSelf().SingleInstance();
     }
 }

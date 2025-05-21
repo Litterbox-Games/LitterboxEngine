@@ -22,10 +22,12 @@ public class ServerGameRegistrar: IServiceRegistrar
     {
         container.RegisterType<BlockRegistry>().AsSelf().SingleInstance();
         
-        container.RegisterType<ServerNetworkService>().As<NetworkService>().SingleInstance();
-        container.RegisterType<ServerPlayerService>().As<IPlayerService>().SingleInstance();
-        container.RegisterType<ServerEntityService>().As<IEntityService>().SingleInstance();
-        container.RegisterType<EarthGenerator>().As<IWorldGenerator>().SingleInstance();
-        container.RegisterType<ServerWorldService>().As<IWorldService>().SingleInstance();
+        container.RegisterType<ServerNetworkService>().As<NetworkService>().AsSelf().SingleInstance();
+        container.RegisterType<ServerPlayerService>().As<IPlayerService>().AsSelf().SingleInstance();
+        container.RegisterType<ServerEntityService>().As<IEntityService>().AsSelf().SingleInstance();
+        container.RegisterType<EarthGenerator>().As<IWorldGenerator>().AsSelf().SingleInstance();
+        container.RegisterType<ServerWorldService>().As<IWorldService>().AsSelf().SingleInstance();
+        
+        Console.WriteLine("test");
     }
 }
