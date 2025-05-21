@@ -3,6 +3,8 @@ using System.Diagnostics;
 using Client.Graphics;
 using System.Drawing;
 using System.Numerics;
+using Autofac;
+using Autofac.Core;
 using Client.Graphics.GHAL.Vulkan;
 using Client.Graphics.ImGui;
 using Client.Host;
@@ -17,7 +19,7 @@ namespace Client;
 
 internal static class Program
 {
-    private static IClientHost MainMenu(IContainer engineContainer)
+    private static IClientHost MainMenu(Container engineContainer)
     {
         IClientHost? host = null;
 
@@ -63,7 +65,12 @@ internal static class Program
     {
         // Engine Initialization
         using var engineContainer = new Container();
-        engineContainer.RegisterServices(EGameMode.Client | EGameMode.SinglePlayer | EGameMode.Host, ELifetime.Engine);
+
+        var containerBuilder = new ContainerBuilder();
+        containerBuilder.RegisterServices(EGameMode.Client | EGameMode.SinglePlayer | EGameMode.Host, ELifetime.Engine);
+        
+        var container = containerBuilder.Build();
+        
         var engineUpdatables = engineContainer.RegisterUpdatables();
         
         IClientHost? host = null;

@@ -1,5 +1,4 @@
-﻿using Client.Core;
-using Client.Graphics;
+﻿using Client.Graphics;
 using Client.Services.Network;
 using Common.Core;
 using Common.Host;

@@ -1,4 +1,6 @@
-﻿using Common.Core.Attributes;
+﻿/*
+
+using Common.Core.Attributes;
 using Common.Core.Exceptions;
 using Common.Host;
 using MoreLinq.Extensions;
@@ -82,25 +84,7 @@ public sealed class Container(IUnityContainer? container = null): IContainer
 
     public IContainer CreateChildContainer()
     {
-        var child = _container.CreateChildContainer();
-        
-        // _container.Registrations.Where(x => x.MappedToType.IsAssignableTo(typeof(IService))).ForEach((registration) =>
-        // {
-        //     // child.RegisterInstance(registration.MappedToType, registration, new ExternallyControlledLifetimeManager());
-        // });
-        
-        /*
-        _container.Registrations
-            .Where(x => x.MappedToType.IsAssignableTo(typeof(IService)) && !x.MappedToType.IsAssignableTo(typeof(IContainer)))
-            .ForEach(registration =>
-            {
-                var service = _container.Resolve(registration.MappedToType);
-                
-                child.RegisterSingleton(registration.MappedToType);
-                child.RegisterInstance(registration.RegisteredType, registration.Name, service, new ExternallyControlledLifetimeManager());
-            });
-        */
-        
+        var child = _container.CreateChildContainer(); 
         return new Container(child);
     }
 
@@ -178,3 +162,4 @@ public sealed class Container(IUnityContainer? container = null): IContainer
         _container.Dispose();
     }
 }
+*/

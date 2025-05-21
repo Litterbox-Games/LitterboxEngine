@@ -1,7 +1,8 @@
-﻿using Client.Core;
+﻿using Autofac.Core;
 using Client.Graphics;
 using Common.Core;
 using Common.Host;
+using MoreLinq;
 
 namespace Client.Host;
 
@@ -10,17 +11,23 @@ namespace Client.Host;
 /// </summary>
 public class LocalHost : IClientHost, IServerHost
 {
-    
     // Game
-    public IContainer? GameContainer  { get; set; }
+    public Container? GameContainer { get; set; }
     public List<(EPriority, IUpdatable)> GameUpdatables { get; private set; } = [];
     public List<IDrawable> GameDrawables { get; private set; } = [];
     public List<IInputable> GameInputables { get; private set; } = [];
 
-    public void Start(IContainer engineContainer, EGameMode gameMode)
+    public void Start(Container engineContainer, EGameMode gameMode)
     {
+        
+        engineContainer.ComponentRegistry.Registrations.ForEach(x =>
+        {
+            
+        });
+        
         GameContainer = engineContainer.CreateChildContainer();
         GameContainer.RegisterServices(gameMode, ELifetime.Game);
+        
         GameUpdatables = GameContainer.RegisterUpdatables();
         
         GameInputables = GameContainer.RegisterInputables();

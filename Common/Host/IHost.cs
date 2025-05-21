@@ -1,6 +1,8 @@
 ﻿using System.Runtime.CompilerServices;
+using Autofac;
 using Common.Core;
-using Common.Core.Attributes;
+using Autofac.Core;
+using MoreLinq;
 
 [assembly: InternalsVisibleTo("Client")]
 
@@ -8,11 +10,11 @@ namespace Common.Host;
 
 public interface IHost: IDisposable
 {
-    public IContainer? GameContainer { get; set; }
+    public Container? GameContainer { get; set; }
     
     List<(EPriority, IUpdatable)> GameUpdatables { get; }
 
-    public void Start(IContainer engineContainer, EGameMode gameMode);
+    public void Start(Container engineContainer, EGameMode gameMode);
     
     public void Stop();
     

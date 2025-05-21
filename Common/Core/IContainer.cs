@@ -1,4 +1,6 @@
-﻿using Common.Host;
+﻿/*
+
+using Common.Host;
 
 namespace Common.Core;
 
@@ -65,3 +67,4 @@ public interface IContainer : IService, IDisposable
     /// <remarks>This does not resolve the default service, only mapped services.</remarks>>
     IEnumerable<T> ResolveAll<T>() where T : IService;
 }
+*/

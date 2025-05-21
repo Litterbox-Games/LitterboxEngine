@@ -1,14 +1,14 @@
+using Common.Core;
 using Common.Core.Attributes;
+using Common.Core.Extensions;
 
-namespace Common.Core;
+namespace Common.Host.Extensions;
 
-public static class ServerContainerExtensions
+public static class IHostExtensions
 {
-    public static List<(EPriority, IUpdatable)> RegisterUpdatables(this IContainer container )
+    public static void RegisterUpdatables(this IHost host)
     {
-        var updatables = new List<(EPriority, IUpdatable)>(); 
-        
-        container.FilterRegistrations<IUpdatable>((updatable, type) =>
+        host.GameContainer!.FilterRegistrations<IUpdatable>((updatable, type) =>
         {
             var tickableAttribute =
                 type.CustomAttributes.FirstOrDefault(y => y.AttributeType == typeof(UpdatablePriorityAttribute));
@@ -20,21 +20,19 @@ public static class ServerContainerExtensions
 
             var inserted = false;
 
-            for (var i = 0; i < updatables.Count && !inserted; i++)
+            for (var i = 0; i < host.GameUpdatables.Count && !inserted; i++)
             {
-                if (priority <= updatables[i].Item1)
+                if (priority <= host.GameUpdatables[i].Item1)
                     continue;
 
-                updatables.Insert(i, (priority, updatable));
+                host.GameUpdatables.Insert(i, (priority, updatable));
                 inserted = true;
             }
 
             if (!inserted)
             {
-                updatables.Add((priority, updatable));
+                host.GameUpdatables.Add((priority, updatable));
             }
         });
-
-        return updatables;
     }
 }

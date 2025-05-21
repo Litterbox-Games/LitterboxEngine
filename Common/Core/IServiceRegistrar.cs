@@ -1,4 +1,6 @@
-﻿namespace Common.Core;
+﻿using Autofac.Core;
+
+namespace Common.Core;
 
 /// <summary>
 ///     A service registrar used to handle the registration of specific services.
@@ -8,5 +10,5 @@ public interface IServiceRegistrar
     /// <summary>
     ///     Registers all services for this registrar.
     /// </summary>
-    void RegisterServices(IContainer container);
+    void RegisterServices(Container container);
 }
