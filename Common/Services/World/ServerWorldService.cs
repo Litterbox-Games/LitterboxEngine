@@ -21,11 +21,11 @@ public class ServerWorldService : IWorldService, IUpdatable
     private readonly EventService _eventService;
     private readonly IWorldGenerator _generation;
 
-    public ServerWorldService(IContainer container, IPlayerService playerService, EventService eventService, BlockRegistry blockRegistry)
+    public ServerWorldService(IPlayerService playerService, EventService eventService, BlockRegistry blockRegistry, IWorldGenerator generation)
     {
         _playerService = playerService;
         _eventService = eventService;
-        _generation = container.Resolve<IWorldGenerator>("earth");
+        _generation = generation;
         
         // TODO: This should be initialized somewhere else, maybe a resource loading stage of program startup?
         blockRegistry.RegisterDefaultBlocks();

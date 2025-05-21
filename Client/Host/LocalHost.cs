@@ -1,7 +1,11 @@
-﻿using Client.Core;
+﻿using Autofac;
+using Autofac.Core;
+using Client.Core.Extensions;
 using Client.Graphics;
 using Common.Core;
+using Common.Core.Extensions;
 using Common.Host;
+using Common.Services.Logging;
 
 namespace Client.Host;
 
@@ -10,22 +14,23 @@ namespace Client.Host;
 /// </summary>
 public class LocalHost : IClientHost, IServerHost
 {
-    
     // Game
-    public IContainer? GameContainer  { get; set; }
+    public ILifetimeScope GameContainer { get; set; } = null!;
     public List<(EPriority, IUpdatable)> GameUpdatables { get; private set; } = [];
     public List<IDrawable> GameDrawables { get; private set; } = [];
     public List<IInputable> GameInputables { get; private set; } = [];
 
-    public void Start(IContainer engineContainer, EGameMode gameMode)
+    public void Start(Container engineContainer, EGameMode gameMode)
     {
-        GameContainer = engineContainer.CreateChildContainer();
-        GameContainer.RegisterServices(gameMode, ELifetime.Game);
-        GameUpdatables = GameContainer.RegisterUpdatables();
+        GameContainer = engineContainer.BeginLifetimeScope(builder =>
+        {
+            builder.RegisterServices(gameMode, ELifetime.Game);
+        });
         
+        GameUpdatables = GameContainer.RegisterUpdatables();
         GameInputables = GameContainer.RegisterInputables();
         GameDrawables = GameContainer.RegisterDrawables();
-
+        
         (this as IServerHost).StartServer(7777);
         (this as IServerHost).SpawnServerPlayer();
     }
@@ -34,7 +39,6 @@ public class LocalHost : IClientHost, IServerHost
     {
         (this as IServerHost).StopServer();
         GameContainer?.Dispose();
-        GameContainer = null;
         GameUpdatables = [];
         GameInputables = [];
         GameDrawables = [];
@@ -54,11 +58,9 @@ public class LocalHost : IClientHost, IServerHost
     {
         GameDrawables.ForEach(drawable => drawable.Draw(deltaTime, renderer));
     }
-    
 
     public void Dispose()
     { 
         GC.SuppressFinalize(this);
     }
-
 }

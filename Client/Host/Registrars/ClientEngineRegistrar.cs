@@ -1,4 +1,5 @@
-﻿using Client.Graphics;
+﻿using Autofac;
+using Client.Graphics;
 using Client.Graphics.GHAL;
 using Client.Graphics.GHAL.Vulkan;
 using Common.Core;
@@ -18,12 +19,13 @@ namespace Client.Host.Registrars;
 public class ClientEngineRegistrar : IServiceRegistrar
 {
     /// <inheritdoc />
-    public void RegisterServices(IContainer container)
+    public void RegisterServices(ContainerBuilder container)
     {
-        container.RegisterSingleton<WindowService, WindowService>();
-        container.RegisterSingleton<InputService, InputService>();
-        container.RegisterSingleton<IGraphicsDeviceService, VulkanGraphicsDeviceService>();
-        container.RegisterSingleton<RendererService, RendererService>();
-        container.RegisterSingleton<IResourceService, ClientResourceService>();
-    }                                                                 
+        container.RegisterType<WindowService>().AsSelf().SingleInstance();
+        container.RegisterType<InputService>().AsSelf().SingleInstance();
+        container.RegisterType<RendererService>().AsSelf().SingleInstance();
+        
+        container.RegisterType<VulkanGraphicsDeviceService>().As<IGraphicsDeviceService>().AsSelf().SingleInstance();
+        container.RegisterType<ClientResourceService>().As<IResourceService>().AsSelf().SingleInstance();
+    }
 }

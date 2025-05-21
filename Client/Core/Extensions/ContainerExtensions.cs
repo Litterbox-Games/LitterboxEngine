@@ -1,11 +1,13 @@
+using Autofac;
+using Autofac.Core;
 using Client.Graphics;
-using Common.Core;
+using Common.Core.Extensions;
 
-namespace Client.Core;
+namespace Client.Core.Extensions;
 
-public static class ClientContainerExtensions
+public static class ContainerExtensions
 {
-    public static List<IInputable> RegisterInputables(this IContainer container)
+    public static List<IInputable> RegisterInputables(this ILifetimeScope container)
     {
         var inputables = new List<IInputable>();
         
@@ -17,7 +19,7 @@ public static class ClientContainerExtensions
         return inputables;
     }
     
-    public static List<IDrawable> RegisterDrawables(this IContainer container)
+    public static List<IDrawable> RegisterDrawables(this ILifetimeScope container)
     {
         var drawables = new List<IDrawable>();
         
@@ -25,7 +27,7 @@ public static class ClientContainerExtensions
         {
             drawables.Add(drawable);
         });
-        
+
         return drawables;
     }
 }

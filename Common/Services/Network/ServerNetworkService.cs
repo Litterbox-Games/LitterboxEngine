@@ -1,6 +1,4 @@
-﻿using Common.Core;
-using Common.Host;
-using Common.Services.Events;
+﻿using Common.Services.Events;
 using Common.Services.Logging;
 using Common.Services.Network.Events;
 using Common.Services.Players;
@@ -9,7 +7,7 @@ using Lidgren.Network;
 
 namespace Common.Services.Network;
 
-public sealed class ServerNetworkService(IContainer container, ILoggingService logger, EventService eventService): NetworkService(logger, eventService)
+public sealed class ServerNetworkService(ILoggingService logger, EventService eventService): NetworkService(logger, eventService)
 {
     private NetServer? _server;
     protected override NetPeer NetPeer => _server!;

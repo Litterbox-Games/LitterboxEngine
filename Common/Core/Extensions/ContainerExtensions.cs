@@ -1,12 +1,29 @@
+using Autofac;
+using Autofac.Core;
 using Common.Core.Attributes;
+using Common.Host;
+using MoreLinq;
 
-namespace Common.Core;
+namespace Common.Core.Extensions;
 
-public static class ServerContainerExtensions
+public static class ContainerExtensions
 {
-    public static List<(EPriority, IUpdatable)> RegisterUpdatables(this IContainer container )
+    public static void FilterRegistrations<T>(this ILifetimeScope container, Action<T, Type> action)
     {
-        var updatables = new List<(EPriority, IUpdatable)>(); 
+        container.ComponentRegistry.Registrations.SelectMany(x => x.Services)
+            .OfType<IServiceWithType>()
+            .Select(x => x.ServiceType)
+            .Where(x => x.IsAssignableTo(typeof(T)))
+            .ForEach(x =>
+            {
+                var service = (T)container.Resolve(x);
+                action(service, service!.GetType());
+            });
+    }
+    
+    public static List<(EPriority, IUpdatable)> RegisterUpdatables(this ILifetimeScope container)
+    {
+        var updatables = new List<(EPriority, IUpdatable)>();
         
         container.FilterRegistrations<IUpdatable>((updatable, type) =>
         {
