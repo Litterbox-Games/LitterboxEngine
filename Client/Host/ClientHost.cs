@@ -15,22 +15,15 @@ namespace Client.Host;
 public class ClientHost : IClientHost
 {
     // Game
-    public Container GameContainer  { get; set; }
-    
+    public ILifetimeScope GameContainer  { get; set; } = null!;
+
     public List<(EPriority, IUpdatable)> GameUpdatables { get; private set; } = [];
     public List<IDrawable> GameDrawables { get; private set; } = [];
     public List<IInputable> GameInputables { get; private set; } = [];
-    
-    private ILifetimeScope? _gameScope;
 
-    public ClientHost(Container gameContainer)
-    {
-        GameContainer = gameContainer;
-    }
-    
     public void Start(Container engineContainer, EGameMode gameMode)
     {
-        _gameScope = engineContainer.BeginLifetimeScope(builder =>
+        GameContainer = engineContainer.BeginLifetimeScope(builder =>
         {
             builder.RegisterServices(gameMode, ELifetime.Game);
         });
@@ -45,7 +38,7 @@ public class ClientHost : IClientHost
 
     public void Stop()
     {
-        _gameScope?.Dispose();
+        GameContainer?.Dispose();
         GameUpdatables = [];
         GameInputables = [];
         GameDrawables = [];

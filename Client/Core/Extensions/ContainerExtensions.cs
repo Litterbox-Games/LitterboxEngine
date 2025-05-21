@@ -1,3 +1,4 @@
+using Autofac;
 using Autofac.Core;
 using Client.Graphics;
 using Common.Core.Extensions;
@@ -6,7 +7,7 @@ namespace Client.Core.Extensions;
 
 public static class ContainerExtensions
 {
-    public static List<IInputable> RegisterInputables(this Container container)
+    public static List<IInputable> RegisterInputables(this ILifetimeScope container)
     {
         var inputables = new List<IInputable>();
         
@@ -18,7 +19,7 @@ public static class ContainerExtensions
         return inputables;
     }
     
-    public static List<IDrawable> RegisterDrawables(this Container container)
+    public static List<IDrawable> RegisterDrawables(this ILifetimeScope container)
     {
         var drawables = new List<IDrawable>();
         

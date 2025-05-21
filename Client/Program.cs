@@ -123,21 +123,21 @@ internal static class Program
                 
                 if (ImGui.Button("Single Player"))
                 {
-                    host = new LocalHost(engineContainer);
+                    host = new LocalHost();
                     host.Start(engineContainer, EGameMode.SinglePlayer);
                     cameraService = host.GameContainer?.Resolve<CameraSystem>();
                 }
                 
                 if (ImGui.Button("Local Host"))
                 {
-                    host = new LocalHost(engineContainer);
+                    host = new LocalHost();
                     host.Start(engineContainer, EGameMode.Host);
                     cameraService = host.GameContainer?.Resolve<CameraSystem>();
                 }
                 
                 if (ImGui.Button("Client"))
                 {
-                    host = new ClientHost(engineContainer);
+                    host = new ClientHost();
                     host.Start(engineContainer, EGameMode.Client);
                     cameraService = host.GameContainer?.Resolve<CameraSystem>();
                 }

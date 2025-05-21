@@ -8,7 +8,7 @@ namespace Common.Core.Extensions;
 
 public static class ContainerExtensions
 {
-    public static void FilterRegistrations<T>(this IContainer container, Action<T, Type> action)
+    public static void FilterRegistrations<T>(this ILifetimeScope container, Action<T, Type> action)
     {
         container.ComponentRegistry.Registrations.SelectMany(x => x.Services)
             .OfType<IServiceWithType>()
@@ -21,7 +21,7 @@ public static class ContainerExtensions
             });
     }
     
-    public static List<(EPriority, IUpdatable)> RegisterUpdatables(this Container container)
+    public static List<(EPriority, IUpdatable)> RegisterUpdatables(this ILifetimeScope container)
     {
         var updatables = new List<(EPriority, IUpdatable)>();
         

@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using Autofac;
 using Common.Core;
 using Autofac.Core;
 
@@ -8,7 +9,7 @@ namespace Common.Host;
 
 public interface IHost: IDisposable
 {
-    public Container GameContainer { get; set; }
+    public ILifetimeScope GameContainer { get; set; }
     
     List<(EPriority, IUpdatable)> GameUpdatables { get; }
 

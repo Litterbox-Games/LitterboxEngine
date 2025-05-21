@@ -1,8 +1,8 @@
 ﻿using Autofac;
 using Autofac.Core;
 using Common.Core;
+using Common.Core.Extensions;
 using Common.Host;
-using Common.Host.Extensions;
 
 namespace Server.Host;
 
@@ -12,23 +12,24 @@ namespace Server.Host;
 public class ServerHost : IServerHost
 {
     // Game
-    public Container? GameContainer  { get; set; }
+    public ILifetimeScope GameContainer  { get; set; } = null!;
     public List<(EPriority, IUpdatable)> GameUpdatables { get; private set; } = [];
     
-    public void Start(IContainer engineContainer, EGameMode gameMode)
+    public void Start(Container engineContainer, EGameMode gameMode)
     {
-        GameContainer = engineContainer.CreateChildContainer();
-        GameContainer.RegisterServices(gameMode, ELifetime.Game);
+        GameContainer = engineContainer.BeginLifetimeScope(builder =>
+        {
+            builder.RegisterServices(gameMode, ELifetime.Game);
+        });
         
-        this.RegisterUpdatables();
+        GameUpdatables = GameContainer.RegisterUpdatables();
         
         (this as IServerHost).StartServer(7777);
     }
     
     public void Stop()
     {
-        GameContainer?.Dispose();
-        GameContainer = null;
+        GameContainer.Dispose();
         GameUpdatables = [];
     }
     
