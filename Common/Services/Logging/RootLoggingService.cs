@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Autofac.Core;
+using Common.Host;
 
 namespace Common.Services.Logging;
 
@@ -8,18 +9,7 @@ namespace Common.Services.Logging;
 /// </summary>
 public class RootLoggingService : ILoggingService
 {
-    private readonly List<ILoggingService> _loggers = new();
-    private readonly Container _container;
-    
-    /// <summary>
-    ///     Creates an instance of the root logger.
-    /// </summary>
-    /// <remarks>This is designed to be called by the container during resolution, not by manual invocation.</remarks>
-    public RootLoggingService(Container container)
-    {
-        _container = container;
-        RefreshLoggers();
-    }
+    private readonly List<ILoggingService> _loggers = [];
     
     /// <inheritdoc />
     public void Debug(string message)
@@ -55,10 +45,10 @@ public class RootLoggingService : ILoggingService
     ///     Forces the root logger to clear and resolve all other logging services again.
     /// </summary>
     /// <remarks>This is used when a logging service is added after initial registration.</remarks>
-    public void RefreshLoggers()
+    public void RefreshLoggers(ILifetimeScope container)
     {
         _loggers.Clear();
-        _loggers.AddRange(_container.Resolve<IEnumerable<ILoggingService>>().Where(x => x != this));
+        _loggers.AddRange(container.Resolve<IEnumerable<ILoggingService>>().Where(x => x != this));
     }
     
     

@@ -10,6 +10,7 @@ using Client.Systems;
 using Common.Core;
 using Common.Core.Extensions;
 using Common.Host;
+using Common.Services.Logging;
 using ImGuiNET;
 using Silk.NET.Input;
 
@@ -27,6 +28,8 @@ internal static class Program
         
         var engineContainer = (Container)containerBuilder.Build();
 
+        engineContainer.Resolve<RootLoggingService>().RefreshLoggers(engineContainer);
+        
         IClientHost? host = null;
         
         // Game Initialization
@@ -115,6 +118,8 @@ internal static class Program
                 host.Dispose();
                 host = null;
                 cameraService = null;
+                
+                engineContainer.Resolve<RootLoggingService>().RefreshLoggers(engineContainer);
                 
                 GC.Collect();
             }

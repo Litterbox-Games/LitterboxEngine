@@ -19,7 +19,7 @@ public class FirstEngineRegistrar: IServiceRegistrar
     {
         container.RegisterType<EventService>().AsSelf().SingleInstance();
         
-        //container.RegisterType<RootLoggingService>().As<ILoggingService>().SingleInstance();
-        container.RegisterType<ConsoleLoggingService>().As<ILoggingService>().AsSelf().SingleInstance();
+        container.RegisterType<RootLoggingService>().As<ILoggingService>().AsSelf().SingleInstance();
+        container.RegisterType<ConsoleLoggingService>().As<ILoggingService>().AsSelf().SingleInstance().PreserveExistingDefaults();
     }    
 }

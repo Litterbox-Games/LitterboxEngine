@@ -6,6 +6,7 @@ using Client.Services.Network;
 using Common.Core;
 using Common.Host;
 using Common.Core.Extensions;
+using Common.Services.Logging;
 
 namespace Client.Host;
 
@@ -25,9 +26,17 @@ public class ClientHost : IClientHost
     {
         GameContainer = engineContainer.BeginLifetimeScope(builder =>
         {
+            builder.RegisterInstance(this)
+                .As<IClientHost>()
+                .As<IHost>()
+                .AsSelf()
+                .SingleInstance();
+            
             builder.RegisterServices(gameMode, ELifetime.Game);
         });
 
+        GameContainer.Resolve<RootLoggingService>().RefreshLoggers(GameContainer);
+        
         GameUpdatables = engineContainer.RegisterUpdatables();
         GameInputables = engineContainer.RegisterInputables();
         GameDrawables = engineContainer.RegisterDrawables();
