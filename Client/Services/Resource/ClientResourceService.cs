@@ -7,7 +7,7 @@ using MoreLinq;
 
 namespace Client.Services.Resource;
 
-public class ClientResourceService: IResourceService, IUpdatable, IDisposable
+public class ClientResourceService: IResourceService, IUpdatable
 {
     private readonly Dictionary<string, IResource> _resources = new ();
     private readonly IGraphicsDeviceService _graphicsDevice;

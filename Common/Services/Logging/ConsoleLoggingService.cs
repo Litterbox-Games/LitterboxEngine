@@ -6,7 +6,7 @@ namespace Common.Services.Logging;
 /// <summary>
 ///     A service implementing the logging contract to log information to the system console.
 /// </summary>
-public class ConsoleLoggingService : ILoggingService, IDisposable
+public class ConsoleLoggingService : ILoggingService
 {
     private readonly Logger _logger = new LoggerConfiguration().MinimumLevel.Debug().WriteTo.Console().CreateLogger();
     

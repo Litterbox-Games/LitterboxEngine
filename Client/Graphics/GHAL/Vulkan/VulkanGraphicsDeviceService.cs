@@ -5,7 +5,7 @@ using Silk.NET.Vulkan;
 namespace Client.Graphics.GHAL.Vulkan;
 
 // TODO: where should this be disposed and should IGraphicsDeviceService inherit from IDisposable?
-public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService, IDisposable
+public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService
 {
     public readonly Vk Vk;
     private readonly VulkanInstance _instance;

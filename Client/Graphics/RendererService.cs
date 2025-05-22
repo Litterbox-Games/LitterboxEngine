@@ -8,7 +8,7 @@ using Buffer = Client.Graphics.GHAL.Buffer;
 
 namespace Client.Graphics;
 
-public class RendererService: IService, IDisposable
+public class RendererService: IService
 {
     private const int MaxQuads = 100000;
     private const int MaxTextures = 8;
