@@ -1,6 +1,4 @@
-﻿using Client.Services.Network;
-using Common.Services.Events;
-using Common.Services.Network;
+﻿using Common.Services.Events;
 using Common.Services.Players;
 using Common.Services.Players.Events;
 

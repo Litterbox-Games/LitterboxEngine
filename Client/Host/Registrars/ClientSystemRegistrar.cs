@@ -1,5 +1,4 @@
 ﻿using Autofac;
-using Client.Graphics;
 using Client.Services.World;
 using Common.Core;
 using Common.Core.Attributes;

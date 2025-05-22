@@ -17,51 +17,6 @@ namespace Client;
 
 internal static class Program
 {
-    /*
-     
-    private static IClientHost MainMenu(Container engineContainer)
-    {
-        IClientHost? host = null;
-
-        while (host == null)
-        {
-            Console.WriteLine("""
-            Type letter to start associated client:
-            'S' - Single-player
-            'L' - Localhost
-            'C' - Client
-            """);
-            var userInput = Console.ReadLine();
-
-            if (string.IsNullOrEmpty(userInput)) continue;
-            
-            switch (userInput.ToUpper()[0])
-            {
-                case 'S':
-                {
-                    host = new LocalHost();
-                    host.Start(engineContainer, EGameMode.SinglePlayer);
-                    break;
-                }
-                case 'L':
-                {
-                    host = new LocalHost();
-                    host.Start(engineContainer, EGameMode.Host);
-                    break;
-                }
-                case 'C':
-                {
-                    host = new ClientHost();
-                    host.Start(engineContainer, EGameMode.Client);
-                    break;
-                }
-            }
-        }
-        
-        return host;
-    }
-    */
-    
     private static void Main()
     {
         // Engine Initialization
@@ -73,8 +28,6 @@ internal static class Program
         var engineContainer = (Container)containerBuilder.Build();
 
         IClientHost? host = null;
-        
-        // var host = MainMenu(engineContainer);
         
         // Game Initialization
         // TODO: everything under this should be condensed to a single GameStartEvent or something similar

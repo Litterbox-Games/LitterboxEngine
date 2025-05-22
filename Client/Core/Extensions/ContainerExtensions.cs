@@ -1,5 +1,4 @@
 using Autofac;
-using Autofac.Core;
 using Client.Graphics;
 using Common.Core.Extensions;
 

@@ -5,7 +5,6 @@ using Client.Graphics;
 using Common.Core;
 using Common.Core.Extensions;
 using Common.Host;
-using Common.Services.Logging;
 
 namespace Client.Host;
 

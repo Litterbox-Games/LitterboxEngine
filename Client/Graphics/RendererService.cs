@@ -4,8 +4,6 @@ using System.Runtime.InteropServices;
 using Client.Graphics.GHAL;
 using Client.Services.Resource;
 using Common.Core;
-using Common.Services.Resource;
-using ImGuiNET;
 using Buffer = Client.Graphics.GHAL.Buffer;
 
 namespace Client.Graphics;
