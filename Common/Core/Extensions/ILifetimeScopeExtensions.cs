@@ -6,7 +6,7 @@ using MoreLinq;
 
 namespace Common.Core.Extensions;
 
-public static class ContainerExtensions
+public static class ILifetimeScopeExtensions
 {
     public static void FilterRegistrations<T>(this ILifetimeScope container, Action<T, Type> action)
     {

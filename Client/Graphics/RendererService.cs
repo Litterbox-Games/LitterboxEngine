@@ -4,13 +4,11 @@ using System.Runtime.InteropServices;
 using Client.Graphics.GHAL;
 using Client.Services.Resource;
 using Common.Core;
-using Common.Services.Resource;
-using ImGuiNET;
 using Buffer = Client.Graphics.GHAL.Buffer;
 
 namespace Client.Graphics;
 
-public class RendererService: IService, IDisposable
+public class RendererService: IService
 {
     private const int MaxQuads = 100000;
     private const int MaxTextures = 8;
@@ -39,9 +37,8 @@ public class RendererService: IService, IDisposable
     private readonly Texture[] _textures;
     private readonly ResourceSet _textureSet;
     
-    private Matrix4x4 _mvp;
-    
-    public Color ClearColor { get; set; } = Color.Black;
+    public Matrix4x4 ViewMatrix = Matrix4x4.Identity;
+    public Color ClearColor = Color.Black;
     
     public unsafe RendererService(IGraphicsDeviceService graphicsDevice)
     {
@@ -114,14 +111,12 @@ public class RendererService: IService, IDisposable
         _commandList = _graphicsDevice.CreateCommandList();
     }
 
-    public void BeginDrawing(Matrix4x4? mvp = null)
+    public void BeginDrawing()
     {
-        _mvp = mvp ?? Matrix4x4.Identity;
-        
         _commandList.BeginRenderPass(ClearColor);
         _commandList.SetPipeline(_pipeline);
         
-        _commandList.UpdateBuffer(_transformBuffer, 0, _mvp);
+        _commandList.UpdateBuffer(_transformBuffer, 0, ViewMatrix);
         _commandList.SetResourceSet(0, _transformSet);
     }
 

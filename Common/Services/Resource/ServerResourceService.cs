@@ -4,7 +4,7 @@ using MoreLinq;
 
 namespace Common.Services.Resource;
 
-public class ServerResourceService : IResourceService, IDisposable
+public class ServerResourceService : IResourceService
 {
     private readonly Dictionary<string, IResource> _resources = new ();
     private readonly ILoggingService _logger;

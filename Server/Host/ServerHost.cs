@@ -3,6 +3,7 @@ using Autofac.Core;
 using Common.Core;
 using Common.Core.Extensions;
 using Common.Host;
+using Common.Services.Logging;
 
 namespace Server.Host;
 
@@ -21,6 +22,8 @@ public class ServerHost : IServerHost
         {
             builder.RegisterServices(gameMode, ELifetime.Game);
         });
+        
+        GameContainer.Resolve<RootLoggingService>().RefreshLoggers(GameContainer);
         
         GameUpdatables = GameContainer.RegisterUpdatables();
         

@@ -2,14 +2,13 @@
 using Arch.Core;
 using Common.Components;
 using Common.Core;
-using Common.Services.Entities;
 using Common.Services.Entities.Events;
 using Common.Services.Events;
 using Common.Services.Players;
 
-namespace Common.Systems;
+namespace Common.Services.Entities;
 
-public class MovementSystem: ISystem, IUpdatable
+public class MovementService: IService, IUpdatable
 {
     private readonly QueryDescription _movable = new QueryDescription().WithAll<Networked, Position>();
 
@@ -17,7 +16,7 @@ public class MovementSystem: ISystem, IUpdatable
     private readonly IEntityService _entityService;
     private readonly IPlayerService _playerService;
     
-    public MovementSystem(IEntityService entityService, IPlayerService playerService, EventService eventService)
+    public MovementService(IEntityService entityService, IPlayerService playerService, EventService eventService)
     {
         _eventService = eventService;
         _entityService = entityService;

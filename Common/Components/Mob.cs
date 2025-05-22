@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-
-namespace Common.Components;
+﻿namespace Common.Components;
 
 public struct Mob()
 {

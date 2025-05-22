@@ -30,6 +30,7 @@ public class BlockRegistry : IRegistry<IBlock>
     
     public void Dispose()
     {
+        this.ResetCounter();
         GC.SuppressFinalize(this);
     }
 }

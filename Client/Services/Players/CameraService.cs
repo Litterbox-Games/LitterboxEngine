@@ -6,39 +6,25 @@ using Common.Core;
 using Common.Mathematics;
 using Common.Services.Entities;
 
-namespace Client.Systems;
+namespace Client.Services.Players;
 
-public class CameraSystem : ISystem, IUpdatable
+public class CameraService : IService, IUpdatable
 {
     private readonly QueryDescription _target = new QueryDescription().WithAll<CameraFollow, Position>();
     
     private readonly IEntityService _entityService;
     private readonly WindowService _window;
+    private readonly RendererService _renderer;
     
     public readonly Camera Camera;
-
-    private int _scaleFactor;
     
-    public CameraSystem(IEntityService entityService, WindowService window)
+    public CameraService(IEntityService entityService, WindowService window, RendererService renderer)
     {
         _entityService = entityService;
         _window = window;
+        _renderer = renderer;
         
-        Camera = new Camera(Vector2.Zero, new Vector2(1920, 1080));
-        RecalculateCamera(window.Width, window.Height);
-        window.OnResize += RecalculateCamera;
-    }
-
-    ~CameraSystem()
-    {
-        Console.WriteLine("Destructor");
-    }
-
-    private void RecalculateCamera(int width, int height)
-    {
-        _scaleFactor = width / 20;
-        Camera.Size = new Vector2(width, height) / _scaleFactor; 
-        Camera.Update();
+        Camera = new Camera(Vector2.Zero, window.Size.ToVector2());
     }
     
     /// <inheritdoc />
@@ -47,12 +33,16 @@ public class CameraSystem : ISystem, IUpdatable
         _entityService.Entities.Query(in _target, ( 
             ref Position position
         ) => {
-            Camera.Position = position.Current + _window.Size.ToVector2() / _scaleFactor / 2;
-            Camera.Position *= _scaleFactor;
+            var scaleFactor = _window.Width / 20;
+            Camera.Size = _window.Size.ToVector2() / scaleFactor;
+            Camera.Position = position.Current + Camera.Size / 2;
+            Camera.Position *= scaleFactor;
             Camera.Position = Camera.Position.Round();
-            Camera.Position /= _scaleFactor;
+            Camera.Position /= scaleFactor;
 
             Camera.Update();    
+            
+            _renderer.ViewMatrix = Camera.ViewMatrix;
         });
     }
     
@@ -67,8 +57,6 @@ public class CameraSystem : ISystem, IUpdatable
     
     public void Dispose()
     {
-        _window.OnResize -= RecalculateCamera; 
-        // GC.SuppressFinalize(this);
-        Console.WriteLine("Dispose");
+        GC.SuppressFinalize(this);
     }
 }

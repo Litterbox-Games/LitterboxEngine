@@ -1,5 +1,4 @@
-﻿using Arch.Core;
-using Common.Core;
+﻿using Common.Core;
 
 namespace Common.Services.Entities;
 

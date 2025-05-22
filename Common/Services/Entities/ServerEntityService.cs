@@ -66,7 +66,7 @@ public class ServerEntityService: IEntityService
     private void OnPlayerConnect(PlayerConnectEvent e)
     {
         var entity = Entities.Create(
-            new Networked { OwnerId = e.NetworkPlayer!.PlayerId, NetworkId = (ulong) _random.Next(), EntityType = 0 },
+            new Networked { OwnerId = e.NetworkPlayer.PlayerId, NetworkId = (ulong) _random.Next(), EntityType = 0 },
             new Player(), 
             new Position(Vector2.Zero));
         
@@ -84,18 +84,16 @@ public class ServerEntityService: IEntityService
             ref Networked network, 
             ref Position position
         ) => { 
-            if (network.OwnerId == e.NetworkPlayer!.PlayerId) return;
+            if (network.OwnerId == e.NetworkPlayer.PlayerId) return;
             
-            var entitySpawnMessage = new EntitySpawnEvent
+            _eventService.Emit(new EntitySpawnEvent
             {
                 EntityId = network.NetworkId,
                 EntityOwner = network.OwnerId,
                 EntityType = network.EntityType,
                 EntityPosition = position.Current,
-                Receivers = serverPlayer => serverPlayer.PlayerId == e.NetworkPlayer!.PlayerId
-            };
-
-            _eventService.Emit(entitySpawnMessage);
+                Receivers = serverPlayer => serverPlayer.PlayerId == e.NetworkPlayer.PlayerId
+            });
         });
     }
 

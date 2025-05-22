@@ -6,10 +6,10 @@ using Client.Graphics.GHAL.Vulkan;
 using Client.Graphics.ImGui;
 using Client.Host;
 using Client.Services.Resource;
-using Client.Systems;
 using Common.Core;
 using Common.Core.Extensions;
 using Common.Host;
+using Common.Services.Logging;
 using ImGuiNET;
 using Silk.NET.Input;
 
@@ -17,51 +17,6 @@ namespace Client;
 
 internal static class Program
 {
-    /*
-     
-    private static IClientHost MainMenu(Container engineContainer)
-    {
-        IClientHost? host = null;
-
-        while (host == null)
-        {
-            Console.WriteLine("""
-            Type letter to start associated client:
-            'S' - Single-player
-            'L' - Localhost
-            'C' - Client
-            """);
-            var userInput = Console.ReadLine();
-
-            if (string.IsNullOrEmpty(userInput)) continue;
-            
-            switch (userInput.ToUpper()[0])
-            {
-                case 'S':
-                {
-                    host = new LocalHost();
-                    host.Start(engineContainer, EGameMode.SinglePlayer);
-                    break;
-                }
-                case 'L':
-                {
-                    host = new LocalHost();
-                    host.Start(engineContainer, EGameMode.Host);
-                    break;
-                }
-                case 'C':
-                {
-                    host = new ClientHost();
-                    host.Start(engineContainer, EGameMode.Client);
-                    break;
-                }
-            }
-        }
-        
-        return host;
-    }
-    */
-    
     private static void Main()
     {
         // Engine Initialization
@@ -72,9 +27,9 @@ internal static class Program
         
         var engineContainer = (Container)containerBuilder.Build();
 
-        IClientHost? host = null;
+        engineContainer.Resolve<RootLoggingService>().RefreshLoggers(engineContainer);
         
-        // var host = MainMenu(engineContainer);
+        IClientHost? host = null;
         
         // Game Initialization
         // TODO: everything under this should be condensed to a single GameStartEvent or something similar
@@ -83,9 +38,6 @@ internal static class Program
         var graphicsDevice = engineContainer.Resolve<VulkanGraphicsDeviceService>();
         var renderer = engineContainer.Resolve<RendererService>();
         var resourceService = engineContainer.Resolve<ClientResourceService>();
-        
-        // TODO: is there a better way to grab the camera? It would be nice if we could set the renderers camera?
-        CameraSystem? cameraService = null;
         
         // TODO: convert this to use IGraphicsDevice
         using var imGui = new ImGuiRenderer(window, graphicsDevice);
@@ -114,7 +66,7 @@ internal static class Program
             imGui.Update(deltaTime);
 
             renderer.BeginFrame();
-            renderer.BeginDrawing(cameraService?.Camera.ViewMatrix);
+            renderer.BeginDrawing();
             
             // MainMenu
             if (host == null)
@@ -125,21 +77,18 @@ internal static class Program
                 {
                     host = new LocalHost();
                     host.Start(engineContainer, EGameMode.SinglePlayer);
-                    cameraService = host.GameContainer?.Resolve<CameraSystem>();
                 }
                 
                 if (ImGui.Button("Local Host"))
                 {
                     host = new LocalHost();
                     host.Start(engineContainer, EGameMode.Host);
-                    cameraService = host.GameContainer?.Resolve<CameraSystem>();
                 }
                 
                 if (ImGui.Button("Client"))
                 {
                     host = new ClientHost();
                     host.Start(engineContainer, EGameMode.Client);
-                    cameraService = host.GameContainer?.Resolve<CameraSystem>();
                 }
                 
                 ImGui.End();
@@ -161,7 +110,8 @@ internal static class Program
                 host.Stop();
                 host.Dispose();
                 host = null;
-                cameraService = null;
+                
+                engineContainer.Resolve<RootLoggingService>().RefreshLoggers(engineContainer);
                 
                 GC.Collect();
             }

@@ -24,8 +24,17 @@ public class LocalHost : IClientHost, IServerHost
     {
         GameContainer = engineContainer.BeginLifetimeScope(builder =>
         {
+            builder.RegisterInstance(this)
+                .As<IClientHost>()
+                .As<IServerHost>()
+                .As<IHost>()
+                .AsSelf()
+                .SingleInstance();
+            
             builder.RegisterServices(gameMode, ELifetime.Game);
         });
+        
+        GameContainer.Resolve<RootLoggingService>().RefreshLoggers(GameContainer);
         
         GameUpdatables = GameContainer.RegisterUpdatables();
         GameInputables = GameContainer.RegisterInputables();

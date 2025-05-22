@@ -3,7 +3,7 @@ using Common.Core.Attributes;
 using Common.Host;
 using MoreLinq;
 
-namespace Common.Core;
+namespace Common.Core.Extensions;
 
 public static class ContainerBuildExtensions
 {
