@@ -6,9 +6,9 @@ using Common.Core;
 using Common.Mathematics;
 using Common.Services.Entities;
 
-namespace Client.Systems;
+namespace Client.Services.Players;
 
-public class CameraSystem : ISystem, IUpdatable
+public class CameraService : IService, IUpdatable
 {
     private readonly QueryDescription _target = new QueryDescription().WithAll<CameraFollow, Position>();
     
@@ -18,7 +18,7 @@ public class CameraSystem : ISystem, IUpdatable
     
     public readonly Camera Camera;
     
-    public CameraSystem(IEntityService entityService, WindowService window, RendererService renderer)
+    public CameraService(IEntityService entityService, WindowService window, RendererService renderer)
     {
         _entityService = entityService;
         _window = window;

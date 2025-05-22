@@ -1,9 +1,10 @@
 ﻿using Autofac;
+using Client.Services.Entities;
+using Client.Services.Players;
 using Client.Services.World;
 using Common.Core;
 using Common.Core.Attributes;
 using Common.Host;
-using Client.Systems;
 
 namespace Client.Host.Registrars;
 
@@ -20,8 +21,8 @@ public class ClientSystemRegistrar : IServiceRegistrar
     {
         container.RegisterType<WorldRenderService>().AsSelf().SingleInstance();
         
-        container.RegisterType<CameraSystem>().AsSelf().SingleInstance();
-        container.RegisterType<PlayerControlSystem>().AsSelf().SingleInstance();
-        container.RegisterType<EntityRenderSystem>().AsSelf().SingleInstance();
+        container.RegisterType<CameraService>().AsSelf().SingleInstance();
+        container.RegisterType<PlayerControlService>().AsSelf().SingleInstance();
+        container.RegisterType<EntityRenderService>().AsSelf().SingleInstance();
     }                                                                 
 }

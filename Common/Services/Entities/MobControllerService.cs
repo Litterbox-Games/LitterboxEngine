@@ -2,12 +2,11 @@
 using Arch.Core;
 using Common.Components;
 using Common.Core;
-using Common.Services.Entities;
 using Common.Services.Players;
 
-namespace Common.Systems;
+namespace Common.Services.Entities;
 
-public class MobControllerSystem : ISystem, IUpdatable
+public class MobControllerService : IService, IUpdatable
 {
     private readonly QueryDescription _mobs = new QueryDescription().WithAll<Mob, Position, Velocity>();
     
@@ -16,7 +15,7 @@ public class MobControllerSystem : ISystem, IUpdatable
     
     private readonly Random _random = new();
 
-    public MobControllerSystem(ServerEntityService entityService, IPlayerService playerService)
+    public MobControllerService(ServerEntityService entityService, IPlayerService playerService)
     {
         _entityService = entityService;
         _playerService = playerService;

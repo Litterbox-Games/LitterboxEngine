@@ -3,7 +3,7 @@ using Autofac;
 using Common.Components;
 using Common.Core;
 using Common.Core.Attributes;
-using Common.Systems;
+using Common.Services.Entities;
 
 namespace Common.Host.Registrars;
 
@@ -23,6 +23,6 @@ public class FirstSystemRegistrar: IServiceRegistrar
         ComponentRegistry.Add<Position>(); 
         
         // Systems
-        container.RegisterType<MovementSystem>().AsSelf().SingleInstance();
+        container.RegisterType<MovementService>().AsSelf().SingleInstance();
     }    
 }

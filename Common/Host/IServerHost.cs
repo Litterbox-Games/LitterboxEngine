@@ -1,8 +1,8 @@
 ﻿using System.Numerics;
 using Autofac;
+using Common.Services.Entities;
 using Common.Services.Network;
 using Common.Services.Players;
-using Common.Systems;
 
 namespace Common.Host;
 
@@ -19,7 +19,7 @@ public interface IServerHost: IHost
         var networking = GameContainer.Resolve<ServerNetworkService>();
         networking.Listen(port);
 
-        var mobController = GameContainer.Resolve<MobControllerSystem>();
+        var mobController = GameContainer.Resolve<MobControllerService>();
         for (var x = 0; x < 30; x++)
         {
             for (var y = 0; y < 30; y++)

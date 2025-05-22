@@ -1,7 +1,7 @@
 ﻿using Autofac;
 using Common.Core;
 using Common.Core.Attributes;
-using Common.Systems;
+using Common.Services.Entities;
 
 namespace Common.Host.Registrars;
 
@@ -17,6 +17,6 @@ public class ServerSystemRegistrar : IServiceRegistrar
     public void RegisterServices(ContainerBuilder container)
     {
         // Systems
-        container.RegisterType<MobControllerSystem>().AsSelf().SingleInstance();
+        container.RegisterType<MobControllerService>().AsSelf().SingleInstance();
     }                                                                 
 }

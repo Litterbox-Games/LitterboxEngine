@@ -16,9 +16,9 @@ using Common.Services.Resource;
 using Common.Services.World;
 using ImGuiNET;
 
-namespace Client.Systems;
+namespace Client.Services.Entities;
 
-public class EntityRenderSystem: ISystem, IDrawable
+public class EntityRenderService: IService, IDrawable
 {
     private readonly QueryDescription _movable = new QueryDescription().WithAll<Networked, Position>();
     
@@ -30,7 +30,7 @@ public class EntityRenderSystem: ISystem, IDrawable
     private Entity? _playerEntity;
     private readonly Rectangle _textureSource = new(32, 112, 20, 16);
     
-    public EntityRenderSystem(IEntityService entityService, IPlayerService playerService, IResourceService resourceService, EventService eventService)
+    public EntityRenderService(IEntityService entityService, IPlayerService playerService, IResourceService resourceService, EventService eventService)
     {
         _entityService = entityService;
         _playerService = playerService;

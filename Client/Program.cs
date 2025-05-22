@@ -6,7 +6,6 @@ using Client.Graphics.GHAL.Vulkan;
 using Client.Graphics.ImGui;
 using Client.Host;
 using Client.Services.Resource;
-using Client.Systems;
 using Common.Core;
 using Common.Core.Extensions;
 using Common.Host;
