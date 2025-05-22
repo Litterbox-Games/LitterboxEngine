@@ -4,7 +4,7 @@ using Common.Core.Extensions;
 
 namespace Client.Core.Extensions;
 
-public static class ContainerExtensions
+public static class ILifetimeScopeExtensions
 {
     public static List<IInputable> RegisterInputables(this ILifetimeScope container)
     {
