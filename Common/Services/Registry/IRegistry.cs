@@ -71,7 +71,7 @@ public static class RegistryExtensions
     
     public static void ResetCounter<T> (this IRegistry<T> registry) where T : class, IRegisterable
     {
-        IdCounter.Remove(typeof(T));
+        IdCounter.Remove(registry.GetType());
     }
     
     public static void LoadSerializedMappings<T>(this IRegistry<T> registry, byte[] serializedMappings) where T : class, IRegisterable
