@@ -10,12 +10,6 @@ public interface IServerHost: IHost
 {
     public void StartServer(ushort port)
     {
-        if (GameContainer == null)
-        {
-            Console.WriteLine("GameContainer is null");
-            return;
-        }
-        
         var networking = GameContainer.Resolve<ServerNetworkService>();
         networking.Listen(port);
 
@@ -31,24 +25,12 @@ public interface IServerHost: IHost
     
     public void StopServer()
     {
-        if (GameContainer == null)
-        {
-            Console.WriteLine("GameContainer is null");
-            return;
-        }
-        
         var networking = GameContainer.Resolve<ServerNetworkService>();
         networking.StopListening();
     }
 
     public void SpawnServerPlayer()
     {
-        if (GameContainer == null)
-        {
-            Console.WriteLine("GameContainer is null");
-            return;
-        }
-        
         var playerService = GameContainer.Resolve<ServerPlayerService>();
         playerService.SpawnServerPlayer();
     }

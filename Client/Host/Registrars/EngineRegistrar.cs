@@ -16,7 +16,7 @@ namespace Client.Host.Registrars;
 [RegistrarMode(EGameMode.Client | EGameMode.Host | EGameMode.SinglePlayer)]
 [RegistrarLifetime(ELifetime.Engine)]
 [RegistrarPriority(EPriority.High)]
-public class ClientEngineRegistrar : IServiceRegistrar
+public class EngineRegistrar : IServiceRegistrar
 {
     /// <inheritdoc />
     public void RegisterServices(ContainerBuilder container)

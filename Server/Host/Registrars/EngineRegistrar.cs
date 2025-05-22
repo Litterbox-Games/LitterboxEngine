@@ -12,7 +12,7 @@ namespace Server.Host.Registrars;
 [RegistrarMode(EGameMode.Dedicated)]
 [RegistrarLifetime(ELifetime.Engine)]
 [RegistrarPriority(EPriority.High)]
-public class ServerEngineRegistrar: IServiceRegistrar
+public class EngineRegistrar: IServiceRegistrar
 {
     /// <inheritdoc />
     public void RegisterServices(ContainerBuilder container)

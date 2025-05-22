@@ -37,9 +37,9 @@ public class ClientHost : IClientHost
 
         GameContainer.Resolve<RootLoggingService>().RefreshLoggers(GameContainer);
         
-        GameUpdatables = engineContainer.RegisterUpdatables();
-        GameInputables = engineContainer.RegisterInputables();
-        GameDrawables = engineContainer.RegisterDrawables();
+        GameUpdatables = GameContainer.RegisterUpdatables();
+        GameInputables = GameContainer.RegisterInputables();
+        GameDrawables = GameContainer.RegisterDrawables();
 
         var networkService = GameContainer.Resolve<ClientNetworkService>();
         networkService.Connect("127.0.0.1", 7777);

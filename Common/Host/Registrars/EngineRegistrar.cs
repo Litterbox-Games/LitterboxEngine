@@ -7,12 +7,12 @@ using Common.Services.Logging;
 namespace Common.Host.Registrars;
 
 /// <summary>
-///     Registers any services that all hosts share.
+///     Registers any engine services that all hosts share.
 /// </summary>
 [RegistrarMode(EGameMode.Client | EGameMode.Host | EGameMode.SinglePlayer | EGameMode.Dedicated)]
 [RegistrarLifetime(ELifetime.Engine)]
 [RegistrarPriority(EPriority.VeryHigh)]
-public class FirstEngineRegistrar: IServiceRegistrar
+public class EngineRegistrar: IServiceRegistrar
 {
     /// <inheritdoc />
     public void RegisterServices(ContainerBuilder container)
