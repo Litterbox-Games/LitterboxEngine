@@ -69,6 +69,11 @@ public class EventService(ILoggingService logger) : IService
         if (_handlers.TryGetValue(eventType, out var handlers))
         {
             handlers.RemoveAll(x => x.Item1 == methodName);
+            
+            if (handlers.Count == 0)
+            {
+                _handlers.Remove(eventType);
+            }
         }
     }
     

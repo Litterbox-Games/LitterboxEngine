@@ -30,7 +30,7 @@ public abstract class NetworkService: IService, IUpdatable
     {
         var hash = GetDeterministicHashCode(e.Type.FullName!);
 
-        _logger.Information($"Registering network event '{e.Type.Name}'");
+        _logger.Information($"Registering network event '{e.Type.Name}' with hash '{hash}'");
         if (_events.TryGetValue(hash, out var message))
         {
             _logger.Warning("Attempted to register network events sharing the same hash.");
