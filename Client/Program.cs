@@ -40,9 +40,6 @@ internal static class Program
         var renderer = engineContainer.Resolve<RendererService>();
         var resourceService = engineContainer.Resolve<ClientResourceService>();
         
-        // TODO: is there a better way to grab the camera? It would be nice if we could set the renderers camera?
-        CameraSystem? cameraService = null;
-        
         // TODO: convert this to use IGraphicsDevice
         using var imGui = new ImGuiRenderer(window, graphicsDevice);
         
@@ -70,7 +67,7 @@ internal static class Program
             imGui.Update(deltaTime);
 
             renderer.BeginFrame();
-            renderer.BeginDrawing(cameraService?.Camera.ViewMatrix);
+            renderer.BeginDrawing();
             
             // MainMenu
             if (host == null)
@@ -81,21 +78,18 @@ internal static class Program
                 {
                     host = new LocalHost();
                     host.Start(engineContainer, EGameMode.SinglePlayer);
-                    cameraService = host.GameContainer?.Resolve<CameraSystem>();
                 }
                 
                 if (ImGui.Button("Local Host"))
                 {
                     host = new LocalHost();
                     host.Start(engineContainer, EGameMode.Host);
-                    cameraService = host.GameContainer?.Resolve<CameraSystem>();
                 }
                 
                 if (ImGui.Button("Client"))
                 {
                     host = new ClientHost();
                     host.Start(engineContainer, EGameMode.Client);
-                    cameraService = host.GameContainer?.Resolve<CameraSystem>();
                 }
                 
                 ImGui.End();
@@ -117,7 +111,6 @@ internal static class Program
                 host.Stop();
                 host.Dispose();
                 host = null;
-                cameraService = null;
                 
                 engineContainer.Resolve<RootLoggingService>().RefreshLoggers(engineContainer);
                 
