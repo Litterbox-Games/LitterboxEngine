@@ -69,6 +69,11 @@ public static class RegistryExtensions
         return stream.ToArray();
     }
     
+    public static void ResetCounter<T> (this IRegistry<T> registry) where T : class, IRegisterable
+    {
+        IdCounter.Remove(typeof(T));
+    }
+    
     public static void LoadSerializedMappings<T>(this IRegistry<T> registry, byte[] serializedMappings) where T : class, IRegisterable
     {
         using var memoryStream = new MemoryStream(serializedMappings);
