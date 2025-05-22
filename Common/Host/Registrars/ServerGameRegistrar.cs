@@ -27,7 +27,5 @@ public class ServerGameRegistrar: IServiceRegistrar
         container.RegisterType<ServerEntityService>().As<IEntityService>().AsSelf().SingleInstance();
         container.RegisterType<EarthGenerator>().As<IWorldGenerator>().AsSelf().SingleInstance();
         container.RegisterType<ServerWorldService>().As<IWorldService>().AsSelf().SingleInstance();
-        
-        Console.WriteLine("test");
     }
 }

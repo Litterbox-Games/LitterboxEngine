@@ -29,11 +29,6 @@ public class CameraSystem : ISystem, IUpdatable
         window.OnResize += RecalculateCamera;
     }
 
-    ~CameraSystem()
-    {
-        Console.WriteLine("Destructor");
-    }
-
     private void RecalculateCamera(int width, int height)
     {
         _scaleFactor = width / 20;
@@ -68,7 +63,6 @@ public class CameraSystem : ISystem, IUpdatable
     public void Dispose()
     {
         _window.OnResize -= RecalculateCamera; 
-        // GC.SuppressFinalize(this);
-        Console.WriteLine("Dispose");
+        GC.SuppressFinalize(this);
     }
 }

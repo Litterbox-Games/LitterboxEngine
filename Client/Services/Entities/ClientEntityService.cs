@@ -38,9 +38,6 @@ public class ClientEntityService : IEntityService
                     
                     new Player(),
                     new Position(e.EntityPosition));
-
-                
-                Console.WriteLine(_playerService.PlayerId);
                 
                 if (e.EntityOwner == _playerService.PlayerId)
                 {
