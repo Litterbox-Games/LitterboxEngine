@@ -117,6 +117,8 @@ public class ClientResourceService: IResourceService, IUpdatable
     {
         _watcher.Dispose();
         
+        _graphicsDevice.WaitIdle();
+        
         _resources
             .Select(x => x.Value)
             .Where(x => x.GetType().IsAssignableTo(typeof(IDisposable)))

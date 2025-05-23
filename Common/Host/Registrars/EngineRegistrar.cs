@@ -9,7 +9,7 @@ namespace Common.Host.Registrars;
 /// <summary>
 ///     Registers any engine services that all hosts share.
 /// </summary>
-[RegistrarMode(EGameMode.Client | EGameMode.Host | EGameMode.SinglePlayer | EGameMode.Dedicated)]
+[RegistrarMode(EGameMode.Client | EGameMode.LocalHost | EGameMode.SinglePlayer | EGameMode.Dedicated)]
 [RegistrarLifetime(ELifetime.Engine)]
 [RegistrarPriority(EPriority.VeryHigh)]
 public class EngineRegistrar: IServiceRegistrar

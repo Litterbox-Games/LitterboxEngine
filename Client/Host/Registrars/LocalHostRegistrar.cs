@@ -16,7 +16,7 @@ using Common.Services.World.Generation;
 
 namespace Client.Host.Registrars;
 
-[RegistrarMode(EGameMode.Host)]
+[RegistrarMode(EGameMode.LocalHost)]
 [RegistrarLifetime(ELifetime.Game)]
 [RegistrarPriority(EPriority.High)]
 public class LocalHostRegistrar: IServiceRegistrar

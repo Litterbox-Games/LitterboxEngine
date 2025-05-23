@@ -1,24 +1,21 @@
-﻿using Autofac;
+using Autofac;
 using Autofac.Core;
 using Client.Core.Extensions;
 using Client.Graphics;
-using Client.Services.Network;
 using Common.Core;
-using Common.Host;
 using Common.Core.Extensions;
+using Common.Host;
 using Common.Services.Logging;
 
 namespace Client.Host;
 
 /// <summary>
-///     The host used to represent the client game state.
+///     The host used for single-player.
 /// </summary>
-public class ClientHost : IClientHost
+public class SinglePlayerHost : IClientHost, IServerHost
 {
-    public EGameMode GameMode => EGameMode.Client;
-    
-    public ILifetimeScope GameScope  { get; set; } = null!;
-
+    public EGameMode GameMode => EGameMode.SinglePlayer;
+    public ILifetimeScope GameScope { get; set; } = null!;
     public List<(EPriority, IUpdatable)> GameUpdatables { get; private set; } = [];
     public List<IDrawable> GameDrawables { get; private set; } = [];
     public List<IInputable> GameInputables { get; private set; } = [];
@@ -29,21 +26,21 @@ public class ClientHost : IClientHost
         {
             builder.RegisterInstance(this)
                 .As<IClientHost>()
+                .As<IServerHost>()
                 .As<IHost>()
                 .AsSelf()
                 .SingleInstance();
             
             builder.RegisterServices(GameMode, ELifetime.Game);
         });
-
+        
         GameScope.Resolve<RootLoggingService>().RefreshLoggers(GameScope);
         
         GameUpdatables = GameScope.RegisterUpdatables();
         GameInputables = GameScope.RegisterInputables();
         GameDrawables = GameScope.RegisterDrawables();
-
-        var networkService = GameScope.Resolve<ClientNetworkService>();
-        networkService.Connect("127.0.0.1", 7777);
+        
+        (this as IServerHost).SpawnServerPlayer();
     }
 
     public void Stop()
@@ -55,7 +52,7 @@ public class ClientHost : IClientHost
     }
 
     public void Dispose()
-    {
+    { 
         GC.SuppressFinalize(this);
     }
 }

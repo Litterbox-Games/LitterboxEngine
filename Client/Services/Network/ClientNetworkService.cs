@@ -53,7 +53,7 @@ public class ClientNetworkService: NetworkService
         // Create a random ID and send it in the approval request message
         var msg = _client.CreateMessage();
 
-        var playerService = _host.GameContainer.Resolve<IPlayerService>();
+        var playerService = _host.GameScope.Resolve<IPlayerService>();
         
         var playerName = $"Player {playerService.PlayerId}";
 

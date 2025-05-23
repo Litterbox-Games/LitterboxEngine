@@ -10,10 +10,10 @@ public interface IServerHost: IHost
 {
     public void StartServer(ushort port)
     {
-        var networking = GameContainer.Resolve<ServerNetworkService>();
+        var networking = GameScope.Resolve<ServerNetworkService>();
         networking.Listen(port);
 
-        var mobController = GameContainer.Resolve<MobControllerService>();
+        var mobController = GameScope.Resolve<MobControllerService>();
         for (var x = 0; x < 30; x++)
         {
             for (var y = 0; y < 30; y++)
@@ -25,13 +25,13 @@ public interface IServerHost: IHost
     
     public void StopServer()
     {
-        var networking = GameContainer.Resolve<ServerNetworkService>();
+        var networking = GameScope.Resolve<ServerNetworkService>();
         networking.StopListening();
     }
 
     public void SpawnServerPlayer()
     {
-        var playerService = GameContainer.Resolve<ServerPlayerService>();
+        var playerService = GameScope.Resolve<ServerPlayerService>();
         playerService.SpawnServerPlayer();
     }
 }

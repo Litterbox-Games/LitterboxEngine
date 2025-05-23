@@ -6,6 +6,7 @@ using Common.Core;
 using Common.Core.Attributes;
 using Common.Host;
 using Client.Services.Resource;
+using Client.Services.UI;
 using Common.Services.Resource;
 
 namespace Client.Host.Registrars;
@@ -13,7 +14,7 @@ namespace Client.Host.Registrars;
 /// <summary>
 ///     Registers any engine services that all client hosts share.
 /// </summary>
-[RegistrarMode(EGameMode.Client | EGameMode.Host | EGameMode.SinglePlayer)]
+[RegistrarMode(EGameMode.Client | EGameMode.LocalHost | EGameMode.SinglePlayer)]
 [RegistrarLifetime(ELifetime.Engine)]
 [RegistrarPriority(EPriority.High)]
 public class EngineRegistrar : IServiceRegistrar
@@ -27,5 +28,8 @@ public class EngineRegistrar : IServiceRegistrar
         
         container.RegisterType<VulkanGraphicsDeviceService>().As<IGraphicsDeviceService>().AsSelf().SingleInstance();
         container.RegisterType<ClientResourceService>().As<IResourceService>().AsSelf().SingleInstance();
+
+        container.RegisterType<GameLoopService>().AsSelf().SingleInstance();
+        container.RegisterType<MainMenuService>().AsSelf().SingleInstance();
     }
 }

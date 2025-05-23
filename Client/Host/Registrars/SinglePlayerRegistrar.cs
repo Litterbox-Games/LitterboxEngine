@@ -29,7 +29,7 @@ public class SinglePlayerRegistrar: IServiceRegistrar
         container.RegisterType<BlockRegistry>().AsSelf().SingleInstance();
         
         // TODO: remove ServerNetworkService from here after we change IServerHost.Start() to be event based
-        container.RegisterType<ServerNetworkService>().As<NetworkService>().AsSelf().SingleInstance();
+        // container.RegisterType<ServerNetworkService>().As<NetworkService>().AsSelf().SingleInstance();
         container.RegisterType<ServerPlayerService>().As<IPlayerService>().AsSelf().SingleInstance();
         container.RegisterType<ServerEntityService>().As<IEntityService>().AsSelf().SingleInstance();
         container.RegisterType<EarthGenerator>().As<IWorldGenerator>().AsSelf().SingleInstance();

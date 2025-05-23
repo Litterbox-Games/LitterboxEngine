@@ -19,7 +19,7 @@ public enum EGameMode
     /// <summary>
     ///     Server instance, for servers hosted through the game application with a local client.
     /// </summary>
-    Host = 0x0100,
+    LocalHost = 0x0100,
     
     /// <summary>
     ///     Server instance, for dedicated servers without a local client.
