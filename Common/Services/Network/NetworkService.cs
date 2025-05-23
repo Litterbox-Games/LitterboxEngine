@@ -3,6 +3,7 @@ using Common.Services.Events;
 using Common.Services.Logging;
 using Common.Services.Network.Events;
 using Lidgren.Network;
+using MoreLinq;
 
 namespace Common.Services.Network;
 
@@ -21,26 +22,27 @@ public abstract class NetworkService: IService, IUpdatable
         _eventService = eventService;
 
         eventService.Handle<OutgoingEvent>(OnOutgoing);
-        eventService.Handle<RegisterMessageEvent>(OnRegisterMessage);
     }
     
     protected abstract void OnOutgoing(OutgoingEvent e);
-    
-    private void OnRegisterMessage(RegisterMessageEvent e) 
+
+    protected void RegisterNetworkEvents()
     {
-        var hash = GetDeterministicHashCode(e.Type.FullName!);
+        _eventService.EventTypes.Where(eventType => eventType.IsAssignableTo(typeof(INetworkEvent))).ForEach(eventType => {
+            var hash = GetDeterministicHashCode(eventType.FullName!);
 
-        _logger.Information($"Registering network event '{e.Type.Name}' with hash '{hash}'");
-        if (_events.TryGetValue(hash, out var message))
-        {
-            _logger.Warning("Attempted to register network events sharing the same hash.");
-            _logger.Warning(message.FullName!);
-            _logger.Warning(e.Type.FullName!);
+            _logger.Information($"Registering network event '{eventType.Name}' with hash '{hash}'");
+            if (_events.TryGetValue(hash, out var message))
+            {
+                _logger.Warning("Attempted to register network events sharing the same hash.");
+                _logger.Warning(message.FullName!);
+                _logger.Warning(eventType.FullName!);
 
-            return;
-        }
+                return;
+            }
 
-        _events[hash] = e.Type;
+            _events[hash] = eventType;
+        });
     }
     
     protected void SendMessage(NetConnection connection, INetworkEvent e)
@@ -110,6 +112,5 @@ public abstract class NetworkService: IService, IUpdatable
     public virtual void Dispose()
     {
         _eventService.Unhandle<OutgoingEvent>(OnOutgoing);
-        _eventService.Unhandle<RegisterMessageEvent>(OnRegisterMessage);
     }
 }

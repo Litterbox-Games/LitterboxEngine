@@ -48,6 +48,8 @@ public class ClientNetworkService: NetworkService
     
     public void Connect(string ip, ushort port)
     {
+        RegisterNetworkEvents();
+        
         // Create a random ID and send it in the approval request message
         var msg = _client.CreateMessage();
         

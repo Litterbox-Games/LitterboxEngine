@@ -82,6 +82,8 @@ public sealed class ServerNetworkService(ILoggingService logger, EventService ev
 
     public void Listen(ushort port)
     {
+        RegisterNetworkEvents();
+        
         if (_server != null) throw new InvalidOperationException("Server is already listening and must be destroyed.");
         
         var config = new NetPeerConfiguration("Ages of Automation") { 
