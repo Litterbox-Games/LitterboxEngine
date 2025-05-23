@@ -21,7 +21,7 @@ internal static class Program
         var engineUpdatables = engineContainer.RegisterUpdatables();
         
         using IServerHost host = new ServerHost();
-        host.Start((Container) engineContainer);
+        host.Start(engineContainer);
 
         var stopWatch = new Stopwatch();
 

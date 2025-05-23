@@ -15,7 +15,7 @@ internal static class Program
         var containerBuilder = new ContainerBuilder();
         containerBuilder.RegisterServices(EGameMode.Client | EGameMode.SinglePlayer | EGameMode.LocalHost, ELifetime.Engine);
         
-        var engineContainer = (Container)containerBuilder.Build();
+        var engineContainer = containerBuilder.Build();
         
         engineContainer.Resolve<RootLoggingService>().RefreshLoggers(engineContainer);
         
