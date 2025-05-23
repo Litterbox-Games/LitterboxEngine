@@ -1,5 +1,4 @@
 using Autofac;
-using Autofac.Core;
 using Client.Services.UI;
 using Common.Core;
 using Common.Core.Extensions;
