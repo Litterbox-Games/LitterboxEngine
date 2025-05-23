@@ -1,8 +1,5 @@
-﻿using System.Runtime.CompilerServices;
-using Autofac;
+﻿using Autofac;
 using Common.Core;
-
-[assembly: InternalsVisibleTo("Client")]
 
 namespace Common.Host;
 
