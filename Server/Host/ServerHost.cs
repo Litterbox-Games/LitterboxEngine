@@ -1,5 +1,4 @@
 ﻿using Autofac;
-using Autofac.Core;
 using Common.Core;
 using Common.Core.Extensions;
 using Common.Host;

@@ -1,6 +1,4 @@
 ﻿using Autofac;
-using Autofac.Core;
-using Common.Host;
 
 namespace Common.Services.Logging;
 

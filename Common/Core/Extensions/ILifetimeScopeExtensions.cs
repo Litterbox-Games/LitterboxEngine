@@ -1,7 +1,6 @@
 using Autofac;
 using Autofac.Core;
 using Common.Core.Attributes;
-using Common.Host;
 using MoreLinq;
 
 namespace Common.Core.Extensions;

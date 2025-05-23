@@ -1,7 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using Autofac;
 using Common.Core;
-using Autofac.Core;
 
 [assembly: InternalsVisibleTo("Client")]
 

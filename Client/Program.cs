@@ -1,18 +1,10 @@
-using System.Diagnostics;
-using Client.Graphics;
 using Autofac;
 using Autofac.Core;
-using Client.Graphics.GHAL.Vulkan;
-using Client.Graphics.ImGui;
-using Client.Host;
-using Client.Services.Resource;
 using Client.Services.UI;
 using Common.Core;
 using Common.Core.Extensions;
 using Common.Host;
 using Common.Services.Logging;
-using ImGuiNET;
-using Silk.NET.Input;
 
 namespace Client;
 
