@@ -28,8 +28,8 @@ public class ClientRegistrar: IServiceRegistrar
         
         container.RegisterType<BlockRegistry>().AsSelf().SingleInstance();
         
-        container.RegisterType<ClientNetworkService>().As<NetworkService>().AsSelf().SingleInstance();
         container.RegisterType<ClientPlayerService>().As<IPlayerService>().AsSelf().SingleInstance();
+        container.RegisterType<ClientNetworkService>().As<NetworkService>().AsSelf().SingleInstance();
         container.RegisterType<ClientEntityService>().As<IEntityService>().AsSelf().SingleInstance();
         container.RegisterType<ClientWorldService>().As<IWorldService>().AsSelf().SingleInstance();
         

@@ -23,13 +23,6 @@ public class LocalHost : IClientHost, IServerHost
     {
         GameScope = engineScope.BeginLifetimeScope(builder =>
         {
-            builder.RegisterInstance(this)
-                .As<IClientHost>()
-                .As<IServerHost>()
-                .As<IHost>()
-                .AsSelf()
-                .SingleInstance();
-            
             builder.RegisterServices(GameMode, ELifetime.Game);
         });
         

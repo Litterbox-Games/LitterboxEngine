@@ -1,6 +1,4 @@
-﻿using Autofac;
-using Common.Host;
-using Common.Services.Events;
+﻿using Common.Services.Events;
 using Common.Services.Logging;
 using Common.Services.Network;
 using Common.Services.Network.Events;
@@ -20,14 +18,14 @@ public class ClientNetworkService: NetworkService
     private readonly NetClient _client;
     private readonly ILoggingService _logger;
     private readonly EventService _eventService;
-    private readonly IHost _host;
+    private readonly IPlayerService _playerService;
     
     private NetConnection? _connection;
     private float _connectionAttemptTime;
     
-    public ClientNetworkService(IHost host, ILoggingService logger, EventService eventService) : base(logger, eventService)
+    public ClientNetworkService(IPlayerService playerService, ILoggingService logger, EventService eventService) : base(logger, eventService)
     {
-        _host = host;
+        _playerService = playerService;
         _logger = logger;
         _eventService = eventService;
 
@@ -52,12 +50,10 @@ public class ClientNetworkService: NetworkService
     {
         // Create a random ID and send it in the approval request message
         var msg = _client.CreateMessage();
-
-        var playerService = _host.GameScope.Resolve<IPlayerService>();
         
-        var playerName = $"Player {playerService.PlayerId}";
+        var playerName = $"Player {_playerService.PlayerId}";
 
-        msg.Write(playerService.PlayerId);
+        msg.Write(_playerService.PlayerId);
         msg.Write(playerName);
 
         _connection = _client.Connect(ip, port, msg);

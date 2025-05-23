@@ -62,16 +62,16 @@ public class GameLoopService: IService
             _imGui.Update(deltaTime);
 
             _renderer.BeginFrame();
-            _renderer.BeginDrawing();
-            
-                if (_host == null)
-                {
-                    engineDrawables.ForEach(drawable => drawable.Draw(deltaTime, _renderer));
-                }
-             
-                _host?.Draw(deltaTime, _renderer);
-     
-            _renderer.EndDrawing();
+                _renderer.BeginDrawing();
+                
+                    if (_host == null)
+                    {
+                        engineDrawables.ForEach(drawable => drawable.Draw(deltaTime, _renderer));
+                    }
+                 
+                    _host?.Draw(deltaTime, _renderer);
+         
+                _renderer.EndDrawing();
             
                 _imGui.Draw();
             

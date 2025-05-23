@@ -26,12 +26,6 @@ public class ClientHost : IClientHost
     {
         GameScope = engineScope.BeginLifetimeScope(builder =>
         {
-            builder.RegisterInstance(this)
-                .As<IClientHost>()
-                .As<IHost>()
-                .AsSelf()
-                .SingleInstance();
-            
             builder.RegisterServices(GameMode, ELifetime.Game);
         });
 
