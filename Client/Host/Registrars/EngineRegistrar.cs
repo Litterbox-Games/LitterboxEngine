@@ -2,6 +2,7 @@
 using Client.Graphics;
 using Client.Graphics.GHAL;
 using Client.Graphics.GHAL.Vulkan;
+using Client.Graphics.ImGui;
 using Common.Core;
 using Common.Core.Attributes;
 using Common.Host;
@@ -24,11 +25,13 @@ public class EngineRegistrar : IServiceRegistrar
     {
         container.RegisterType<WindowService>().AsSelf().SingleInstance();
         container.RegisterType<InputService>().AsSelf().SingleInstance();
-        container.RegisterType<RendererService>().AsSelf().SingleInstance();
-        
         container.RegisterType<VulkanGraphicsDeviceService>().As<IGraphicsDeviceService>().AsSelf().SingleInstance();
+        
         container.RegisterType<ClientResourceService>().As<IResourceService>().AsSelf().SingleInstance();
-
+        
+        container.RegisterType<RendererService>().AsSelf().SingleInstance();
+        container.RegisterType<ImGuiRendererService>().AsSelf().SingleInstance();
+        
         container.RegisterType<GameLoopService>().AsSelf().SingleInstance();
         container.RegisterType<MainMenuService>().AsSelf().SingleInstance();
     }

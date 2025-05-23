@@ -9,6 +9,7 @@ using Client.Host;
 using Common.Core;
 using Common.Core.Extensions;
 using Common.Services.Logging;
+using ImGuiNET;
 using Silk.NET.Input;
 
 namespace Client.Services.UI;
@@ -19,21 +20,27 @@ public class GameLoopService: IService
     private readonly IGraphicsDeviceService _graphicsDevice;
     private readonly RendererService _renderer;
     private readonly InputService _input;
-    private readonly ImGuiRenderer _imGui;
+    private readonly ImGuiRendererService _imGui;
     private readonly ILifetimeScope _engineScope;
     
     private IClientHost? _host;
     
-    public GameLoopService(WindowService window, VulkanGraphicsDeviceService graphicsDevice, RendererService renderer, InputService input, ILifetimeScope engineScope)
+    public GameLoopService
+    (
+        WindowService window, 
+        VulkanGraphicsDeviceService graphicsDevice, 
+        RendererService renderer, 
+        ImGuiRendererService imGui, 
+        InputService input, 
+        ILifetimeScope engineScope
+    )
     {
         _window = window;
         _graphicsDevice = graphicsDevice;
         _renderer = renderer;
         _engineScope = engineScope;
         _input = input;
-        
-        // TODO: convert this into a service so we dont require specifically a VulkanGraphicsDevice
-        _imGui = new ImGuiRenderer(window, graphicsDevice);
+        _imGui = imGui;
     }
 
     public void Run()

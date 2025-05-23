@@ -1,14 +1,17 @@
 ﻿using Client.Graphics.GHAL.Vulkan;
+using Common.Core;
+using Common.Core.Attributes;
 using Silk.NET.Vulkan.Extensions.ImGui;
 
 namespace Client.Graphics.ImGui;
 
-public class ImGuiRenderer: IDisposable
+[UpdatablePriority(EPriority.Low)]
+public class ImGuiRendererService: IService
 {
     private readonly ImGuiController _imGuiController;
     private readonly VulkanSwapChain _swapChain;
     
-    public ImGuiRenderer(WindowService windowService, VulkanGraphicsDeviceService graphicsDevice)
+    public ImGuiRendererService(WindowService windowService, VulkanGraphicsDeviceService graphicsDevice)
     {
         _swapChain = graphicsDevice.SwapChain;
         
