@@ -14,6 +14,8 @@ public class MobControllerService : IService, IUpdatable
     private readonly IPlayerService _playerService;
     
     private readonly Random _random = new();
+    
+    private const float MovementSpeed = 5f;
 
     public MobControllerService(ServerEntityService entityService, IPlayerService playerService)
     {
@@ -25,21 +27,19 @@ public class MobControllerService : IService, IUpdatable
     {
         var signX = _random.Next() > int.MaxValue / 2 ? -1 : 1;
         var signY = _random.Next() > int.MaxValue / 2 ? -1 : 1;
-        var velocity = Vector2.Normalize(new Vector2(signX * _random.Next(), signY * _random.Next()));
+        var velocity = Vector2.Normalize(new Vector2(signX * _random.Next(), signY * _random.Next())) * MovementSpeed;
         
         var entity = _entityService.Entities.Create(
             new Networked { OwnerId = _playerService.PlayerId, NetworkId = (ulong) _random.Next(), EntityType = 1 },
             new Mob(), 
             new Position(position),
-            new Velocity(velocity.X, velocity.Y) );
+            new Velocity(velocity.X, velocity.Y));
         
         _entityService.SpawnEntity(entity);
     }
 
     public void Update(float deltaTime)
     {
-        const float movementSpeed = 5f;
-
         _entityService.Entities.Query(_mobs, (
             ref Mob mob,
             ref Velocity velocity
@@ -50,7 +50,7 @@ public class MobControllerService : IService, IUpdatable
             
             var signX = _random.Next() > int.MaxValue / 2 ? -1 : 1;
             var signY = _random.Next() > int.MaxValue / 2 ? -1 : 1;
-            velocity = Vector2.Normalize(new Vector2(signX * _random.Next(), signY * _random.Next())) * movementSpeed;
+            velocity = Vector2.Normalize(new Vector2(signX * _random.Next(), signY * _random.Next())) * MovementSpeed;
             mob.LastChangedDirections = DateTime.Now;
         });
         
