@@ -7,7 +7,7 @@ namespace Common.Core.Extensions;
 
 public static class ContainerBuildExtensions
 {
-    public static void RegisterServices(this ContainerBuilder builder, EGameMode gameMode, ELifetime lifetime)
+    public static ContainerBuilder RegisterServices(this ContainerBuilder builder, EGameMode gameMode, ELifetime lifetime)
     {
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
@@ -72,5 +72,7 @@ public static class ContainerBuildExtensions
             var registrar = (IServiceRegistrar)Activator.CreateInstance(x.Item2)!;
             registrar.RegisterServices(builder);
         });
+
+        return builder;
     }
 }

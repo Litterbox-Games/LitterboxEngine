@@ -9,7 +9,6 @@ using Client.Host;
 using Common.Core;
 using Common.Core.Extensions;
 using Common.Services.Logging;
-using ImGuiNET;
 using Silk.NET.Input;
 
 namespace Client.Services.UI;
@@ -32,6 +31,7 @@ public class GameLoopService: IService
         RendererService renderer, 
         ImGuiRendererService imGui, 
         InputService input, 
+        RootLoggingService logger,
         ILifetimeScope engineScope
     )
     {
@@ -41,6 +41,8 @@ public class GameLoopService: IService
         _engineScope = engineScope;
         _input = input;
         _imGui = imGui;
+
+        logger.RefreshLoggers(engineScope);
     }
 
     public void Run()
