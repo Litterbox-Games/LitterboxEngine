@@ -1,4 +1,4 @@
-﻿using Client.Graphics.GHAL;
+﻿using Client.Graphics.Backend;
 using Common.Core;
 using Common.Services.Logging;
 using Common.Services.Resource;

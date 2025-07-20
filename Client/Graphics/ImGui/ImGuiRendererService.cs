@@ -1,4 +1,4 @@
-﻿using Client.Graphics.GHAL.Vulkan;
+﻿using Client.Graphics.Backend.Vulkan;
 using Common.Core;
 using Common.Core.Attributes;
 using Silk.NET.Vulkan.Extensions.ImGui;

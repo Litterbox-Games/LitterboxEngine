@@ -1,10 +1,10 @@
 ﻿using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using Client.Graphics.GHAL;
+using Client.Graphics.Backend;
 using Client.Services.Resource;
 using Common.Core;
-using Buffer = Client.Graphics.GHAL.Buffer;
+using Buffer = Client.Graphics.Backend.Buffer;
 
 namespace Client.Graphics;
 

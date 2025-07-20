@@ -1,7 +1,7 @@
 ﻿using Autofac;
 using Client.Graphics;
-using Client.Graphics.GHAL;
-using Client.Graphics.GHAL.Vulkan;
+using Client.Graphics.Backend;
+using Client.Graphics.Backend.Vulkan;
 using Client.Graphics.ImGui;
 using Common.Core;
 using Common.Core.Attributes;
