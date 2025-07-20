@@ -3,8 +3,8 @@
 public interface ICommandList
 {
     public void Begin();
-    public void BeginRenderPass(RgbaFloat clearColor);
-    public void EndRenderPass();
+    public void BeginPass();
+    public void EndPass();
     public void End();
     public void SetPipeline(Pipeline pipeline);
     public void SetIndexBuffer(Buffer buffer, IndexFormat format);

@@ -1,4 +1,5 @@
-﻿using Client.Services.Resource;
+﻿using System.Drawing;
+using Client.Services.Resource;
 using Common.Services.Logging;
 using Silk.NET.Vulkan;
 
@@ -14,6 +15,7 @@ public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService
     private readonly VulkanInstance _instance;
     private readonly VulkanSurface _surface;
     private readonly VulkanRenderPass _renderPass;
+    private readonly VulkanRenderPass _clearPass;
     public readonly VulkanQueue GraphicsQueue;
     private readonly VulkanQueue _presentQueue;
     private readonly VulkanCommandPool _commandPool;
@@ -28,16 +30,29 @@ public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService
         Vk = Vk.GetApi();
         _windowService = windowService;
         _instance = new VulkanInstance(Vk, _windowService.Title, logger);
+        
         var physicalDevice = VulkanPhysicalDevice.SelectPreferredPhysicalDevice(Vk, _instance);
         LogicalDevice = new VulkanLogicalDevice(Vk, physicalDevice);
+        
         _surface = new VulkanSurface(Vk, _instance, physicalDevice, _windowService);
         _renderPass = new VulkanRenderPass(Vk, LogicalDevice, _surface.Format.Format);
+        _clearPass = new VulkanRenderPass(Vk, LogicalDevice, _surface.Format.Format, true);
         GraphicsQueue = new GraphicsQueue(Vk, LogicalDevice, 0);
         _presentQueue = new PresentQueue(Vk, LogicalDevice, _surface, 0);
         _commandPool = new VulkanCommandPool(Vk, LogicalDevice, GraphicsQueue.QueueFamilyIndex);
-
-        SwapChain = new VulkanSwapChain(Vk, LogicalDevice, _surface, _renderPass, _commandPool, _windowService, 3,
-            false, _presentQueue, [GraphicsQueue]);
+        
+        SwapChain = new VulkanSwapChain(
+            Vk, 
+            LogicalDevice, 
+            _surface, 
+            _renderPass, 
+            _commandPool, 
+            _windowService, 
+            3,
+            false, 
+            _presentQueue, 
+            [GraphicsQueue]
+        );
         _descriptorPool = new VulkanDescriptorPool(Vk, LogicalDevice);
         _pipelineCache = new VulkanPipelineCache(Vk, LogicalDevice);
 
@@ -132,11 +147,11 @@ public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService
         LogicalDevice.WaitIdle();
     }
 
-    public void BeginFrame()
+    public void BeginFrame(Color clearColor)
     {
         SwapBuffers();
         CommandList.Begin();
-        ClearPass();
+        ClearPass(clearColor);
     }
 
     public void EndFrame()
@@ -145,9 +160,37 @@ public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService
         SubmitCommands();
     }
 
-    private void ClearPass()
+    private unsafe void ClearPass(Color clearColor)
     {
-        // TODO: implement a simple clear pass 
+        ClearValue clearValue = new()
+        {
+            Color = new ClearColorValue
+            {
+                Float32_0 = clearColor.R, 
+                Float32_1 = clearColor.G, 
+                Float32_2 = clearColor.B, 
+                Float32_3 = 1
+            }
+        };
+        
+        RenderPassBeginInfo renderPassInfo = new()
+        {
+            SType = StructureType.RenderPassBeginInfo,
+            RenderPass = _clearPass.VkRenderPass,
+            Framebuffer = SwapChain.CurrentFrameBuffer.VkFrameBuffer,
+            RenderArea =
+            {
+                Offset = { X = 0, Y = 0 },
+                Extent = SwapChain.Extent
+            },
+            ClearValueCount = 1,
+            PClearValues = &clearValue
+        };
+        
+        Vk.CmdBeginRenderPass(SwapChain.CurrentCommandBuffer.VkCommandBuffer, &renderPassInfo, SubpassContents.Inline);
+        
+        // Empty pass to clear the entire screen
+        Vk.CmdEndRenderPass(SwapChain.CurrentCommandBuffer.VkCommandBuffer);
     }
 
     private void SubmitCommands()

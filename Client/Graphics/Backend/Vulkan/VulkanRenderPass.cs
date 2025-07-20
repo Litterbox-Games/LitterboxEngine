@@ -9,7 +9,7 @@ public class VulkanRenderPass: IDisposable
     private readonly Vk _vk;
     private readonly VulkanLogicalDevice _logicalDevice;
     
-    public unsafe VulkanRenderPass(Vk vk, VulkanLogicalDevice logicalDevice, Format format)
+    public unsafe VulkanRenderPass(Vk vk, VulkanLogicalDevice logicalDevice, Format format, bool clearPass = false)
     {
         _vk = vk;
         _logicalDevice = logicalDevice;
@@ -18,11 +18,11 @@ public class VulkanRenderPass: IDisposable
         {
             Format = format,
             Samples = SampleCountFlags.Count1Bit,
-            LoadOp = AttachmentLoadOp.Clear,
+            LoadOp = clearPass ? AttachmentLoadOp.Clear : AttachmentLoadOp.Load,
             StoreOp = AttachmentStoreOp.Store,
             StencilLoadOp = AttachmentLoadOp.DontCare,
-            InitialLayout = ImageLayout.Undefined,
-            FinalLayout = ImageLayout.PresentSrcKhr,
+            InitialLayout = clearPass ? ImageLayout.Undefined : ImageLayout.PresentSrcKhr,
+            FinalLayout = ImageLayout.PresentSrcKhr
         };
 
         AttachmentReference colorAttachmentRef = new()

@@ -1,4 +1,5 @@
-﻿using Client.Services.Resource;
+﻿using System.Drawing;
+using Client.Services.Resource;
 using Common.Core;
 
 namespace Client.Graphics.Backend;
@@ -16,6 +17,6 @@ public interface IGraphicsDeviceService: IService
     public ResourceSet CreateResourceSet(ResourceLayout layout);
     public Sampler CreateSampler();
     public void WaitIdle();
-    public void BeginFrame();
+    public void BeginFrame(Color clearColor);
     public void EndFrame();
 }

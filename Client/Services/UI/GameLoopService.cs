@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Drawing;
 using Autofac;
 using Client.Core.Extensions;
 using Client.Graphics;
@@ -70,7 +71,7 @@ public class GameLoopService: IService
             // Must be called at the same rate as _imGui.Draw()
             _imGui.Update(deltaTime);
 
-            _graphicsDevice.BeginFrame();
+            _graphicsDevice.BeginFrame(Color.Black);
             
                 _renderer.BeginDrawing();
                 

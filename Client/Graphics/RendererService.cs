@@ -37,7 +37,6 @@ public class RendererService: IService
     private readonly ResourceSet _textureSet;
     
     public Matrix4x4 ViewMatrix = Matrix4x4.Identity;
-    public Color ClearColor = Color.Black;
     
     public unsafe RendererService(IGraphicsDeviceService graphicsDevice)
     {
@@ -111,7 +110,7 @@ public class RendererService: IService
 
     public void BeginDrawing()
     {
-        _commandList.BeginRenderPass(ClearColor);
+        _commandList.BeginPass();
         _commandList.SetPipeline(_pipeline);
         
         _commandList.UpdateBuffer(_transformBuffer, 0, ViewMatrix);
@@ -138,7 +137,7 @@ public class RendererService: IService
     public void EndDrawing()
     {
         if (_quadCount > 0) Flush();
-        _commandList.EndRenderPass();
+        _commandList.EndPass();
     }
 
     public void DrawRectangle(RectangleF destination, Color color, float depth = 0.0f)

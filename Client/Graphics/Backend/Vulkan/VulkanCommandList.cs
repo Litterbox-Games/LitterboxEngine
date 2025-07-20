@@ -23,14 +23,8 @@ public class VulkanCommandList: ICommandList
         _swapChain.CurrentCommandBuffer.BeginRecording();
     }
 
-    public unsafe void BeginRenderPass(RgbaFloat clearColor)
+    public unsafe void BeginPass()
     {
-        ClearValue clearValue = new()
-        {
-            Color = new ClearColorValue
-                { Float32_0 = clearColor.R, Float32_1 = clearColor.G, Float32_2 = clearColor.B, Float32_3 = 1 },
-        };
-        
         RenderPassBeginInfo renderPassInfo = new()
         {
             SType = StructureType.RenderPassBeginInfo,
@@ -40,15 +34,13 @@ public class VulkanCommandList: ICommandList
             {
                 Offset = { X = 0, Y = 0 },
                 Extent = _swapChain.Extent
-            },
-            ClearValueCount = 1,
-            PClearValues = &clearValue
+            }
         };
         
         _vk.CmdBeginRenderPass(_swapChain.CurrentCommandBuffer.VkCommandBuffer, &renderPassInfo, SubpassContents.Inline);
     }
 
-    public void EndRenderPass()
+    public void EndPass()
     {
         _vk.CmdEndRenderPass(_swapChain.CurrentCommandBuffer.VkCommandBuffer);
     }
