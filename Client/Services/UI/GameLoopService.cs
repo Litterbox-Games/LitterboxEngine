@@ -70,7 +70,8 @@ public class GameLoopService: IService
             // Must be called at the same rate as _imGui.Draw()
             _imGui.Update(deltaTime);
 
-            _renderer.BeginFrame();
+            _graphicsDevice.BeginFrame();
+            
                 _renderer.BeginDrawing();
                 
                     if (_host == null)
@@ -79,12 +80,12 @@ public class GameLoopService: IService
                     }
                  
                     _host?.Draw(deltaTime, _renderer);
-         
+                    
                 _renderer.EndDrawing();
             
                 _imGui.Draw();
             
-            _renderer.EndFrame();
+            _graphicsDevice.EndFrame();
 
             if (_input.IsKeyDown(Key.Escape))
                 _window.SetShouldClose();

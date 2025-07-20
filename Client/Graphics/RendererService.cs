@@ -108,7 +108,7 @@ public class RendererService: IService
 
         _pipeline = _graphicsDevice.CreatePipeline(pipelineDescription);
 
-        _commandList = _graphicsDevice.CreateCommandList();
+        _commandList = _graphicsDevice.CommandList;
     }
 
     public void BeginDrawing()
@@ -118,12 +118,6 @@ public class RendererService: IService
         
         _commandList.UpdateBuffer(_transformBuffer, 0, ViewMatrix);
         _commandList.SetResourceSet(0, _transformSet);
-    }
-
-    public void BeginFrame()
-    {
-        _graphicsDevice.SwapBuffers();
-        _commandList.Begin();
     }
 
     private void Flush()
@@ -147,12 +141,6 @@ public class RendererService: IService
     {
         if (_quadCount > 0) Flush();
         _commandList.EndRenderPass();
-    }
-    
-    public void EndFrame()
-    {
-        _commandList.End();
-        _graphicsDevice.SubmitCommands();
     }
 
     public void DrawRectangle(RectangleF destination, Color color, float depth = 0.0f)

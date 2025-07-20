@@ -5,6 +5,7 @@ namespace Client.Graphics.Backend;
 
 public interface IGraphicsDeviceService: IService
 {
+    public CommandList CommandList { get; }
     public Buffer CreateBuffer(BufferDescription description);
     public void UpdateBuffer(Buffer buffer, uint offset, uint[] data);
     public ShaderProgram CreateShaderProgram(params ShaderDescription[] descriptions);
@@ -14,8 +15,7 @@ public interface IGraphicsDeviceService: IService
     public ResourceLayout CreateResourceLayout(ResourceLayoutDescription description);
     public ResourceSet CreateResourceSet(ResourceLayout layout);
     public Sampler CreateSampler();
-    public CommandList CreateCommandList();
-    public void SubmitCommands();
-    public void SwapBuffers();
     public void WaitIdle();
+    public void BeginFrame();
+    public void EndFrame();
 }

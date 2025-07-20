@@ -8,17 +8,20 @@ namespace Client.Graphics.Backend.Vulkan;
 public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService
 {
     public readonly Vk Vk;
-    private readonly VulkanInstance _instance;
     public readonly VulkanLogicalDevice LogicalDevice;
+    public readonly VulkanSwapChain SwapChain;
+    
+    private readonly VulkanInstance _instance;
     private readonly VulkanSurface _surface;
     private readonly VulkanRenderPass _renderPass;
     public readonly VulkanQueue GraphicsQueue;
     private readonly VulkanQueue _presentQueue;
     private readonly VulkanCommandPool _commandPool;
-    public readonly VulkanSwapChain SwapChain;
     private readonly VulkanPipelineCache _pipelineCache;
     private readonly VulkanDescriptorPool _descriptorPool;
     private readonly WindowService _windowService;
+    
+    public CommandList CommandList { get; }
 
     public VulkanGraphicsDeviceService(WindowService windowService, ILoggingService? logger = null)
     {
@@ -37,19 +40,24 @@ public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService
             false, _presentQueue, [GraphicsQueue]);
         _descriptorPool = new VulkanDescriptorPool(Vk, LogicalDevice);
         _pipelineCache = new VulkanPipelineCache(Vk, LogicalDevice);
+
+        CommandList = new VulkanCommandList(Vk, SwapChain, _renderPass);
+        
         _windowService.OnResize += WindowServiceResized;
     }
 
-    private void WindowServiceResized(int width, int height)
-    {
-        SwapChain.Recreate();
-    }
-
-    public Buffer CreateBuffer(BufferDescription description)
-    {
-        return new VulkanBuffer(Vk, LogicalDevice, description, MemoryPropertyFlags.DeviceLocalBit, _commandPool,
-            GraphicsQueue);
-    }
+    private void WindowServiceResized(int width, int height) => SwapChain.Recreate();
+    
+    public Buffer CreateBuffer(BufferDescription description) => 
+        new VulkanBuffer(
+            Vk, 
+            LogicalDevice, 
+            description, 
+            MemoryPropertyFlags.DeviceLocalBit, 
+            _commandPool,
+            GraphicsQueue
+        );
+    
 
     public void UpdateBuffer(Buffer buffer, uint offset, uint[] data)
     {
@@ -119,11 +127,6 @@ public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService
         return new VulkanSampler(Vk, LogicalDevice);
     }
 
-    public CommandList CreateCommandList()
-    {
-        return new VulkanCommandList(Vk, SwapChain, _renderPass);
-    }
-
     public void SubmitCommands()
     {
         SwapChain.Submit(GraphicsQueue);
@@ -139,6 +142,19 @@ public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService
     public void WaitIdle()
     {
         LogicalDevice.WaitIdle();
+    }
+
+    public void BeginFrame()
+    {
+        SwapBuffers();
+        CommandList.Begin();
+        // ClearPass();
+    }
+
+    public void EndFrame()
+    {
+        CommandList.End();
+        SubmitCommands();
     }
 
     public void Dispose()
