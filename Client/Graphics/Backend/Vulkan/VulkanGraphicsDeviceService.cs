@@ -21,7 +21,7 @@ public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService
     private readonly VulkanDescriptorPool _descriptorPool;
     private readonly WindowService _windowService;
     
-    public CommandList CommandList { get; }
+    public ICommandList CommandList { get; }
 
     public VulkanGraphicsDeviceService(WindowService windowService, ILoggingService? logger = null)
     {
@@ -127,18 +127,6 @@ public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService
         return new VulkanSampler(Vk, LogicalDevice);
     }
 
-    public void SubmitCommands()
-    {
-        SwapChain.Submit(GraphicsQueue);
-        SwapChain.PresentImage(_presentQueue);
-    }
-
-    public void SwapBuffers()
-    {
-        SwapChain.WaitForFence();
-        SwapChain.AcquireNextImage();
-    }
-
     public void WaitIdle()
     {
         LogicalDevice.WaitIdle();
@@ -148,7 +136,7 @@ public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService
     {
         SwapBuffers();
         CommandList.Begin();
-        // ClearPass();
+        ClearPass();
     }
 
     public void EndFrame()
@@ -157,6 +145,23 @@ public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService
         SubmitCommands();
     }
 
+    private void ClearPass()
+    {
+        // TODO: implement a simple clear pass 
+    }
+
+    private void SubmitCommands()
+    {
+        SwapChain.Submit(GraphicsQueue);
+        SwapChain.PresentImage(_presentQueue);
+    }
+
+    private void SwapBuffers()
+    {
+        SwapChain.WaitForFence();
+        SwapChain.AcquireNextImage();
+    }
+    
     public void Dispose()
     {
         _presentQueue.WaitIdle();
