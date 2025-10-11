@@ -18,7 +18,7 @@ using ImGuiNET;
 
 namespace Client.Services.Entities;
 
-public class EntityRenderService: IService, IDrawable
+public class EntityRenderService: IService, IDrawable, IGuiDrawable
 {
     private readonly QueryDescription _movable = new QueryDescription().WithAll<Networked, Position>();
     
@@ -124,6 +124,14 @@ public class EntityRenderService: IService, IDrawable
         });
         
         ImGui.End();
+    }
+    
+    public void DrawGui(float deltaTime, RendererService renderer)
+    {
+        var font = _resourceService.Get<Font>("Fonts/dogica.otf");
+        
+        renderer.DrawRectangle(new RectangleF(new Vector4(0,0,800,150)), Color.Coral);
+        renderer.DrawText("Hello GUI!", font, new Vector2(16, 16), 16, 16, Color.Black);
     }
     
     void DrawComponent(ref object obj)

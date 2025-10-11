@@ -29,4 +29,16 @@ public static class ILifetimeScopeExtensions
 
         return drawables;
     }
+    
+    public static List<IGuiDrawable> RegisterGuiDrawables(this ILifetimeScope container)
+    {
+        var drawables = new List<IGuiDrawable>();
+        
+        container.FilterRegistrations<IGuiDrawable>((drawable, _) =>
+        {
+            drawables.Add(drawable);
+        });
+
+        return drawables;
+    }
 }

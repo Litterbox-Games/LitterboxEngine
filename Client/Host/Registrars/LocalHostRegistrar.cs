@@ -1,5 +1,6 @@
 using Arch.Core.Utils;
 using Autofac;
+using Autofac.Features.AttributeFilters;
 using Client.Services.Entities;
 using Client.Services.Players;
 using Client.Services.World;
@@ -36,7 +37,7 @@ public class LocalHostRegistrar: IServiceRegistrar
         
         container.RegisterType<WorldRenderService>().AsSelf().SingleInstance();
         container.RegisterType<EntityRenderService>().AsSelf().SingleInstance();
-        container.RegisterType<CameraService>().AsSelf().SingleInstance();
+        container.RegisterType<CameraService>().WithAttributeFiltering().AsSelf().SingleInstance();
         
         container.RegisterType<MovementService>().AsSelf().SingleInstance();
         container.RegisterType<MobControllerService>().AsSelf().SingleInstance();

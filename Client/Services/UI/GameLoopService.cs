@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Drawing;
+using System.Numerics;
 using Autofac;
+using Autofac.Features.AttributeFilters;
 using Client.Core.Extensions;
 using Client.Graphics;
 using Client.Graphics.Backend;
@@ -19,6 +21,7 @@ public class GameLoopService: IService
     private readonly WindowService _window;
     private readonly IGraphicsDeviceService _graphicsDevice;
     private readonly RendererService _renderer;
+    private readonly RendererService _guiRenderer;
     private readonly InputService _input;
     private readonly ImGuiRendererService _imGui;
     private readonly ILifetimeScope _engineScope;
@@ -29,7 +32,8 @@ public class GameLoopService: IService
     (
         WindowService window, 
         VulkanGraphicsDeviceService graphicsDevice, 
-        RendererService renderer, 
+        [KeyFilter(ERendererLayer.Game)] RendererService renderer,
+        [KeyFilter(ERendererLayer.Gui)] RendererService guiRenderer,
         ImGuiRendererService imGui, 
         InputService input, 
         RootLoggingService logger,
@@ -39,6 +43,7 @@ public class GameLoopService: IService
         _window = window;
         _graphicsDevice = graphicsDevice;
         _renderer = renderer;
+        _guiRenderer = guiRenderer;
         _engineScope = engineScope;
         _input = input;
         _imGui = imGui;
@@ -53,6 +58,7 @@ public class GameLoopService: IService
         
         var engineUpdatables = _engineScope.RegisterUpdatables();
         var engineDrawables = _engineScope.RegisterDrawables();
+        var engineGuiDrawables = _engineScope.RegisterGuiDrawables();
         
         while (!_window.IsClosing())
         {
@@ -83,6 +89,20 @@ public class GameLoopService: IService
                     _host?.Draw(deltaTime, _renderer);
                     
                 _renderer.EndDrawing();
+                
+                _guiRenderer.ViewMatrix = 
+                    Matrix4x4.CreateOrthographicOffCenter(0f, _window.Width, 0f, _window.Height, -1f, 1f);
+                
+                _guiRenderer.BeginDrawing();
+                
+                if (_host == null)
+                {
+                    engineGuiDrawables.ForEach(drawable => drawable.DrawGui(deltaTime, _guiRenderer));
+                }
+                 
+                _host?.DrawGui(deltaTime, _guiRenderer);
+                    
+                _guiRenderer.EndDrawing();
             
                 _imGui.Draw();
             

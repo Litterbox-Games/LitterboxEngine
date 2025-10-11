@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Autofac.Features.AttributeFilters;
 using Client.Graphics;
 using Client.Graphics.Backend;
 using Client.Graphics.Backend.Vulkan;
@@ -29,10 +30,18 @@ public class EngineRegistrar : IServiceRegistrar
         
         container.RegisterType<ClientResourceService>().As<IResourceService>().AsSelf().SingleInstance();
         
-        container.RegisterType<RendererService>().AsSelf().SingleInstance();
+        // container.RegisterType<RendererService>().AsSelf().SingleInstance();
+        container.RegisterType<RendererService>()
+            .Keyed<RendererService>(ERendererLayer.Game)
+            .SingleInstance();
+        
+        container.RegisterType<RendererService>()
+            .Keyed<RendererService>(ERendererLayer.Gui)
+            .SingleInstance();
+        
         container.RegisterType<ImGuiRendererService>().AsSelf().SingleInstance();
         
-        container.RegisterType<GameLoopService>().AsSelf().SingleInstance();
+        container.RegisterType<GameLoopService>().WithAttributeFiltering().AsSelf().SingleInstance();
         container.RegisterType<MainMenuService>().AsSelf().SingleInstance();
     }
 }

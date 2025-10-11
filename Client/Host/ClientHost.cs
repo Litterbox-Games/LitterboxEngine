@@ -20,6 +20,7 @@ public class ClientHost : IClientHost
 
     public List<(EPriority, IUpdatable)> GameUpdatables { get; private set; } = [];
     public List<IDrawable> GameDrawables { get; private set; } = [];
+    public List<IGuiDrawable> GameGuiDrawables { get; private set; } = [];
     public List<IInputable> GameInputables { get; private set; } = [];
 
     public void Start(ILifetimeScope engineScope)
@@ -34,6 +35,7 @@ public class ClientHost : IClientHost
         GameUpdatables = GameScope.RegisterUpdatables();
         GameInputables = GameScope.RegisterInputables();
         GameDrawables = GameScope.RegisterDrawables();
+        GameGuiDrawables = GameScope.RegisterGuiDrawables();
 
         var networkService = GameScope.Resolve<ClientNetworkService>();
         networkService.Connect("127.0.0.1", 7777);
@@ -45,6 +47,7 @@ public class ClientHost : IClientHost
         GameUpdatables = [];
         GameInputables = [];
         GameDrawables = [];
+        GameGuiDrawables = [];
     }
 
     public void Dispose()

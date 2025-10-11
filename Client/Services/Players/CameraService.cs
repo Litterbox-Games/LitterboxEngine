@@ -5,6 +5,7 @@ using Common.Components;
 using Common.Core;
 using Common.Mathematics;
 using Common.Services.Entities;
+using Autofac.Features.AttributeFilters;
 
 namespace Client.Services.Players;
 
@@ -18,7 +19,7 @@ public class CameraService : IService, IUpdatable
     
     public readonly Camera Camera;
     
-    public CameraService(IEntityService entityService, WindowService window, RendererService renderer)
+    public CameraService(IEntityService entityService, WindowService window, [KeyFilter(ERendererLayer.Game)]RendererService renderer)
     {
         _entityService = entityService;
         _window = window;

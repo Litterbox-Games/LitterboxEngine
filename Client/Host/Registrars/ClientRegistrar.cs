@@ -1,5 +1,6 @@
 using Arch.Core.Utils;
 using Autofac;
+using Autofac.Features.AttributeFilters;
 using Client.Services.Entities;
 using Client.Services.Network;
 using Client.Services.Players;
@@ -35,7 +36,7 @@ public class ClientRegistrar: IServiceRegistrar
         
         container.RegisterType<WorldRenderService>().AsSelf().SingleInstance();
         container.RegisterType<EntityRenderService>().AsSelf().SingleInstance();
-        container.RegisterType<CameraService>().AsSelf().SingleInstance();
+        container.RegisterType<CameraService>().WithAttributeFiltering().AsSelf().SingleInstance();
         
         container.RegisterType<MovementService>().AsSelf().SingleInstance();
         container.RegisterType<PlayerControlService>().AsSelf().SingleInstance();

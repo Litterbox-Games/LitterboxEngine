@@ -17,6 +17,7 @@ public class SinglePlayerHost : IClientHost, IServerHost
     public ILifetimeScope GameScope { get; set; } = null!;
     public List<(EPriority, IUpdatable)> GameUpdatables { get; private set; } = [];
     public List<IDrawable> GameDrawables { get; private set; } = [];
+    public List<IGuiDrawable> GameGuiDrawables { get; private set; } = [];
     public List<IInputable> GameInputables { get; private set; } = [];
 
     public void Start(ILifetimeScope engineScope)
@@ -31,6 +32,7 @@ public class SinglePlayerHost : IClientHost, IServerHost
         GameUpdatables = GameScope.RegisterUpdatables();
         GameInputables = GameScope.RegisterInputables();
         GameDrawables = GameScope.RegisterDrawables();
+        GameGuiDrawables = GameScope.RegisterGuiDrawables();
         
         (this as IServerHost).SpawnServerPlayer();
     }
@@ -41,6 +43,7 @@ public class SinglePlayerHost : IClientHost, IServerHost
         GameUpdatables = [];
         GameInputables = [];
         GameDrawables = [];
+        GameGuiDrawables = [];
     }
 
     public void Dispose()
