@@ -1,4 +1,5 @@
 ﻿using Common.Core;
+using Common.Core.Attributes;
 using Common.Services.Logging;
 using Common.Services.Network.Events;
 
@@ -6,6 +7,7 @@ namespace Common.Services.Events;
 
 public delegate void OnEvent<in T>(T e) where T : IEvent;
 
+[Engine]
 public class EventService(ILoggingService logger) : IService
 {
     private readonly Dictionary<Type, List<(string, Action<IEvent>)>> _handlers = new();

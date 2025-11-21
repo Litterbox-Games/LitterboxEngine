@@ -1,4 +1,5 @@
-﻿using Common.Services.Events;
+﻿using Common.Core.Attributes;
+using Common.Services.Events;
 using Common.Services.Logging;
 using Common.Services.Network;
 using Common.Services.Network.Events;
@@ -7,6 +8,9 @@ using Lidgren.Network;
 
 namespace Client.Services.Network;
 
+[Multiplayer]
+[Game(EMode.Client)]
+[As<NetworkService>]
 public class ClientNetworkService: NetworkService
 {
     protected override NetPeer NetPeer => _client;

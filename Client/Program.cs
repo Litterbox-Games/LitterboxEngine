@@ -11,7 +11,8 @@ internal static class Program
 {
     private static void Main() => 
         new ContainerBuilder()
-            .RegisterServices(EGameMode.Client | EGameMode.SinglePlayer | EGameMode.LocalHost, ELifetime.Engine)
+            // .RegisterServices(EGameMode.Client | EGameMode.SinglePlayer | EGameMode.LocalHost, ELifetime.Engine)
+            .RegisterEngineServices()
             .Build()
             .Resolve<GameLoopService>()
             .Run();

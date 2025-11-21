@@ -4,10 +4,14 @@ using System.Runtime.InteropServices;
 using Client.Graphics.Backend;
 using Client.Services.Resource;
 using Common.Core;
+using Common.Core.Attributes;
 using Buffer = Client.Graphics.Backend.Buffer;
 
 namespace Client.Graphics;
 
+[Engine]
+[As<RendererService>("Game")]
+[As<RendererService>("Gui")]
 public class RendererService: IService
 {
     private const int MaxQuads = 100000;

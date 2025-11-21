@@ -13,7 +13,7 @@ internal static class Program
     {
         var builder = new ContainerBuilder();
         
-        builder.RegisterServices(EGameMode.Dedicated, ELifetime.Engine);
+        builder.RegisterEngineServices();
         
         var engineContainer = builder.Build();
         

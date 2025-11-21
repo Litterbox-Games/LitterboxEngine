@@ -2,10 +2,12 @@
 using Arch.Core;
 using Common.Components;
 using Common.Core;
+using Common.Core.Attributes;
 using Common.Services.Players;
 
 namespace Common.Services.Entities;
 
+[Game(EMode.Host)]
 public class MobControllerService : IService, IUpdatable
 {
     private readonly QueryDescription _mobs = new QueryDescription().WithAll<Mob, Position, Velocity>();

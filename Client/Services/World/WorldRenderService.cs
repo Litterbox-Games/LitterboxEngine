@@ -18,6 +18,7 @@ using ImGuiNET;
 namespace Client.Services.World;
 
 [UpdatablePriority(EPriority.High)]
+[Game]
 public class WorldRenderService : IService, IDrawable
 {
     private readonly IWorldService _worldService;

@@ -1,7 +1,7 @@
 ﻿namespace Client.Graphics;
 
-public enum ERendererLayer
-{
-    Game,
-    Gui
-}
+// public enum ERendererLayer
+// {
+//     Game,
+//     Gui
+// }

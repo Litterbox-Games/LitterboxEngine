@@ -1,9 +1,13 @@
-﻿using Common.Services.Logging;
+﻿using Common.Core.Attributes;
+using Common.Services.Logging;
+using Common.Services.Resource;
 using Common.Services.Resource.Exceptions;
 using MoreLinq;
 
-namespace Common.Services.Resource;
+namespace Server.Services.Resource;
 
+[Engine]
+[As<IResourceService>]
 public class ServerResourceService : IResourceService
 {
     private readonly Dictionary<string, IResource> _resources = new ();

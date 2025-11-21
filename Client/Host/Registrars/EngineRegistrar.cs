@@ -32,11 +32,11 @@ public class EngineRegistrar : IServiceRegistrar
         
         // container.RegisterType<RendererService>().AsSelf().SingleInstance();
         container.RegisterType<RendererService>()
-            .Keyed<RendererService>(ERendererLayer.Game)
+            .Keyed<RendererService>("Game")
             .SingleInstance();
         
         container.RegisterType<RendererService>()
-            .Keyed<RendererService>(ERendererLayer.Gui)
+            .Keyed<RendererService>("Gui")
             .SingleInstance();
         
         container.RegisterType<ImGuiRendererService>().AsSelf().SingleInstance();

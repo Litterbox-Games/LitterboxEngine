@@ -3,6 +3,7 @@ using Client.Core.Extensions;
 using Client.Graphics;
 using Client.Services.Network;
 using Common.Core;
+using Common.Core.Attributes;
 using Common.Host;
 using Common.Core.Extensions;
 using Common.Services.Logging;
@@ -27,7 +28,7 @@ public class ClientHost : IClientHost
     {
         GameScope = engineScope.BeginLifetimeScope(builder =>
         {
-            builder.RegisterServices(GameMode, ELifetime.Game);
+            builder.RegisterGameServices(EMode.Client, true);
         });
 
         GameScope.Resolve<RootLoggingService>().RefreshLoggers(GameScope);

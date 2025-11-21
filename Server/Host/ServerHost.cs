@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Common.Core;
+using Common.Core.Attributes;
 using Common.Core.Extensions;
 using Common.Host;
 using Common.Services.Logging;
@@ -19,7 +20,7 @@ public class ServerHost : IServerHost
     {
         GameScope = engineScope.BeginLifetimeScope(builder =>
         {
-            builder.RegisterServices(GameMode, ELifetime.Game);
+            builder.RegisterGameServices(EMode.Host, true);
         });
         
         GameScope.Resolve<RootLoggingService>().RefreshLoggers(GameScope);

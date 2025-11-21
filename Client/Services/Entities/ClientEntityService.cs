@@ -1,6 +1,7 @@
 ﻿using Arch.Core;
 using Arch.Core.Extensions;
 using Common.Components;
+using Common.Core.Attributes;
 using Common.Services.Entities;
 using Common.Services.Entities.Events;
 using Common.Services.Events;
@@ -8,6 +9,8 @@ using Common.Services.Players;
 
 namespace Client.Services.Entities;
 
+[Game(EMode.Client)]
+[As<IEntityService>]
 public class ClientEntityService : IEntityService
 {
     private readonly QueryDescription _networkEntities = new QueryDescription().WithAll<Networked>();

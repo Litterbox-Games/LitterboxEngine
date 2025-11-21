@@ -7,6 +7,7 @@ using Client.Graphics;
 using Client.Services.Resource;
 using Common.Components;
 using Common.Core;
+using Common.Core.Attributes;
 using Common.Mathematics;
 using Common.Services.Entities;
 using Common.Services.Entities.Events;
@@ -18,6 +19,7 @@ using ImGuiNET;
 
 namespace Client.Services.Entities;
 
+[Game]
 public class EntityRenderService: IService, IDrawable, IGuiDrawable
 {
     private readonly QueryDescription _movable = new QueryDescription().WithAll<Networked, Position>();

@@ -6,9 +6,11 @@ using Common.Core;
 using Common.Mathematics;
 using Common.Services.Entities;
 using Autofac.Features.AttributeFilters;
+using Common.Core.Attributes;
 
 namespace Client.Services.Players;
 
+[Game]
 public class CameraService : IService, IUpdatable
 {
     private readonly QueryDescription _target = new QueryDescription().WithAll<CameraFollow, Position>();
@@ -19,7 +21,7 @@ public class CameraService : IService, IUpdatable
     
     public readonly Camera Camera;
     
-    public CameraService(IEntityService entityService, WindowService window, [KeyFilter(ERendererLayer.Game)]RendererService renderer)
+    public CameraService(IEntityService entityService, WindowService window, [KeyFilter("Game")] RendererService renderer)
     {
         _entityService = entityService;
         _window = window;

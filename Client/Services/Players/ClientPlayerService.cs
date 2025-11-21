@@ -1,9 +1,12 @@
-﻿using Common.Services.Events;
+﻿using Common.Core.Attributes;
+using Common.Services.Events;
 using Common.Services.Players;
 using Common.Services.Players.Events;
 
 namespace Client.Services.Players;
 
+[Game(EMode.Client)]
+[As<IPlayerService>]
 public class ClientPlayerService : IPlayerService
 {
     public ulong PlayerId { get; }

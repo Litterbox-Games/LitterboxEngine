@@ -1,4 +1,5 @@
 ﻿using Common.Core;
+using Common.Core.Attributes;
 using Common.Mathematics;
 using Common.Services.Block;
 using Common.Services.Events;
@@ -9,6 +10,21 @@ using Common.Services.World.Generation;
 
 namespace Common.Services.World;
 
+// Dedicated
+// Localhost
+// SinglePlayer
+
+// Cant do Server attribute here because it wouldnt end up in SinglePlayer, unless server means Host and Client means Client rather than Server meaning Network Server
+// We can solve that with a [Network] attribute layer
+
+// [Host][Network][As<INetworkService>]
+// ServerNetworkService : INetworkService 
+
+// [Client][Game][As<IWorldService>]
+// ClientWorldService : IWorldService
+
+[Game(EMode.Host)]
+[As<IWorldService>]
 public class ServerWorldService : IWorldService, IUpdatable
 {
     public IEnumerable<ChunkData> Chunks => _networkedChunks

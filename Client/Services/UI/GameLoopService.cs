@@ -10,12 +10,14 @@ using Client.Graphics.Backend.Vulkan;
 using Client.Graphics.ImGui;
 using Client.Host;
 using Common.Core;
+using Common.Core.Attributes;
 using Common.Core.Extensions;
 using Common.Services.Logging;
 using Silk.NET.Input;
 
 namespace Client.Services.UI;
 
+[Engine]
 public class GameLoopService: IService
 {
     private readonly WindowService _window;
@@ -32,8 +34,8 @@ public class GameLoopService: IService
     (
         WindowService window, 
         VulkanGraphicsDeviceService graphicsDevice, 
-        [KeyFilter(ERendererLayer.Game)] RendererService renderer,
-        [KeyFilter(ERendererLayer.Gui)] RendererService guiRenderer,
+        [KeyFilter("Game")] RendererService renderer,
+        [KeyFilter("Gui")] RendererService guiRenderer,
         ImGuiRendererService imGui, 
         InputService input, 
         RootLoggingService logger,

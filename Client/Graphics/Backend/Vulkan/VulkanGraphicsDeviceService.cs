@@ -1,11 +1,14 @@
 ﻿using System.Drawing;
 using Client.Services.Resource;
+using Common.Core.Attributes;
 using Common.Services.Logging;
 using Silk.NET.Vulkan;
 
 namespace Client.Graphics.Backend.Vulkan;
 
 // TODO: where should this be disposed and should IGraphicsDeviceService inherit from IDisposable?
+[Engine]
+[As<IGraphicsDeviceService>]
 public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService
 {
     public readonly Vk Vk;

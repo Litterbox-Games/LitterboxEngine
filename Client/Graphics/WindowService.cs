@@ -1,4 +1,5 @@
 ﻿using Common.Core;
+using Common.Core.Attributes;
 using Common.Mathematics;
 using Silk.NET.Input;
 using Silk.NET.Maths;
@@ -6,6 +7,7 @@ using Silk.NET.Windowing;
 
 namespace Client.Graphics;
 
+[Engine]
 public class WindowService: IService
 {
     public string Title { get; }

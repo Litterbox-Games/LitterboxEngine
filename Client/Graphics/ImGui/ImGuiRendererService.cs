@@ -6,6 +6,7 @@ using Silk.NET.Vulkan.Extensions.ImGui;
 namespace Client.Graphics.ImGui;
 
 [UpdatablePriority(EPriority.Low)]
+[Engine]
 public class ImGuiRendererService: IService
 {
     private readonly ImGuiController _imGuiController;

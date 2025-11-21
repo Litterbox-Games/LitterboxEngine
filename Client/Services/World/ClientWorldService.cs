@@ -1,4 +1,5 @@
-﻿using Common.Mathematics;
+﻿using Common.Core.Attributes;
+using Common.Mathematics;
 using Common.Services.Block;
 using Common.Services.Events;
 using Common.Services.World;
@@ -6,6 +7,8 @@ using Common.Services.World.Events;
 
 namespace Client.Services.World;
 
+[Game(EMode.Client)]
+[As<IWorldService>]
 public class ClientWorldService : IWorldService
 {
     private readonly List<ChunkData> _chunks = [];

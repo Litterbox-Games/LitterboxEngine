@@ -1,10 +1,13 @@
 ﻿using Autofac;
+using Common.Core.Attributes;
 
 namespace Common.Services.Logging;
 
 /// <summary>
 ///     The root logging service. Registered under the default mapping, this sends log events to every logging service registered.
 /// </summary>
+[Engine]
+[As<ILoggingService>]
 public class RootLoggingService : ILoggingService
 {
     private readonly List<ILoggingService> _loggers = [];
