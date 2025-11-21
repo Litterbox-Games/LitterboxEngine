@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using Autofac;
-using Autofac.Core;
 using Common.Core;
 using Common.Core.Extensions;
 using Common.Host;
@@ -14,14 +13,14 @@ internal static class Program
     {
         var builder = new ContainerBuilder();
         
-        builder.RegisterServices(EGameMode.Dedicated, ELifetime.Engine);
+        builder.RegisterEngineServices();
         
         var engineContainer = builder.Build();
         
         var engineUpdatables = engineContainer.RegisterUpdatables();
         
         using IServerHost host = new ServerHost();
-        host.Start((Container) engineContainer, EGameMode.Dedicated);
+        host.Start(engineContainer);
 
         var stopWatch = new Stopwatch();
 

@@ -1,5 +1,6 @@
-﻿using Client.Graphics.GHAL;
+﻿using Client.Graphics.Backend;
 using Common.Core;
+using Common.Core.Attributes;
 using Common.Services.Logging;
 using Common.Services.Resource;
 using Common.Services.Resource.Exceptions;
@@ -7,6 +8,8 @@ using MoreLinq;
 
 namespace Client.Services.Resource;
 
+[Engine]
+[As<IResourceService>]
 public class ClientResourceService: IResourceService, IUpdatable
 {
     private readonly Dictionary<string, IResource> _resources = new ();
@@ -116,6 +119,8 @@ public class ClientResourceService: IResourceService, IUpdatable
     public void Dispose()
     {
         _watcher.Dispose();
+        
+        _graphicsDevice.WaitIdle();
         
         _resources
             .Select(x => x.Value)

@@ -1,9 +1,12 @@
-﻿using Common.Services.Events;
+﻿using Common.Core.Attributes;
+using Common.Services.Events;
 using Common.Services.Logging;
 using Common.Services.Players.Events;
 
 namespace Common.Services.Players;
 
+[Game(EMode.Host)]
+[As<IPlayerService>]
 public sealed class ServerPlayerService : IPlayerService
 {
     public ulong PlayerId { get; }

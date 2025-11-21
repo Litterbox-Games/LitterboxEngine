@@ -1,13 +1,17 @@
 ﻿using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using Client.Graphics.GHAL;
+using Client.Graphics.Backend;
 using Client.Services.Resource;
 using Common.Core;
-using Buffer = Client.Graphics.GHAL.Buffer;
+using Common.Core.Attributes;
+using Buffer = Client.Graphics.Backend.Buffer;
 
 namespace Client.Graphics;
 
+[Engine]
+[As<RendererService>("Game")]
+[As<RendererService>("Gui")]
 public class RendererService: IService
 {
     private const int MaxQuads = 100000;
@@ -20,9 +24,8 @@ public class RendererService: IService
     
     private int _textureCount = 1;
 
-    private readonly IGraphicsDeviceService _graphicsDevice;
     private readonly Pipeline _pipeline;
-    private readonly CommandList _commandList;
+    private readonly ICommandList _commandList;
 
     private readonly Quad[] _quads;
     
@@ -38,57 +41,55 @@ public class RendererService: IService
     private readonly ResourceSet _textureSet;
     
     public Matrix4x4 ViewMatrix = Matrix4x4.Identity;
-    public Color ClearColor = Color.Black;
     
     public unsafe RendererService(IGraphicsDeviceService graphicsDevice)
     {
-        _graphicsDevice = graphicsDevice;
 
         _quads = new Quad[MaxQuads];
         
         var vertexShaderDesc = Shader.LoadFromFile("Resources/Shaders/default.vert").ShaderDescription;
         var fragmentShaderDesc = Shader.LoadFromFile("Resources/Shaders/default.frag").ShaderDescription;
 
-        using var shaderProgram = _graphicsDevice.CreateShaderProgram(vertexShaderDesc, fragmentShaderDesc);
+        using var shaderProgram = graphicsDevice.CreateShaderProgram(vertexShaderDesc, fragmentShaderDesc);
 
         // default.vert:15-17
         // layout(set = 0, binding = 0) uniform MVPBuffer {
         //     mat4 uMVP;
         // };
-        _transformBuffer = _graphicsDevice.CreateBuffer(new BufferDescription((uint)sizeof(Matrix4x4), BufferUsage.Uniform));
-        var transformLayout = _graphicsDevice.CreateResourceLayout(
+        _transformBuffer = graphicsDevice.CreateBuffer(new BufferDescription((uint)sizeof(Matrix4x4), BufferUsage.Uniform));
+        var transformLayout = graphicsDevice.CreateResourceLayout(
             new ResourceLayoutDescription(new ResourceLayoutElementDescription(ResourceKind.UniformBuffer, ShaderStages.Vertex)));                                                                       
         
-        _transformSet = _graphicsDevice.CreateResourceSet(transformLayout);
+        _transformSet = graphicsDevice.CreateResourceSet(transformLayout);
         _transformSet.Update(0, _transformBuffer);
 
         // default.vert:20-22
         // layout(std140, set = 1, binding = 0) buffer QuadBlock {
         //     Quad quads[];
         // };
-        _quadsBuffer = _graphicsDevice.CreateBuffer(new BufferDescription((uint)sizeof(Quad) * MaxQuads, BufferUsage.StorageBuffer));
-        var quadsLayout = _graphicsDevice.CreateResourceLayout(
+        _quadsBuffer = graphicsDevice.CreateBuffer(new BufferDescription((uint)sizeof(Quad) * MaxQuads, BufferUsage.StorageBuffer));
+        var quadsLayout = graphicsDevice.CreateResourceLayout(
             new ResourceLayoutDescription(new ResourceLayoutElementDescription(ResourceKind.StorageBuffer, ShaderStages.Vertex)));
         
-        _quadsSet = _graphicsDevice.CreateResourceSet(quadsLayout);
+        _quadsSet = graphicsDevice.CreateResourceSet(quadsLayout);
         _quadsSet.UpdateStorageBuffer(0, _quadsBuffer);
         
         // default.frag:3-4
         // layout(set = 2, binding = 0) uniform texture2D textures[8];
         // layout(set = 2, binding = 1) uniform sampler samp;
-        var textureLayout = _graphicsDevice.CreateResourceLayout(
+        var textureLayout = graphicsDevice.CreateResourceLayout(
             new ResourceLayoutDescription(
                 new ResourceLayoutElementDescription(ResourceKind.TextureReadOnly, ShaderStages.Fragment, MaxTextures),
                 new ResourceLayoutElementDescription(ResourceKind.Sampler, ShaderStages.Fragment)));
 
-        _textureSet = _graphicsDevice.CreateResourceSet(textureLayout);
+        _textureSet = graphicsDevice.CreateResourceSet(textureLayout);
         _textures = new Texture[MaxTextures];
-        _whiteTexture = _graphicsDevice.CreateTexture(1, 1, Color.White);
+        _whiteTexture = graphicsDevice.CreateTexture(1, 1, Color.White);
         _textures[0] = _whiteTexture;
         for (uint i = 0; i < MaxTextures; i++)
             _textureSet.Update(0, _whiteTexture, i);
             
-        _sampler = _graphicsDevice.CreateSampler();
+        _sampler = graphicsDevice.CreateSampler();
         _textureSet.Update(1, _sampler);
 
         var pipelineDescription = new PipelineDescription(
@@ -106,24 +107,18 @@ public class RendererService: IService
                 VertexLayout: Quad.VertexLayout)
         );
 
-        _pipeline = _graphicsDevice.CreatePipeline(pipelineDescription);
+        _pipeline = graphicsDevice.CreatePipeline(pipelineDescription);
 
-        _commandList = _graphicsDevice.CreateCommandList();
+        _commandList = graphicsDevice.CommandList;
     }
 
     public void BeginDrawing()
     {
-        _commandList.BeginRenderPass(ClearColor);
+        _commandList.BeginPass();
         _commandList.SetPipeline(_pipeline);
         
         _commandList.UpdateBuffer(_transformBuffer, 0, ViewMatrix);
         _commandList.SetResourceSet(0, _transformSet);
-    }
-
-    public void BeginFrame()
-    {
-        _graphicsDevice.SwapBuffers();
-        _commandList.Begin();
     }
 
     private void Flush()
@@ -146,13 +141,7 @@ public class RendererService: IService
     public void EndDrawing()
     {
         if (_quadCount > 0) Flush();
-        _commandList.EndRenderPass();
-    }
-    
-    public void EndFrame()
-    {
-        _commandList.End();
-        _graphicsDevice.SubmitCommands();
+        _commandList.EndPass();
     }
 
     public void DrawRectangle(RectangleF destination, Color color, float depth = 0.0f)

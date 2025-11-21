@@ -1,4 +1,5 @@
 ﻿using Common.Core;
+using Common.Core.Attributes;
 using Common.Services.Logging;
 using Common.Services.Network.Events;
 
@@ -6,10 +7,12 @@ namespace Common.Services.Events;
 
 public delegate void OnEvent<in T>(T e) where T : IEvent;
 
+[Engine]
 public class EventService(ILoggingService logger) : IService
 {
     private readonly Dictionary<Type, List<(string, Action<IEvent>)>> _handlers = new();
-
+    public List<Type> EventTypes => _handlers.Keys.ToList(); 
+    
     public void Incoming(INetworkEvent e) => CallHandlers(e);
     
     public void Outgoing(INetworkEvent e) => CallHandlers(new OutgoingEvent(e));
@@ -54,9 +57,6 @@ public class EventService(ILoggingService logger) : IService
         }
         else
         {
-            if (eventType.IsAssignableTo(typeof(INetworkEvent)))
-                CallHandlers(new RegisterMessageEvent(eventType));
-            
             _handlers[eventType] = [(methodName, wrapped)];
         }
     }
@@ -65,15 +65,14 @@ public class EventService(ILoggingService logger) : IService
     {
         var eventType = typeof(T);
         var methodName = handler.Method.DeclaringType!.Name + "." + handler.Method.Name;
+
+        if (!_handlers.TryGetValue(eventType, out var handlers)) return;
         
-        if (_handlers.TryGetValue(eventType, out var handlers))
-        {
-            handlers.RemoveAll(x => x.Item1 == methodName);
+        handlers.RemoveAll(x => x.Item1 == methodName);
             
-            if (handlers.Count == 0)
-            {
-                _handlers.Remove(eventType);
-            }
+        if (handlers.Count == 0)
+        {
+            _handlers.Remove(eventType);
         }
     }
     

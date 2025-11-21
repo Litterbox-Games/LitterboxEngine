@@ -1,5 +1,5 @@
 ﻿using System.Drawing;
-using Client.Graphics.GHAL;
+using Client.Graphics.Backend;
 using Common.Services.Resource;
 using SixLabors.ImageSharp.PixelFormats;
 

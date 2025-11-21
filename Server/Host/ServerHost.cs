@@ -1,6 +1,6 @@
 ﻿using Autofac;
-using Autofac.Core;
 using Common.Core;
+using Common.Core.Attributes;
 using Common.Core.Extensions;
 using Common.Host;
 using Common.Services.Logging;
@@ -12,33 +12,28 @@ namespace Server.Host;
 /// </summary>
 public class ServerHost : IServerHost
 {
-    // Game
-    public ILifetimeScope GameContainer  { get; set; } = null!;
+    public EGameMode GameMode => EGameMode.Dedicated;
+    public ILifetimeScope GameScope  { get; set; } = null!;
     public List<(EPriority, IUpdatable)> GameUpdatables { get; private set; } = [];
     
-    public void Start(Container engineContainer, EGameMode gameMode)
+    public void Start(ILifetimeScope engineScope)
     {
-        GameContainer = engineContainer.BeginLifetimeScope(builder =>
+        GameScope = engineScope.BeginLifetimeScope(builder =>
         {
-            builder.RegisterServices(gameMode, ELifetime.Game);
+            builder.RegisterGameServices(EMode.Host, true);
         });
         
-        GameContainer.Resolve<RootLoggingService>().RefreshLoggers(GameContainer);
+        GameScope.Resolve<RootLoggingService>().RefreshLoggers(GameScope);
         
-        GameUpdatables = GameContainer.RegisterUpdatables();
+        GameUpdatables = GameScope.RegisterUpdatables();
         
         (this as IServerHost).StartServer(7777);
     }
     
     public void Stop()
     {
-        GameContainer.Dispose();
+        GameScope.Dispose();
         GameUpdatables = [];
-    }
-    
-    public void Update(float deltaTime)
-    {
-        GameUpdatables.ForEach(updatable => updatable.Item2.Update(deltaTime));
     }
 
     public void Dispose()

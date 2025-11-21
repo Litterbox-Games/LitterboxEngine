@@ -1,5 +1,4 @@
-﻿using Autofac;
-using Common.Host;
+﻿using Common.Core.Attributes;
 using Common.Services.Events;
 using Common.Services.Logging;
 using Common.Services.Network;
@@ -9,6 +8,9 @@ using Lidgren.Network;
 
 namespace Client.Services.Network;
 
+[Multiplayer]
+[Game(EMode.Client)]
+[As<NetworkService>]
 public class ClientNetworkService: NetworkService
 {
     protected override NetPeer NetPeer => _client;
@@ -20,14 +22,14 @@ public class ClientNetworkService: NetworkService
     private readonly NetClient _client;
     private readonly ILoggingService _logger;
     private readonly EventService _eventService;
-    private readonly IHost _host;
+    private readonly IPlayerService _playerService;
     
     private NetConnection? _connection;
     private float _connectionAttemptTime;
     
-    public ClientNetworkService(IHost host, ILoggingService logger, EventService eventService) : base(logger, eventService)
+    public ClientNetworkService(IPlayerService playerService, ILoggingService logger, EventService eventService) : base(logger, eventService)
     {
-        _host = host;
+        _playerService = playerService;
         _logger = logger;
         _eventService = eventService;
 
@@ -50,14 +52,14 @@ public class ClientNetworkService: NetworkService
     
     public void Connect(string ip, ushort port)
     {
+        RegisterNetworkEvents();
+        
         // Create a random ID and send it in the approval request message
         var msg = _client.CreateMessage();
-
-        var playerService = _host.GameContainer.Resolve<IPlayerService>();
         
-        var playerName = $"Player {playerService.PlayerId}";
+        var playerName = $"Player {_playerService.PlayerId}";
 
-        msg.Write(playerService.PlayerId);
+        msg.Write(_playerService.PlayerId);
         msg.Write(playerName);
 
         _connection = _client.Connect(ip, port, msg);

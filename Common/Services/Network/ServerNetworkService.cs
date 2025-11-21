@@ -1,4 +1,5 @@
-﻿using Common.Services.Events;
+﻿using Common.Core.Attributes;
+using Common.Services.Events;
 using Common.Services.Logging;
 using Common.Services.Network.Events;
 using Common.Services.Players;
@@ -7,6 +8,9 @@ using Lidgren.Network;
 
 namespace Common.Services.Network;
 
+[Multiplayer]
+[Game(EMode.Host)]
+[As<NetworkService>]
 public sealed class ServerNetworkService(ILoggingService logger, EventService eventService): NetworkService(logger, eventService)
 {
     private NetServer? _server;
@@ -82,6 +86,8 @@ public sealed class ServerNetworkService(ILoggingService logger, EventService ev
 
     public void Listen(ushort port)
     {
+        RegisterNetworkEvents();
+        
         if (_server != null) throw new InvalidOperationException("Server is already listening and must be destroyed.");
         
         var config = new NetPeerConfiguration("Ages of Automation") { 

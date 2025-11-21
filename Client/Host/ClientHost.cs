@@ -1,9 +1,9 @@
 ﻿using Autofac;
-using Autofac.Core;
 using Client.Core.Extensions;
 using Client.Graphics;
 using Client.Services.Network;
 using Common.Core;
+using Common.Core.Attributes;
 using Common.Host;
 using Common.Core.Extensions;
 using Common.Services.Logging;
@@ -15,57 +15,40 @@ namespace Client.Host;
 /// </summary>
 public class ClientHost : IClientHost
 {
-    // Game
-    public ILifetimeScope GameContainer  { get; set; } = null!;
+    public EGameMode GameMode => EGameMode.Client;
+    
+    public ILifetimeScope GameScope  { get; set; } = null!;
 
     public List<(EPriority, IUpdatable)> GameUpdatables { get; private set; } = [];
     public List<IDrawable> GameDrawables { get; private set; } = [];
+    public List<IGuiDrawable> GameGuiDrawables { get; private set; } = [];
     public List<IInputable> GameInputables { get; private set; } = [];
 
-    public void Start(Container engineContainer, EGameMode gameMode)
+    public void Start(ILifetimeScope engineScope)
     {
-        GameContainer = engineContainer.BeginLifetimeScope(builder =>
+        GameScope = engineScope.BeginLifetimeScope(builder =>
         {
-            builder.RegisterInstance(this)
-                .As<IClientHost>()
-                .As<IHost>()
-                .AsSelf()
-                .SingleInstance();
-            
-            builder.RegisterServices(gameMode, ELifetime.Game);
+            builder.RegisterGameServices(EMode.Client, true);
         });
 
-        GameContainer.Resolve<RootLoggingService>().RefreshLoggers(GameContainer);
+        GameScope.Resolve<RootLoggingService>().RefreshLoggers(GameScope);
         
-        GameUpdatables = GameContainer.RegisterUpdatables();
-        GameInputables = GameContainer.RegisterInputables();
-        GameDrawables = GameContainer.RegisterDrawables();
+        GameUpdatables = GameScope.RegisterUpdatables();
+        GameInputables = GameScope.RegisterInputables();
+        GameDrawables = GameScope.RegisterDrawables();
+        GameGuiDrawables = GameScope.RegisterGuiDrawables();
 
-        var networkService = GameContainer.Resolve<ClientNetworkService>();
+        var networkService = GameScope.Resolve<ClientNetworkService>();
         networkService.Connect("127.0.0.1", 7777);
     }
 
     public void Stop()
     {
-        GameContainer?.Dispose();
+        GameScope.Dispose();
         GameUpdatables = [];
         GameInputables = [];
         GameDrawables = [];
-    }
-    
-    public void Update(float deltaTime)
-    {
-        GameUpdatables.ForEach(updatable => updatable.Item2.Update(deltaTime));
-    }
-    
-    public void Input(InputService input)
-    {
-        GameInputables.ForEach(inputable => inputable.Input(input));
-    }
-    
-    public void Draw(float deltaTime, RendererService renderer)
-    {
-        GameDrawables.ForEach(drawable => drawable.Draw(deltaTime, renderer));
+        GameGuiDrawables = [];
     }
 
     public void Dispose()

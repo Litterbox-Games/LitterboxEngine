@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using Common.Core.Attributes;
+using Serilog;
 using Serilog.Core;
 
 namespace Common.Services.Logging;
@@ -6,6 +7,8 @@ namespace Common.Services.Logging;
 /// <summary>
 ///     A service implementing the logging contract to log information to the system console.
 /// </summary>
+[Engine]
+[As<ILoggingService>]
 public class ConsoleLoggingService : ILoggingService
 {
     private readonly Logger _logger = new LoggerConfiguration().MinimumLevel.Debug().WriteTo.Console().CreateLogger();

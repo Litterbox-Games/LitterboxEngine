@@ -16,6 +16,7 @@ using Silk.NET.Input;
 namespace Client.Services.Players;
 
 [UpdatablePriority(EPriority.High)]
+[Game]
 public class PlayerControlService : IService, IInputable, IUpdatable, IDrawable
 {
     private readonly QueryDescription _playerControlled = new QueryDescription().WithAll<Position, Velocity, PlayerControls>();

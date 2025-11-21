@@ -1,9 +1,12 @@
-﻿using Common.Mathematics;
+﻿using Common.Core.Attributes;
+using Common.Mathematics;
 using Common.Services.Block;
 using MoreLinq;
 
 namespace Common.Services.World.Generation;
 
+[Game(EMode.Host)]
+[As<IWorldGenerator>]
 public class EarthGenerator : IWorldGenerator
 {
     private const int Seed = 132;

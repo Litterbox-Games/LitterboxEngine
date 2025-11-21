@@ -1,8 +1,10 @@
-﻿using Common.Services.Block.Blocks;
+﻿using Common.Core.Attributes;
+using Common.Services.Block.Blocks;
 using Common.Services.Registry;
 
 namespace Common.Services.Block;
 
+[Game]
 public class BlockRegistry : IRegistry<IBlock>
 {
     public void RegisterDefaultBlocks()

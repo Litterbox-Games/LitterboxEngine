@@ -1,4 +1,4 @@
-﻿using Client.Graphics.GHAL;
+﻿using Client.Graphics.Backend;
 using Common.Mathematics;
 using Common.Services.Resource;
 using MoreLinq.Extensions;
