@@ -22,4 +22,4 @@ public sealed class MultiplayerAttribute : Attribute;
 
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-public sealed class AsAttribute<T>(object? key = null) : Attribute where T : IService;
+public sealed class AsAttribute<T>(string? key = null) : Attribute where T : IService;
