@@ -76,6 +76,7 @@ public class GameLoopService: IService
             _host?.Update(deltaTime);
             
             // Must be called at the same rate as _imGui.Draw()
+            // TODO: this should be converted to IUpdatable after we add a MainMenu layer
             _imGui.Update(deltaTime);
 
             _graphicsDevice.BeginFrame(Color.Black);

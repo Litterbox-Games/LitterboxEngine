@@ -31,7 +31,7 @@ public static class ILifetimeScopeExtensions
             var priorityAttribute = updateMethod?
                 .GetCustomAttributes(typeof(PriorityAttribute), inherit: true)
                 .Cast<PriorityAttribute>()
-                .FirstOrDefault();;
+                .FirstOrDefault();
 
             var priority = priorityAttribute?.Priority ?? (float)EPriority.Normal;
 
