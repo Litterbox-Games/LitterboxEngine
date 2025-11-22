@@ -19,7 +19,7 @@ layout(set = 0, binding = 0) uniform MVPBuffer {
 
 // std430 will use the alignment of the largest item in the Quad struct e.g. 16 bytes for vec4
 // This means the stride for each element in the quads array is 64 bytes, 56 bytes + 8 byte padding
-layout(std430, set = 1, binding = 0) buffer QuadBlock {
+layout(std430, set = 1, binding = 0) readonly buffer QuadBlock {
     Quad quads[];
 };
 
