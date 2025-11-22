@@ -7,7 +7,7 @@ public interface IHost: IDisposable
 {
     public EGameMode GameMode { get; }
     public ILifetimeScope GameScope { get; set; }
-    List<(EPriority, IUpdatable)> GameUpdatables { get; }
+    List<(float, IUpdatable)> GameUpdatables { get; }
 
     public void Start(ILifetimeScope engineScope);
     

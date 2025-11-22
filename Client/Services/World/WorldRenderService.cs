@@ -5,7 +5,6 @@ using Client.Graphics;
 using Client.Services.Resource;
 using Common.Components;
 using Common.Core;
-using Common.Core.Attributes;
 using Common.Mathematics;
 using Common.Services.Block;
 using Common.Services.Entities.Events;
@@ -17,7 +16,6 @@ using ImGuiNET;
 
 namespace Client.Services.World;
 
-[UpdatablePriority(EPriority.High)]
 [Game]
 public class WorldRenderService : IService, IDrawable
 {
@@ -56,7 +54,7 @@ public class WorldRenderService : IService, IDrawable
         var networked = e.Entity.Get<Networked>();
         if (networked.OwnerId == _playerService.PlayerId) _playerEntity = null;       
     }
-
+    
     public void Draw(float _, RendererService renderer)
     {
         if (_playerEntity == null) return;

@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 using Client.Services.Resource;
-using Common.Core.Attributes;
+using Common.Core;
 using Common.Services.Logging;
 using Silk.NET.Vulkan;
 

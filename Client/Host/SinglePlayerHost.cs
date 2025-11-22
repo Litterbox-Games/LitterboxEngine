@@ -2,7 +2,6 @@ using Autofac;
 using Client.Core.Extensions;
 using Client.Graphics;
 using Common.Core;
-using Common.Core.Attributes;
 using Common.Core.Extensions;
 using Common.Host;
 using Common.Services.Logging;
@@ -16,7 +15,7 @@ public class SinglePlayerHost : IClientHost, IServerHost
 {
     public EGameMode GameMode => EGameMode.SinglePlayer;
     public ILifetimeScope GameScope { get; set; } = null!;
-    public List<(EPriority, IUpdatable)> GameUpdatables { get; private set; } = [];
+    public List<(float, IUpdatable)> GameUpdatables { get; private set; } = [];
     public List<IDrawable> GameDrawables { get; private set; } = [];
     public List<IGuiDrawable> GameGuiDrawables { get; private set; } = [];
     public List<IInputable> GameInputables { get; private set; } = [];

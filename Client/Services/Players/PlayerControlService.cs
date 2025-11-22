@@ -3,7 +3,6 @@ using Arch.Core;
 using Client.Graphics;
 using Common.Components;
 using Common.Core;
-using Common.Core.Attributes;
 using Common.Mathematics;
 using Common.Services.Entities;
 using Common.Services.Events;
@@ -15,7 +14,6 @@ using Silk.NET.Input;
 
 namespace Client.Services.Players;
 
-[UpdatablePriority(EPriority.High)]
 [Game]
 public class PlayerControlService : IService, IInputable, IUpdatable, IDrawable
 {
@@ -92,6 +90,7 @@ public class PlayerControlService : IService, IInputable, IUpdatable, IDrawable
     }
     
     /// <inheritdoc />
+    [Priority(EPriority.High)]
     public void Update(float deltaTime)
     {
         UpdatePosition(deltaTime);

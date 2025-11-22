@@ -6,7 +6,6 @@ using Common.Core;
 using Common.Mathematics;
 using Common.Services.Entities;
 using Autofac.Features.AttributeFilters;
-using Common.Core.Attributes;
 
 namespace Client.Services.Players;
 

@@ -1,4 +1,4 @@
-﻿using Common.Core.Attributes;
+﻿using Common.Core;
 using Serilog;
 using Serilog.Core;
 

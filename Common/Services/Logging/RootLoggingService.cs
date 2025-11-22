@@ -1,5 +1,5 @@
 ﻿using Autofac;
-using Common.Core.Attributes;
+using Common.Core;
 
 namespace Common.Services.Logging;
 

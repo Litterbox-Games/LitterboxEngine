@@ -1,6 +1,5 @@
 ﻿using System.Numerics;
 using Common.Core;
-using Common.Core.Attributes;
 using Silk.NET.Input;
 
 namespace Client.Graphics;

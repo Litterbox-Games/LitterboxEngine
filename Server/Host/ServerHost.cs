@@ -1,6 +1,5 @@
 ﻿using Autofac;
 using Common.Core;
-using Common.Core.Attributes;
 using Common.Core.Extensions;
 using Common.Host;
 using Common.Services.Logging;
@@ -14,7 +13,7 @@ public class ServerHost : IServerHost
 {
     public EGameMode GameMode => EGameMode.Dedicated;
     public ILifetimeScope GameScope  { get; set; } = null!;
-    public List<(EPriority, IUpdatable)> GameUpdatables { get; private set; } = [];
+    public List<(float, IUpdatable)> GameUpdatables { get; private set; } = [];
     
     public void Start(ILifetimeScope engineScope)
     {

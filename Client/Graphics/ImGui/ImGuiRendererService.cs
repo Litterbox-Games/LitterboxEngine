@@ -1,11 +1,9 @@
 ﻿using Client.Graphics.Backend.Vulkan;
 using Common.Core;
-using Common.Core.Attributes;
 using Silk.NET.Vulkan.Extensions.ImGui;
 
 namespace Client.Graphics.ImGui;
 
-[UpdatablePriority(EPriority.Low)]
 [Engine]
 public class ImGuiRendererService: IService
 {
@@ -28,12 +26,13 @@ public class ImGuiRendererService: IService
             null
         );
     }
-
+    
+    [Priority(EPriority.Low)]
     public void Update(float deltaTime)
     {
         _imGuiController.Update(deltaTime);
     }
-
+    
     public void Draw()
     {
         _imGuiController.Render(_swapChain.CurrentCommandBuffer.VkCommandBuffer,

@@ -1,5 +1,4 @@
 ﻿using Common.Core;
-using Common.Core.Attributes;
 using Common.Services.Logging;
 using Common.Services.Network.Events;
 

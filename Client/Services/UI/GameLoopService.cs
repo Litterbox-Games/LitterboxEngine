@@ -10,7 +10,6 @@ using Client.Graphics.Backend.Vulkan;
 using Client.Graphics.ImGui;
 using Client.Host;
 using Common.Core;
-using Common.Core.Attributes;
 using Common.Core.Extensions;
 using Common.Services.Logging;
 using Silk.NET.Input;

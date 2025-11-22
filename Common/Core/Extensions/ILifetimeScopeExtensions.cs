@@ -1,6 +1,6 @@
+using System.Reflection;
 using Autofac;
 using Autofac.Core;
-using Common.Core.Attributes;
 using MoreLinq;
 
 namespace Common.Core.Extensions;
@@ -20,36 +20,26 @@ public static class ILifetimeScopeExtensions
             });
     }
     
-    public static List<(EPriority, IUpdatable)> RegisterUpdatables(this ILifetimeScope container)
+    public static List<(float, IUpdatable)> RegisterUpdatables(this ILifetimeScope container)
     {
-        var updatables = new List<(EPriority, IUpdatable)>();
-        
+        var updatables = new List<(float, IUpdatable)>();
+
         container.FilterRegistrations<IUpdatable>((updatable, type) =>
         {
-            var tickableAttribute =
-                type.CustomAttributes.FirstOrDefault(y => y.AttributeType == typeof(UpdatablePriorityAttribute));
+            var updateMethod = type.GetMethod(nameof(IUpdatable.Update), BindingFlags.Instance | BindingFlags.Public);
 
-            var priority = EPriority.Normal;
+            var priorityAttribute = updateMethod?
+                .GetCustomAttributes(typeof(PriorityAttribute), inherit: true)
+                .Cast<PriorityAttribute>()
+                .FirstOrDefault();;
 
-            if (tickableAttribute != null)
-                priority = (EPriority) tickableAttribute.ConstructorArguments[0].Value!;
+            var priority = priorityAttribute?.Priority ?? (float)EPriority.Normal;
 
-            var inserted = false;
-
-            for (var i = 0; i < updatables.Count && !inserted; i++)
-            {
-                if (priority <= updatables[i].Item1)
-                    continue;
-
-                updatables.Insert(i, (priority, updatable));
-                inserted = true;
-            }
-
-            if (!inserted)
-            {
-                updatables.Add((priority, updatable));
-            }
+            updatables.Add((priority, updatable));
         });
+
+        // Sort descending by priority (highest -> lowest)
+        updatables.Sort((a, b) => b.Item1.CompareTo(a.Item1));
 
         return updatables;
     }

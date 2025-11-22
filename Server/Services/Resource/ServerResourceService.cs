@@ -1,4 +1,4 @@
-﻿using Common.Core.Attributes;
+﻿using Common.Core;
 using Common.Services.Logging;
 using Common.Services.Resource;
 using Common.Services.Resource.Exceptions;

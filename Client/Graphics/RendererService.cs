@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using Client.Graphics.Backend;
 using Client.Services.Resource;
 using Common.Core;
-using Common.Core.Attributes;
 using Buffer = Client.Graphics.Backend.Buffer;
 
 namespace Client.Graphics;

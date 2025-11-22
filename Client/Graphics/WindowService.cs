@@ -1,5 +1,4 @@
 ﻿using Common.Core;
-using Common.Core.Attributes;
 using Common.Mathematics;
 using Silk.NET.Input;
 using Silk.NET.Maths;

@@ -3,7 +3,6 @@ using Client.Core.Extensions;
 using Client.Graphics;
 using Client.Services.Network;
 using Common.Core;
-using Common.Core.Attributes;
 using Common.Host;
 using Common.Core.Extensions;
 using Common.Services.Logging;
@@ -19,7 +18,7 @@ public class ClientHost : IClientHost
     
     public ILifetimeScope GameScope  { get; set; } = null!;
 
-    public List<(EPriority, IUpdatable)> GameUpdatables { get; private set; } = [];
+    public List<(float, IUpdatable)> GameUpdatables { get; private set; } = [];
     public List<IDrawable> GameDrawables { get; private set; } = [];
     public List<IGuiDrawable> GameGuiDrawables { get; private set; } = [];
     public List<IInputable> GameInputables { get; private set; } = [];
