@@ -1,9 +1,11 @@
 ﻿using System.Diagnostics;
+using System.Numerics;
 using Autofac;
 using Common.Core;
 using Common.Core.Extensions;
-using Common.Host;
-using Server.Host;
+using Common.Services.Entities;
+using Common.Services.Logging;
+using Common.Services.Network;
 
 namespace Server;
 
@@ -11,27 +13,35 @@ internal static class Program
 {
     private static void Main()
     {
-        var builder = new ContainerBuilder();
+        var container = new ContainerBuilder()
+            .RegisterEngineServices()
+            .RegisterGameServices(EMode.Host, true)
+            .Build();
         
-        builder.RegisterEngineServices();
+        var updatables = container.RegisterUpdatables();
         
-        var engineContainer = builder.Build();
+        container.Resolve<RootLoggingService>().RefreshLoggers(container);
         
-        var engineUpdatables = engineContainer.RegisterUpdatables();
-        
-        using IServerHost host = new ServerHost();
-        host.Start(engineContainer);
+        var networking = container.Resolve<ServerNetworkService>();
+        networking.Listen(7777);
 
+        var mobController = container.Resolve<MobControllerService>();
+        for (var x = 0; x < 30; x++)
+        {
+            for (var y = 0; y < 30; y++)
+            {
+                mobController.SpawnMobEntity(new Vector2(x * 2, y * 2));
+            }
+        }
+        
         var stopWatch = new Stopwatch();
-
         float deltaTime = 0;
         
         while (true)
         {
             stopWatch.Start();
             
-            engineUpdatables.ForEach(updatable => updatable.Item2.Update(deltaTime));
-            host.Update(deltaTime);
+            updatables.ForEach(updatable => updatable.Item2.Update(deltaTime));
             
             // 10ms to Windows causes it to wait the minimum resolution time of the clock, being around 15ms.
             // Values above 10 will cause instability in the timing.

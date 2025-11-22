@@ -6,12 +6,14 @@ using Autofac.Features.AttributeFilters;
 using Client.Core.Extensions;
 using Client.Graphics;
 using Client.Graphics.Backend;
-using Client.Graphics.Backend.Vulkan;
 using Client.Graphics.ImGui;
-using Client.Host;
+using Client.Services.Network;
 using Common.Core;
 using Common.Core.Extensions;
+using Common.Services.Entities;
 using Common.Services.Logging;
+using Common.Services.Network;
+using Common.Services.Players;
 using Silk.NET.Input;
 
 namespace Client.Services.UI;
@@ -26,13 +28,20 @@ public class GameLoopService: IService
     private readonly InputService _input;
     private readonly ImGuiRendererService _imGui;
     private readonly ILifetimeScope _engineScope;
+    private readonly RootLoggingService _logger;
     
-    private IClientHost? _host;
+    private ILifetimeScope? _gameScope;
+    
+    private List<(float, IUpdatable)> _updatables = [];
+    private List<IDrawable> _drawables = [];
+    private List<IGuiDrawable> _guiDrawables = [];
+    private List<IInputable> _inputables = [];
+    
     
     public GameLoopService
     (
         WindowService window, 
-        VulkanGraphicsDeviceService graphicsDevice, 
+        IGraphicsDeviceService graphicsDevice, 
         [KeyFilter("Game")] RendererService renderer,
         [KeyFilter("Gui")] RendererService guiRenderer,
         ImGuiRendererService imGui, 
@@ -48,8 +57,9 @@ public class GameLoopService: IService
         _engineScope = engineScope;
         _input = input;
         _imGui = imGui;
+        _logger = logger;
 
-        logger.RefreshLoggers(engineScope);
+        _logger.RefreshLoggers(engineScope);
     }
 
     public void Run()
@@ -57,53 +67,29 @@ public class GameLoopService: IService
         var stopWatch = new Stopwatch();
         float deltaTime = 0;
         
-        var engineUpdatables = _engineScope.RegisterUpdatables();
-        var engineDrawables = _engineScope.RegisterDrawables();
-        var engineGuiDrawables = _engineScope.RegisterGuiDrawables();
+        _updatables = _engineScope.RegisterUpdatables();
+        _inputables = _engineScope.RegisterInputables();
+        _drawables = _engineScope.RegisterDrawables();
+        _guiDrawables = _engineScope.RegisterGuiDrawables();
+        
+        // TODO: this logic should probably live elsewhere
+        _guiRenderer.ViewMatrix = Matrix4x4.CreateOrthographicOffCenter(0f, _window.Width, 0f, _window.Height, -1f, 1f);
         
         while (!_window.IsClosing())
         {
             stopWatch.Start();
-            _window.PollEvents();
-
-            // TODO: is there a way we can get rid of these checks?
-            if (_host == null)
-            {
-                engineUpdatables.ForEach(x => x.Item2.Update(deltaTime));
-            }
             
-            _host?.Input(_input);
-            _host?.Update(deltaTime);
-            
-            // Must be called at the same rate as _imGui.Draw()
-            // TODO: this should be converted to IUpdatable after we add a MainMenu layer
-            _imGui.Update(deltaTime);
+            _inputables.ForEach(inputable => inputable.Input(_input));
+            _updatables.ForEach(updatable => updatable.Item2.Update(deltaTime));
 
             _graphicsDevice.BeginFrame(Color.Black);
             
                 _renderer.BeginDrawing();
-                
-                    if (_host == null)
-                    {
-                        engineDrawables.ForEach(drawable => drawable.Draw(deltaTime, _renderer));
-                    }
-                 
-                    _host?.Draw(deltaTime, _renderer);
-                    
+                _drawables.ForEach(drawable => drawable.Draw(deltaTime, _renderer));
                 _renderer.EndDrawing();
                 
-                _guiRenderer.ViewMatrix = 
-                    Matrix4x4.CreateOrthographicOffCenter(0f, _window.Width, 0f, _window.Height, -1f, 1f);
-                
                 _guiRenderer.BeginDrawing();
-                
-                if (_host == null)
-                {
-                    engineGuiDrawables.ForEach(drawable => drawable.DrawGui(deltaTime, _guiRenderer));
-                }
-                 
-                _host?.DrawGui(deltaTime, _guiRenderer);
-                    
+                _guiDrawables.ForEach(drawable => drawable.DrawGui(deltaTime, _guiRenderer));
                 _guiRenderer.EndDrawing();
             
                 _imGui.Draw();
@@ -114,9 +100,8 @@ public class GameLoopService: IService
                 _window.SetShouldClose();
 
             if (_input.IsKeyDown(Key.X))
-            {
                 StopGame();
-            }
+            
             
             stopWatch.Stop();
             deltaTime = (float)stopWatch.Elapsed.TotalSeconds;
@@ -124,25 +109,70 @@ public class GameLoopService: IService
         }
     }
 
-    public void StartGame(IClientHost host)
+    public bool IsGameRunning() => _gameScope is not null;
+    
+    public void StartGame(EMode mode, bool isMultiplayer)
     {
-        _host = host;
-        _host.Start(_engineScope);
-    }
+        _gameScope = _engineScope.BeginLifetimeScope(builder =>
+        {
+            builder.RegisterGameServices(mode, isMultiplayer);
+        });
+        
+        _updatables = _gameScope.RegisterUpdatables();
+        _inputables = _gameScope.RegisterInputables();
+        _drawables = _gameScope.RegisterDrawables();
+        _guiDrawables = _gameScope.RegisterGuiDrawables();
+        
+        _logger.RefreshLoggers(_gameScope);
 
-    public bool IsGameRunning() => _host is not null;
+        // TODO: these should be triggered via events rather than directly here
+        if (mode == EMode.Host)
+        {
+            if (isMultiplayer)
+            {
+                var networking = _gameScope.Resolve<ServerNetworkService>();
+                networking.Listen(7777);
+            }
+
+            var mobController = _gameScope.Resolve<MobControllerService>();
+            for (var x = 0; x < 30; x++)
+            {
+                for (var y = 0; y < 30; y++)
+                {
+                    mobController.SpawnMobEntity(new Vector2(x * 2, y * 2));
+                }
+            }
+
+            var playerService = _gameScope.Resolve<ServerPlayerService>();
+            playerService.SpawnServerPlayer();
+        }
+        else if (mode == EMode.Client)
+        {
+            if (isMultiplayer)
+            {
+                var networkService = _gameScope.Resolve<ClientNetworkService>();
+                networkService.Connect("127.0.0.1", 7777);
+            }
+        }
+    }
     
     public void StopGame()
     {
         if (!IsGameRunning()) return;
         
         _graphicsDevice.WaitIdle();
+        
+        // TODO: dispatch a stop game event here to trigger other logic
+        
+        _gameScope?.Dispose();
+        _gameScope = null;
+        
+        _updatables = _engineScope.RegisterUpdatables();
+        _inputables = _engineScope.RegisterInputables();
+        _drawables = _engineScope.RegisterDrawables();
+        _guiDrawables = _engineScope.RegisterGuiDrawables();
                 
-        _host!.Stop();
-        _host.Dispose();
-        _host = null;
-                
-        _engineScope.Resolve<RootLoggingService>().RefreshLoggers(_engineScope);
+        _logger.RefreshLoggers(_engineScope);
                 
         GC.Collect();
     }

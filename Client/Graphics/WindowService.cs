@@ -7,7 +7,7 @@ using Silk.NET.Windowing;
 namespace Client.Graphics;
 
 [Engine]
-public class WindowService: IService
+public class WindowService: IService, IUpdatable
 {
     public string Title { get; }
     public int Width { get; private set; }
@@ -51,13 +51,11 @@ public class WindowService: IService
     public bool IsClosing() => InternalWindow.IsClosing;
     
     public void SetShouldClose(bool closing = true)  => InternalWindow.IsClosing = closing;
-
-    public void PollEvents() => InternalWindow.DoEvents();
     
-    public void Run(Action<float> gameLoop)
+    [Priority(EPriority.Highest)]
+    public void Update(float deltaTime)
     {
-        InternalWindow.Update += deltaTime => gameLoop((float)deltaTime);
-        InternalWindow.Run();
+        InternalWindow.DoEvents();
     }
 
     public void Dispose()

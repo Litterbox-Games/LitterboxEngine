@@ -5,7 +5,7 @@ using Silk.NET.Vulkan.Extensions.ImGui;
 namespace Client.Graphics.ImGui;
 
 [Engine]
-public class ImGuiRendererService: IService
+public class ImGuiRendererService: IService, IUpdatable
 {
     private readonly ImGuiController _imGuiController;
     private readonly VulkanSwapChain _swapChain;

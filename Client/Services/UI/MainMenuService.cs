@@ -1,5 +1,4 @@
 using Client.Graphics;
-using Client.Host;
 using Common.Core;
 using ImGuiNET;
 
@@ -18,22 +17,21 @@ public class MainMenuService: IService, IDrawable
 
     public void Draw(float deltaTime, RendererService renderer)
     {
+        if (_gameLoop.IsGameRunning()) return;
+        
         ImGui.Begin("Main Menu");
                 
         if (ImGui.Button("Single Player"))
-        {
-            _gameLoop.StartGame(new SinglePlayerHost());
-        }
+            _gameLoop.StartGame(EMode.Host, false);
+        
                 
         if (ImGui.Button("Local Host"))
-        {
-            _gameLoop.StartGame(new LocalHost());
-        }
+            _gameLoop.StartGame(EMode.Host, true);
+        
                 
         if (ImGui.Button("Client"))
-        {
-            _gameLoop.StartGame(new ClientHost());
-        }
+            _gameLoop.StartGame(EMode.Client, true);
+        
                 
         ImGui.End();
     }

@@ -175,6 +175,7 @@ public sealed class ServerNetworkService(ILoggingService logger, EventService ev
     public override void Dispose()
     {
         base.Dispose();
+        StopListening();
         GC.SuppressFinalize(this);
     }
 }

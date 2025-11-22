@@ -9,7 +9,9 @@ public static class ILifetimeScopeExtensions
 {
     public static void FilterRegistrations<T>(this ILifetimeScope container, Action<T, Type> action)
     {
-        container.ComponentRegistry.Registrations.SelectMany(x => x.Services)
+        container
+            .GetRegistrationsRecursive()
+            .SelectMany(x => x.Services)
             .OfType<IServiceWithType>()
             .Select(x => x.ServiceType)
             .Where(x => x.IsAssignableTo(typeof(T)))
@@ -18,6 +20,23 @@ public static class ILifetimeScopeExtensions
                 var service = (T)container.Resolve(x);
                 action(service, service!.GetType());
             });
+    }
+    
+    private static IEnumerable<IComponentRegistration> GetRegistrationsRecursive(this ILifetimeScope scope)
+    {
+        if (scope is not ISharingLifetimeScope)
+            return scope.ComponentRegistry.Registrations;
+        
+        var current = scope as ISharingLifetimeScope;
+
+        var registrations = new List<IComponentRegistration>();
+        while (current != null)
+        {
+            registrations.AddRange(current.ComponentRegistry.Registrations);
+            current = current.ParentLifetimeScope;
+        }
+        
+        return registrations;
     }
     
     public static List<(float, IUpdatable)> RegisterUpdatables(this ILifetimeScope container)

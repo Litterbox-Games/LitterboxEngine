@@ -8,7 +8,7 @@ public enum EPriority
     /// <summary>
     ///     The lowest priority.
     /// </summary>
-    VeryLow = -2,
+    Lowest = -2,
     
     /// <summary>
     ///     A middle ground between normal and very low.
@@ -30,5 +30,5 @@ public enum EPriority
     /// <summary>
     ///     The highest priority available.
     /// </summary>
-    VeryHigh = 2
+    Highest = 2
 }
