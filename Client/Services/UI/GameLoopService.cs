@@ -72,9 +72,6 @@ public class GameLoopService: IService
         _drawables = _engineScope.RegisterDrawables();
         _guiDrawables = _engineScope.RegisterGuiDrawables();
         
-        // TODO: this logic should probably live elsewhere
-        _guiRenderer.ViewMatrix = Matrix4x4.CreateOrthographicOffCenter(0f, _window.Width, 0f, _window.Height, -1f, 1f);
-        
         while (!_window.IsClosing())
         {
             stopWatch.Start();
@@ -87,6 +84,9 @@ public class GameLoopService: IService
                 _renderer.BeginDrawing();
                 _drawables.ForEach(drawable => drawable.Draw(deltaTime, _renderer));
                 _renderer.EndDrawing();
+                
+                // TODO: this logic should probably live elsewhere, and be triggered by window size change event
+                _guiRenderer.ViewMatrix = Matrix4x4.CreateOrthographicOffCenter(0f, _window.Width, 0f, _window.Height, -1f, 1f);
                 
                 _guiRenderer.BeginDrawing();
                 _guiDrawables.ForEach(drawable => drawable.DrawGui(deltaTime, _guiRenderer));
