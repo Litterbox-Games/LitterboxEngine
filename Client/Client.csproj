@@ -9,52 +9,44 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Common\Common.csproj" />
+        <None Include="Resources\**\*.*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="AsepriteDotNet" Version="1.9.0" />
+        <PackageReference Include="ImGui.NET" Version="1.89.9.3" />
+        <PackageReference Include="morelinq" Version="4.4.0" />
+        <PackageReference Include="Silk.NET.Core" Version="2.22.0" />
+        <PackageReference Include="Silk.NET.Input" Version="2.22.0" />
+        <PackageReference Include="Silk.NET.Input.Extensions" Version="2.22.0" />
+        <PackageReference Include="Silk.NET.Maths" Version="2.22.0" />
+        <PackageReference Include="Silk.NET.SPIRV.Cross" Version="2.22.0" />
+        <PackageReference Include="Silk.NET.Vulkan" Version="2.22.0" />
+        <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.22.0" />
+        <PackageReference Include="SixLabors.Fonts" Version="2.1.2" />
+        <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+        <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.5" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="AsepriteDotNet" Version="1.9.0" />
-      <PackageReference Include="ImGui.NET" Version="1.89.9.3" />
-      <PackageReference Include="morelinq" Version="4.4.0" />
-      <PackageReference Include="Silk.NET.Core" Version="2.22.0" />
-      <PackageReference Include="Silk.NET.Input" Version="2.22.0" />
-      <PackageReference Include="Silk.NET.Input.Extensions" Version="2.22.0" />
-      <PackageReference Include="Silk.NET.Maths" Version="2.22.0" />
-      <PackageReference Include="Silk.NET.SPIRV.Cross" Version="2.22.0" />
-      <PackageReference Include="Silk.NET.Vulkan" Version="2.22.0" />
-      <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.22.0" />
-      <PackageReference Include="SixLabors.Fonts" Version="2.1.2" />
-      <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
-      <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.5" />
+        <ProjectReference Include="..\Common\Common.csproj" />
+        <Analyzer Include="..\Common\obj\$(Configuration)\$(TargetFramework)\Common.Analyzer.dll" />
     </ItemGroup>
 
+    <ItemGroup>
+        <VertexShader Include="Resources/**/*.vert" />
+        <FragmentShader Include="Resources/**/*.frag" />
+    </ItemGroup>
+    
     <PropertyGroup>
         <VulkanBinPath>$(VULKAN_SDK)\Bin</VulkanBinPath>
         <ShaderOutputPath>Resources\Shaders</ShaderOutputPath>
     </PropertyGroup>
-
-    <ItemGroup>
-        <VertexShader Include="Resources/Shaders/*.vert" />
-        <FragmentShader Include="Resources/Shaders/*.frag" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Update="Resources\Aseprites\Player.aseprite">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="Resources\Aseprites\BiomePalette.aseprite">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="Resources\Fonts\dogica.otf">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-    </ItemGroup>
-
+    
     <Target Name="BuildVulkanShader" AfterTargets="Build">
-        <Message Text="VulkanBinPath: $(VulkanBinPath)" Importance="high" />
-        <Message Text="ShaderOutputPath: $(OutputPath)$(ShaderOutputPath)" Importance="high" />
-        <Message Text="VertexShader: @(VertexShader)" Importance="high" />
-        <Message Text="FragmentShader: @(FragmentShader)" Importance="high" />
+        <Message Text="Compiling shaders..." Importance="high" />
         <MakeDir Directories="$(TargetDir)$(ShaderOutputPath)" Condition="!Exists('$(TargetDir)$(ShaderOutputPath)')" />
         <Exec Command="$(VulkanBinPath)\glslc.exe &quot;%(VertexShader.FullPath)&quot; -o &quot;$(TargetDir)$(ShaderOutputPath)\%(VertexShader.FileName).vert&quot;" Condition="'@(VertexShader)'!=''" />
         <Exec Command="$(VulkanBinPath)\glslc.exe &quot;%(FragmentShader.FullPath)&quot; -o &quot;$(TargetDir)$(ShaderOutputPath)\%(FragmentShader.FileName).frag&quot;" Condition="'@(FragmentShader)'!=''" />
