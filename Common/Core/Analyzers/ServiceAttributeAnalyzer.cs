@@ -3,10 +3,10 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Linq;
 
-namespace Common.Core;
+namespace Common.Analyzers.Core;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class AttributeAnalyzer : DiagnosticAnalyzer
+public class ServiceAttributeAnalyzer : DiagnosticAnalyzer
 {
     private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
         id: "LB001",

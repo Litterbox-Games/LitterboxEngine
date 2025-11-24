@@ -17,17 +17,20 @@
     </ItemGroup>
     
     <ItemGroup>
-        <Compile Remove="Core/AttributeAnalyzer.cs" />
+        <Compile Remove="Core\Analyzers\**\*.cs" />
         <Analyzer Include="$(IntermediateOutputPath)Common.Analyzer.dll" />
-        <AnalyzerCompile Include="Core/AttributeAnalyzer.cs" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <AnalyzerSource Include="Core\Analyzers\**\*.cs" />
     </ItemGroup>
     
     <Target Name="BuildAnalyzer"
             BeforeTargets="CoreCompile" 
-            Inputs="@(AnalyzerCompile)" 
+            Inputs="@(AnalyzerSource)" 
             Outputs="$(IntermediateOutputPath)Common.Analyzer.dll">
         
-        <Csc Sources="@(AnalyzerCompile)"
+        <Csc Sources="@(AnalyzerSource)"
              OutputAssembly="$(IntermediateOutputPath)Common.Analyzer.dll"
              TargetType="Library"
              EmitDebugInformation="true"
