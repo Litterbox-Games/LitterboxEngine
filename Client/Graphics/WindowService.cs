@@ -1,5 +1,7 @@
-﻿using Common.Core;
+﻿using Client.Graphics.Events;
+using Common.Core;
 using Common.Mathematics;
+using Common.Services.Events;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
@@ -14,13 +16,15 @@ public class WindowService: IService, IUpdatable
     public int Height { get; private set; }
     public Vector2i Size => new(Width, Height);
     
-    public event Action<int, int>? OnResize;
+    private readonly EventService _eventService;
 
     public readonly IWindow InternalWindow;
     public readonly IInputContext Input;
     
-    public WindowService()
+    public WindowService(EventService eventService)
     {
+        _eventService = eventService;
+        
         Title = "Litterbox Engine";
         Width = 1920;
         Height = 1080;
@@ -45,7 +49,7 @@ public class WindowService: IService, IUpdatable
     {
         Width = size.X;
         Height = size.Y;
-        OnResize?.Invoke(Width, Height);
+        _eventService.Emit(new WindowResizeEvent(Width, Height));
     }
 
     public bool IsClosing() => InternalWindow.IsClosing;

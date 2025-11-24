@@ -14,10 +14,6 @@ namespace Client.Services.Network;
 public class ClientNetworkService: NetworkService
 {
     protected override NetPeer NetPeer => _client;
-
-    // TODO: replace with IEvents
-    public event Action? EventOnConnect;
-    public event Action? EventOnDisconnect;
     
     private readonly NetClient _client;
     private readonly ILoggingService _logger;
@@ -86,10 +82,8 @@ public class ClientNetworkService: NetworkService
                     switch (status)
                     {
                         case NetConnectionStatus.Connected:
-                            EventOnConnect?.Invoke();
                             continue;
                         case NetConnectionStatus.Disconnected:
-                            EventOnDisconnect?.Invoke();
                             _connection = null;
                             continue;
                     }

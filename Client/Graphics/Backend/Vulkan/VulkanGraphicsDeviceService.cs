@@ -1,6 +1,8 @@
 ﻿using System.Drawing;
+using Client.Graphics.Events;
 using Client.Services.Resource;
 using Common.Core;
+using Common.Services.Events;
 using Common.Services.Logging;
 using Silk.NET.Vulkan;
 
@@ -24,20 +26,20 @@ public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService
     private readonly VulkanCommandPool _commandPool;
     private readonly VulkanPipelineCache _pipelineCache;
     private readonly VulkanDescriptorPool _descriptorPool;
-    private readonly WindowService _windowService;
+    private readonly EventService _eventService;
     
     public ICommandList CommandList { get; }
 
-    public VulkanGraphicsDeviceService(WindowService windowService, ILoggingService? logger = null)
+    public VulkanGraphicsDeviceService(WindowService windowService, EventService eventService, ILoggingService? logger = null)
     {
         Vk = Vk.GetApi();
-        _windowService = windowService;
-        _instance = new VulkanInstance(Vk, _windowService.Title, logger);
+        _eventService = eventService;
+        _instance = new VulkanInstance(Vk, windowService.Title, logger);
         
         var physicalDevice = VulkanPhysicalDevice.SelectPreferredPhysicalDevice(Vk, _instance);
         LogicalDevice = new VulkanLogicalDevice(Vk, physicalDevice);
         
-        _surface = new VulkanSurface(Vk, _instance, physicalDevice, _windowService);
+        _surface = new VulkanSurface(Vk, _instance, physicalDevice, windowService);
         _renderPass = new VulkanRenderPass(Vk, LogicalDevice, _surface.Format.Format);
         _clearPass = new VulkanRenderPass(Vk, LogicalDevice, _surface.Format.Format, true);
         GraphicsQueue = new GraphicsQueue(Vk, LogicalDevice, 0);
@@ -50,7 +52,7 @@ public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService
             _surface, 
             _renderPass, 
             _commandPool, 
-            _windowService, 
+            windowService, 
             3,
             false, 
             _presentQueue, 
@@ -61,10 +63,10 @@ public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService
 
         CommandList = new VulkanCommandList(Vk, SwapChain, _renderPass);
         
-        _windowService.OnResize += WindowServiceResized;
+        eventService.Handle<WindowResizeEvent>(OnWindowResize);
     }
 
-    private void WindowServiceResized(int width, int height) => SwapChain.Recreate();
+    private void OnWindowResize(WindowResizeEvent e) => SwapChain.Recreate();
     
     public Buffer CreateBuffer(BufferDescription description) => 
         new VulkanBuffer(
@@ -213,8 +215,8 @@ public sealed class VulkanGraphicsDeviceService : IGraphicsDeviceService
         _presentQueue.WaitIdle();
         GraphicsQueue.WaitIdle();
         LogicalDevice.WaitIdle();
-     
-        _windowService.OnResize -= WindowServiceResized;
+        
+        _eventService.Unhandle<WindowResizeEvent>(OnWindowResize);
         
         _pipelineCache.Dispose();
         _descriptorPool.Dispose();
